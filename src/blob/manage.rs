@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{core::RequestParams, Error};
 
-// ---- Blob/upload (RFC 9404 Section 3) ----
+// ---- Blob/upload (RFC 9404 §4.1) ----
 
 /// Request for `Blob/upload` — create blobs via JMAP method call.
 #[derive(Debug, Clone, Serialize)]
@@ -41,18 +41,25 @@ pub struct BlobUploadCreate {
     pub type_: Option<String>,
 }
 
-/// Data source for blob assembly.
+/// Data source for blob assembly (RFC 9404 §4.1 DataSourceObject).
+///
+/// Each source provides either inline data or a reference to an existing
+/// blob. Multiple sources are concatenated in order.
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum DataSource {
+    /// Reference an existing blob by ID, with optional byte range.
     Blob(DataSourceBlob),
-    String(DataSourceString),
+    /// Inline text data.
+    Text(DataSourceText),
+    /// Inline base64-encoded binary data.
+    Base64(DataSourceBase64),
 }
 
 /// Reference another blob (with optional range) as a data source.
 #[derive(Debug, Clone, Serialize)]
 pub struct DataSourceBlob {
-    #[serde(rename = "data:asBlob")]
+    #[serde(rename = "blobId")]
     pub blob_id: String,
 
     #[serde(rename = "offset")]
@@ -64,10 +71,17 @@ pub struct DataSourceBlob {
     pub length: Option<u64>,
 }
 
-/// A literal string value as a data source.
+/// Inline text data source.
 #[derive(Debug, Clone, Serialize)]
-pub struct DataSourceString {
+pub struct DataSourceText {
     #[serde(rename = "data:asText")]
+    pub value: String,
+}
+
+/// Inline base64-encoded binary data source.
+#[derive(Debug, Clone, Serialize)]
+pub struct DataSourceBase64 {
+    #[serde(rename = "data:asBase64")]
     pub value: String,
 }
 
@@ -105,7 +119,7 @@ impl BlobUploadRequest {
         }
     }
 
-    /// Add a blob creation entry. Returns the create id for referencing.
+    /// Add a blob creation entry from inline text. Returns the create id.
     pub fn create_from_text(
         &mut self,
         text: impl Into<String>,
@@ -115,7 +129,7 @@ impl BlobUploadRequest {
         self.create.insert(
             create_id.clone(),
             BlobUploadCreate {
-                data: vec![DataSource::String(DataSourceString {
+                data: vec![DataSource::Text(DataSourceText {
                     value: text.into(),
                 })],
                 type_: type_.map(|t| t.into()),
@@ -124,7 +138,27 @@ impl BlobUploadRequest {
         create_id
     }
 
-    /// Add a blob creation entry from a blob reference.
+    /// Add a blob creation entry from inline base64 data. Returns the create id.
+    pub fn create_from_base64(
+        &mut self,
+        base64: impl Into<String>,
+        type_: Option<impl Into<String>>,
+    ) -> String {
+        let create_id = format!("b{}", self.create.len());
+        self.create.insert(
+            create_id.clone(),
+            BlobUploadCreate {
+                data: vec![DataSource::Base64(DataSourceBase64 {
+                    value: base64.into(),
+                })],
+                type_: type_.map(|t| t.into()),
+            },
+        );
+        create_id
+    }
+
+    /// Add a blob creation entry from a reference to an existing blob.
+    /// Returns the create id.
     pub fn create_from_blob(
         &mut self,
         blob_id: impl Into<String>,
@@ -147,7 +181,8 @@ impl BlobUploadRequest {
         create_id
     }
 
-    /// Add a blob creation entry with arbitrary data sources.
+    /// Add a blob creation entry with arbitrary data sources (concatenated
+    /// in order). Returns the create id.
     pub fn create_with_sources(
         &mut self,
         data: Vec<DataSource>,
@@ -174,7 +209,10 @@ impl BlobUploadResponse {
         if let Some(result) = self.created.as_mut().and_then(|r| r.remove(id)) {
             Ok(result)
         } else if let Some(error) = self.not_created.as_ref().and_then(|r| r.get(id)) {
-            Err(Error::Internal(format!("Blob {} not created: {:?}", id, error)))
+            Err(Error::Internal(format!(
+                "Blob {} not created: {:?}",
+                id, error
+            )))
         } else {
             Err(Error::Internal(format!("Id {} not found.", id)))
         }
@@ -185,39 +223,32 @@ impl BlobUploadResponse {
     }
 }
 
-// ---- Blob/get (RFC 9404 Section 4) ----
+// ---- Blob/get (RFC 9404 §4.2) ----
 
-/// Request for `Blob/get` — retrieve blob content with optional range.
+/// Request for `Blob/get` — retrieve blob content.
+///
+/// Unlike most JMAP /get methods, the `properties` here are dynamic
+/// names like `"data:asText"`, `"data:asBase64"`, `"digest:sha-256"`,
+/// and `"size"`. The `offset` and `length` apply to all requested blobs.
 #[derive(Debug, Clone, Serialize)]
 pub struct BlobGetRequest {
     #[serde(rename = "accountId")]
     account_id: String,
 
     #[serde(rename = "ids")]
-    ids: Vec<BlobGetItem>,
-}
+    ids: Vec<String>,
 
-/// A single blob get entry with optional range and encoding.
-#[derive(Debug, Clone, Serialize)]
-pub struct BlobGetItem {
-    #[serde(rename = "id")]
-    pub id: String,
+    #[serde(rename = "properties")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    properties: Option<Vec<String>>,
 
     #[serde(rename = "offset")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub offset: Option<u64>,
+    offset: Option<u64>,
 
     #[serde(rename = "length")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub length: Option<u64>,
-
-    #[serde(rename = "encoding")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub encoding: Option<String>,
-
-    #[serde(rename = "digest")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub digest: Option<Vec<String>>,
+    length: Option<u64>,
 }
 
 /// Response for `Blob/get`.
@@ -234,25 +265,50 @@ pub struct BlobGetResponse {
 }
 
 /// Result for a single blob get entry.
+///
+/// Response properties use dynamic keys (`data:asText`, `data:asBase64`,
+/// `digest:sha-256`, etc.) so they are captured in a flat map via
+/// `serde(flatten)`. Use the typed accessor methods to read common
+/// fields, or access the `properties` map directly for digest values.
 #[derive(Debug, Clone, Deserialize)]
 pub struct BlobGetResult {
     #[serde(rename = "id")]
     pub id: String,
 
-    #[serde(rename = "data")]
-    pub data: Option<String>,
-
     #[serde(rename = "size")]
     pub size: Option<u64>,
-
-    #[serde(rename = "digest")]
-    pub digest: Option<AHashMap<String, String>>,
 
     #[serde(rename = "isEncodingProblem")]
     pub is_encoding_problem: Option<bool>,
 
     #[serde(rename = "isTruncated")]
     pub is_truncated: Option<bool>,
+
+    /// All dynamic properties including `data:asText`, `data:asBase64`,
+    /// and `digest:<algorithm>` values.
+    #[serde(flatten)]
+    pub properties: AHashMap<String, serde_json::Value>,
+}
+
+impl BlobGetResult {
+    /// Get the blob data as text (`data:asText` property).
+    pub fn data_as_text(&self) -> Option<&str> {
+        self.properties.get("data:asText")?.as_str()
+    }
+
+    /// Get the blob data as base64 (`data:asBase64` property).
+    pub fn data_as_base64(&self) -> Option<&str> {
+        self.properties.get("data:asBase64")?.as_str()
+    }
+
+    /// Get a computed digest value by algorithm name.
+    ///
+    /// For example, `digest("sha-256")` reads the `digest:sha-256` property.
+    pub fn digest(&self, algorithm: &str) -> Option<&str> {
+        self.properties
+            .get(&format!("digest:{}", algorithm))?
+            .as_str()
+    }
 }
 
 impl BlobGetRequest {
@@ -260,24 +316,43 @@ impl BlobGetRequest {
         BlobGetRequest {
             account_id: params.account_id,
             ids: Vec::new(),
+            properties: None,
+            offset: None,
+            length: None,
         }
     }
 
-    /// Add a blob to retrieve by ID.
-    pub fn id(&mut self, id: impl Into<String>) -> &mut Self {
-        self.ids.push(BlobGetItem {
-            id: id.into(),
-            offset: None,
-            length: None,
-            encoding: None,
-            digest: None,
-        });
+    /// Add blob IDs to retrieve.
+    pub fn ids<U, V>(&mut self, ids: U) -> &mut Self
+    where
+        U: IntoIterator<Item = V>,
+        V: Into<String>,
+    {
+        self.ids.extend(ids.into_iter().map(|i| i.into()));
         self
     }
 
-    /// Add a blob to retrieve with range and options.
-    pub fn id_with_options(&mut self, item: BlobGetItem) -> &mut Self {
-        self.ids.push(item);
+    /// Set which properties to return. Valid values include `"data:asText"`,
+    /// `"data:asBase64"`, `"data"` (auto-detect), `"digest:sha"`,
+    /// `"digest:sha-256"`, `"digest:sha-512"`, `"size"`.
+    pub fn properties<U, V>(&mut self, properties: U) -> &mut Self
+    where
+        U: IntoIterator<Item = V>,
+        V: Into<String>,
+    {
+        self.properties = Some(properties.into_iter().map(|p| p.into()).collect());
+        self
+    }
+
+    /// Set the byte offset for all requested blobs.
+    pub fn offset(&mut self, offset: u64) -> &mut Self {
+        self.offset = Some(offset);
+        self
+    }
+
+    /// Set the byte length for all requested blobs.
+    pub fn length(&mut self, length: u64) -> &mut Self {
+        self.length = Some(length);
         self
     }
 }
@@ -300,45 +375,16 @@ impl BlobGetResponse {
     }
 }
 
-impl BlobGetItem {
-    pub fn new(id: impl Into<String>) -> Self {
-        BlobGetItem {
-            id: id.into(),
-            offset: None,
-            length: None,
-            encoding: None,
-            digest: None,
-        }
-    }
-
-    pub fn offset(mut self, offset: u64) -> Self {
-        self.offset = Some(offset);
-        self
-    }
-
-    pub fn length(mut self, length: u64) -> Self {
-        self.length = Some(length);
-        self
-    }
-
-    pub fn encoding(mut self, encoding: impl Into<String>) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    pub fn digest<U, V>(mut self, algorithms: U) -> Self
-    where
-        U: IntoIterator<Item = V>,
-        V: Into<String>,
-    {
-        self.digest = Some(algorithms.into_iter().map(|a| a.into()).collect());
-        self
-    }
-}
-
-// ---- Blob/lookup (RFC 9404 Section 5) ----
+// ---- Blob/lookup (RFC 9404 §4.3) ----
 
 /// Request for `Blob/lookup` — reverse lookup which objects reference a blob.
+///
+/// **Important**: The JMAP request's `using` array must include the
+/// capability that defines each type listed in `typeNames`. For example,
+/// looking up `"Email"` requires `urn:ietf:params:jmap:mail`. Use
+/// [`Request::add_capability`] to add the required capabilities, or use
+/// the `lookup_blob_with_capabilities` helper which handles this
+/// automatically for known types.
 #[derive(Debug, Clone, Serialize)]
 pub struct BlobLookupRequest {
     #[serde(rename = "accountId")]
@@ -370,6 +416,7 @@ pub struct BlobLookupResult {
     #[serde(rename = "id")]
     pub id: String,
 
+    /// Map of type name → list of object IDs that reference this blob.
     #[serde(rename = "matchedIds")]
     pub matched_ids: AHashMap<String, Vec<String>>,
 }
@@ -383,6 +430,10 @@ impl BlobLookupRequest {
         }
     }
 
+    /// Set the JMAP type names to search (e.g. `"Email"`, `"CalendarEvent"`).
+    ///
+    /// The caller must ensure the corresponding capabilities are added
+    /// to the request's `using` array.
     pub fn type_names<U, V>(&mut self, type_names: U) -> &mut Self
     where
         U: IntoIterator<Item = V>,
@@ -392,6 +443,7 @@ impl BlobLookupRequest {
         self
     }
 
+    /// Set the blob IDs to look up.
     pub fn ids<U, V>(&mut self, ids: U) -> &mut Self
     where
         U: IntoIterator<Item = V>,

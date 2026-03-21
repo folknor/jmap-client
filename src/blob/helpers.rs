@@ -12,7 +12,7 @@
 use crate::{
     client::Client,
     core::request::{Arguments, Request},
-    Method,
+    Method, URI,
 };
 
 use super::{
@@ -100,6 +100,24 @@ impl Request<'_> {
 
     pub fn lookup_blob(&mut self) -> &mut BlobLookupRequest {
         self.add_capability(crate::URI::Blob);
+        self.add_method_call(
+            Method::LookupBlob,
+            Arguments::blob_lookup(self.params(Method::LookupBlob)),
+        )
+        .blob_lookup_mut()
+    }
+
+    /// Create a Blob/lookup request and automatically add the capabilities
+    /// required by the given type names. Each type name must have its
+    /// defining capability in the `using` array per RFC 9404 §4.3.
+    pub fn lookup_blob_with_capabilities(
+        &mut self,
+        capabilities: impl IntoIterator<Item = URI>,
+    ) -> &mut BlobLookupRequest {
+        self.add_capability(crate::URI::Blob);
+        for cap in capabilities {
+            self.add_capability(cap);
+        }
         self.add_method_call(
             Method::LookupBlob,
             Arguments::blob_lookup(self.params(Method::LookupBlob)),
