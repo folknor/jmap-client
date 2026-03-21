@@ -214,7 +214,7 @@ impl Request<'_> {
     }
 
     pub fn parse_calendar_event(&mut self) -> &mut CalendarEventParseRequest {
-        self.add_capability(crate::URI::Calendars);
+        self.add_capability(crate::URI::CalendarsParse);
         self.add_method_call(
             Method::ParseCalendarEvent,
             Arguments::calendar_event_parse(self.params(Method::ParseCalendarEvent)),

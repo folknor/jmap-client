@@ -27,7 +27,6 @@ ahash = {version = "0.8", features = ["serde"]}
 parking_lot = "0.12"
 base64 = "0.13"
 maybe-async = "0.2"
-calcard = "0.3"
 
 [features]
 default = ["async", "websockets", "ring"]

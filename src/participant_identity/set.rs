@@ -41,7 +41,7 @@ impl SetObject for ParticipantIdentity<Set> {
             _state: Default::default(),
             id: None,
             name: None,
-            send_to: AHashMap::new().into(),
+            send_to: None,
             is_default: None,
         }
     }

@@ -39,10 +39,6 @@ use crate::core::changes::ChangesObject;
 use crate::core::Object;
 use crate::{Get, Set};
 
-// Re-export calcard for users who want iCalendar conversion or deep
-// JSCalendar type access.
-pub use calcard;
-
 // ---- CalendarEvent ----
 
 /// A calendar event backed by a JSCalendar JSON object.

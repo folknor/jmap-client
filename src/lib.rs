@@ -226,6 +226,10 @@ pub enum URI {
     Contacts,
     #[serde(rename = "urn:ietf:params:jmap:calendars")]
     Calendars,
+    #[serde(rename = "urn:ietf:params:jmap:calendars:parse")]
+    CalendarsParse,
+    #[serde(rename = "urn:ietf:params:jmap:contacts:parse")]
+    ContactsParse,
     #[serde(rename = "urn:ietf:params:jmap:websocket")]
     WebSocket,
     #[serde(rename = "urn:ietf:params:jmap:sieve")]
@@ -245,6 +249,8 @@ impl AsRef<str> for URI {
             URI::VacationResponse => "urn:ietf:params:jmap:vacationresponse",
             URI::Contacts => "urn:ietf:params:jmap:contacts",
             URI::Calendars => "urn:ietf:params:jmap:calendars",
+            URI::CalendarsParse => "urn:ietf:params:jmap:calendars:parse",
+            URI::ContactsParse => "urn:ietf:params:jmap:contacts:parse",
             URI::WebSocket => "urn:ietf:params:jmap:websocket",
             URI::Sieve => "urn:ietf:params:jmap:sieve",
             URI::Principals => "urn:ietf:params:jmap:principals",

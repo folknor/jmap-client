@@ -39,10 +39,6 @@ use crate::core::changes::ChangesObject;
 use crate::core::Object;
 use crate::{Get, Set};
 
-// Re-export calcard for users who want vCard conversion or deep
-// JSContact type access.
-pub use calcard;
-
 // ---- ContactCard ----
 
 /// A contact card backed by a JSContact JSON object.

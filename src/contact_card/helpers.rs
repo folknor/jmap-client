@@ -191,7 +191,7 @@ impl Request<'_> {
     }
 
     pub fn parse_contact_card(&mut self) -> &mut ContactCardParseRequest {
-        self.add_capability(crate::URI::Contacts);
+        self.add_capability(crate::URI::ContactsParse);
         self.add_method_call(
             Method::ParseContactCard,
             Arguments::contact_card_parse(self.params(Method::ParseContactCard)),
