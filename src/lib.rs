@@ -181,11 +181,13 @@
 //!
 
 #[forbid(unsafe_code)]
+pub mod address_book;
 pub mod blob;
 pub mod calendar;
 pub mod calendar_event;
 pub mod calendar_event_notification;
 pub mod client;
+pub mod contact_card;
 pub mod core;
 pub mod email;
 pub mod email_submission;
@@ -361,6 +363,26 @@ pub enum Method {
     ChangesParticipantIdentity,
     #[serde(rename = "ParticipantIdentity/set")]
     SetParticipantIdentity,
+    #[serde(rename = "AddressBook/get")]
+    GetAddressBook,
+    #[serde(rename = "AddressBook/changes")]
+    ChangesAddressBook,
+    #[serde(rename = "AddressBook/set")]
+    SetAddressBook,
+    #[serde(rename = "ContactCard/get")]
+    GetContactCard,
+    #[serde(rename = "ContactCard/changes")]
+    ChangesContactCard,
+    #[serde(rename = "ContactCard/query")]
+    QueryContactCard,
+    #[serde(rename = "ContactCard/queryChanges")]
+    QueryChangesContactCard,
+    #[serde(rename = "ContactCard/set")]
+    SetContactCard,
+    #[serde(rename = "ContactCard/parse")]
+    ParseContactCard,
+    #[serde(rename = "ContactCard/copy")]
+    CopyContactCard,
     #[serde(rename = "error")]
     Error,
 }

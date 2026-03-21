@@ -10,9 +10,11 @@
  */
 
 use crate::{
+    address_book::AddressBook,
     blob::copy::CopyBlobRequest,
     calendar::Calendar,
     calendar_event::{parse::CalendarEventParseRequest, CalendarEvent},
+    contact_card::{parse::ContactCardParseRequest, ContactCard},
     calendar_event_notification::CalendarEventNotification,
     client::Client,
     email::{
@@ -116,6 +118,14 @@ pub enum Arguments {
     CalendarEventNotificationSet(SetRequest<CalendarEventNotification<Set>>),
     ParticipantIdentityGet(GetRequest<ParticipantIdentity<Set>>),
     ParticipantIdentitySet(SetRequest<ParticipantIdentity<Set>>),
+    AddressBookGet(GetRequest<AddressBook<Set>>),
+    AddressBookSet(SetRequest<AddressBook<Set>>),
+    ContactCardGet(GetRequest<ContactCard<Set>>),
+    ContactCardQuery(QueryRequest<ContactCard<Set>>),
+    ContactCardQueryChanges(QueryChangesRequest<ContactCard<Set>>),
+    ContactCardSet(SetRequest<ContactCard<Set>>),
+    ContactCardParse(ContactCardParseRequest),
+    ContactCardCopy(CopyRequest<ContactCard<Set>>),
 }
 
 impl Arguments {
@@ -302,6 +312,44 @@ impl Arguments {
 
     pub fn participant_identity_set(params: RequestParams) -> Self {
         Arguments::ParticipantIdentitySet(SetRequest::new(params))
+    }
+
+    pub fn address_book_get(params: RequestParams) -> Self {
+        Arguments::AddressBookGet(GetRequest::new(params))
+    }
+
+    pub fn address_book_set(params: RequestParams) -> Self {
+        Arguments::AddressBookSet(SetRequest::new(params))
+    }
+
+    pub fn contact_card_get(params: RequestParams) -> Self {
+        Arguments::ContactCardGet(GetRequest::new(params))
+    }
+
+    pub fn contact_card_query(params: RequestParams) -> Self {
+        Arguments::ContactCardQuery(QueryRequest::new(params))
+    }
+
+    pub fn contact_card_query_changes(
+        params: RequestParams,
+        since_query_state: String,
+    ) -> Self {
+        Arguments::ContactCardQueryChanges(QueryChangesRequest::new(
+            params,
+            since_query_state,
+        ))
+    }
+
+    pub fn contact_card_set(params: RequestParams) -> Self {
+        Arguments::ContactCardSet(SetRequest::new(params))
+    }
+
+    pub fn contact_card_parse(params: RequestParams) -> Self {
+        Arguments::ContactCardParse(ContactCardParseRequest::new(params))
+    }
+
+    pub fn contact_card_copy(params: RequestParams, from_account_id: String) -> Self {
+        Arguments::ContactCardCopy(CopyRequest::new(params, from_account_id))
     }
 
     pub fn changes_mut(&mut self) -> &mut ChangesRequest {
@@ -620,6 +668,64 @@ impl Arguments {
     ) -> &mut SetRequest<ParticipantIdentity<Set>> {
         match self {
             Arguments::ParticipantIdentitySet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn address_book_get_mut(&mut self) -> &mut GetRequest<AddressBook<Set>> {
+        match self {
+            Arguments::AddressBookGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn address_book_set_mut(&mut self) -> &mut SetRequest<AddressBook<Set>> {
+        match self {
+            Arguments::AddressBookSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn contact_card_get_mut(&mut self) -> &mut GetRequest<ContactCard<Set>> {
+        match self {
+            Arguments::ContactCardGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn contact_card_query_mut(&mut self) -> &mut QueryRequest<ContactCard<Set>> {
+        match self {
+            Arguments::ContactCardQuery(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn contact_card_query_changes_mut(
+        &mut self,
+    ) -> &mut QueryChangesRequest<ContactCard<Set>> {
+        match self {
+            Arguments::ContactCardQueryChanges(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn contact_card_set_mut(&mut self) -> &mut SetRequest<ContactCard<Set>> {
+        match self {
+            Arguments::ContactCardSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn contact_card_parse_mut(&mut self) -> &mut ContactCardParseRequest {
+        match self {
+            Arguments::ContactCardParse(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn contact_card_copy_mut(&mut self) -> &mut CopyRequest<ContactCard<Set>> {
+        match self {
+            Arguments::ContactCardCopy(ref mut r) => r,
             _ => unreachable!(),
         }
     }

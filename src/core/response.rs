@@ -14,9 +14,11 @@ use serde::{de::Visitor, Deserialize};
 use std::fmt;
 
 use crate::{
+    address_book::AddressBook,
     blob::copy::CopyBlobResponse,
     calendar::Calendar,
     calendar_event::{parse::CalendarEventParseResponse, CalendarEvent},
+    contact_card::{parse::ContactCardParseResponse, ContactCard},
     calendar_event_notification::CalendarEventNotification,
     email::{
         import::EmailImportResponse, parse::EmailParseResponse,
@@ -155,6 +157,13 @@ pub type CalendarEventNotificationChangesResponse =
 pub type ParticipantIdentityGetResponse = GetResponse<ParticipantIdentity<Get>>;
 pub type ParticipantIdentitySetResponse = SetResponse<ParticipantIdentity<Get>>;
 pub type ParticipantIdentityChangesResponse = ChangesResponse<ParticipantIdentity<Get>>;
+pub type AddressBookGetResponse = GetResponse<AddressBook<Get>>;
+pub type AddressBookSetResponse = SetResponse<AddressBook<Get>>;
+pub type AddressBookChangesResponse = ChangesResponse<AddressBook<Get>>;
+pub type ContactCardGetResponse = GetResponse<ContactCard<Get>>;
+pub type ContactCardSetResponse = SetResponse<ContactCard<Get>>;
+pub type ContactCardChangesResponse = ChangesResponse<ContactCard<Get>>;
+pub type ContactCardCopyResponse = CopyResponse<ContactCard<Get>>;
 
 #[derive(Debug)]
 pub struct TaggedMethodResponse {
@@ -219,6 +228,17 @@ pub enum MethodResponse {
     GetParticipantIdentity(ParticipantIdentityGetResponse),
     ChangesParticipantIdentity(ParticipantIdentityChangesResponse),
     SetParticipantIdentity(ParticipantIdentitySetResponse),
+
+    GetAddressBook(AddressBookGetResponse),
+    ChangesAddressBook(AddressBookChangesResponse),
+    SetAddressBook(AddressBookSetResponse),
+    GetContactCard(ContactCardGetResponse),
+    ChangesContactCard(ContactCardChangesResponse),
+    QueryContactCard(QueryResponse),
+    QueryChangesContactCard(QueryChangesResponse),
+    SetContactCard(ContactCardSetResponse),
+    ParseContactCard(ContactCardParseResponse),
+    CopyContactCard(ContactCardCopyResponse),
 
     Echo(serde_json::Value),
     Error(MethodError),
@@ -362,6 +382,34 @@ impl TaggedMethodResponse {
                 | (
                     MethodResponse::SetParticipantIdentity(_),
                     Method::SetParticipantIdentity
+                )
+                | (MethodResponse::GetAddressBook(_), Method::GetAddressBook)
+                | (
+                    MethodResponse::ChangesAddressBook(_),
+                    Method::ChangesAddressBook
+                )
+                | (MethodResponse::SetAddressBook(_), Method::SetAddressBook)
+                | (MethodResponse::GetContactCard(_), Method::GetContactCard)
+                | (
+                    MethodResponse::ChangesContactCard(_),
+                    Method::ChangesContactCard
+                )
+                | (
+                    MethodResponse::QueryContactCard(_),
+                    Method::QueryContactCard
+                )
+                | (
+                    MethodResponse::QueryChangesContactCard(_),
+                    Method::QueryChangesContactCard
+                )
+                | (MethodResponse::SetContactCard(_), Method::SetContactCard)
+                | (
+                    MethodResponse::ParseContactCard(_),
+                    Method::ParseContactCard
+                )
+                | (
+                    MethodResponse::CopyContactCard(_),
+                    Method::CopyContactCard
                 )
                 | (MethodResponse::Echo(_), Method::Echo)
                 | (MethodResponse::Error(_), Method::Error)
@@ -808,6 +856,86 @@ impl TaggedMethodResponse {
         }
     }
 
+    pub fn unwrap_get_address_book(self) -> crate::Result<AddressBookGetResponse> {
+        match self.response {
+            MethodResponse::GetAddressBook(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_changes_address_book(self) -> crate::Result<AddressBookChangesResponse> {
+        match self.response {
+            MethodResponse::ChangesAddressBook(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_set_address_book(self) -> crate::Result<AddressBookSetResponse> {
+        match self.response {
+            MethodResponse::SetAddressBook(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_get_contact_card(self) -> crate::Result<ContactCardGetResponse> {
+        match self.response {
+            MethodResponse::GetContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_changes_contact_card(self) -> crate::Result<ContactCardChangesResponse> {
+        match self.response {
+            MethodResponse::ChangesContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_query_contact_card(self) -> crate::Result<QueryResponse> {
+        match self.response {
+            MethodResponse::QueryContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_query_changes_contact_card(self) -> crate::Result<QueryChangesResponse> {
+        match self.response {
+            MethodResponse::QueryChangesContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_set_contact_card(self) -> crate::Result<ContactCardSetResponse> {
+        match self.response {
+            MethodResponse::SetContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_parse_contact_card(self) -> crate::Result<ContactCardParseResponse> {
+        match self.response {
+            MethodResponse::ParseContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_copy_contact_card(self) -> crate::Result<ContactCardCopyResponse> {
+        match self.response {
+            MethodResponse::CopyContactCard(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
     pub fn unwrap_echo(self) -> crate::Result<serde_json::Value> {
         match self.response {
             MethodResponse::Echo(response) => Ok(response),
@@ -1072,6 +1200,46 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
             Method::SetParticipantIdentity => MethodResponse::SetParticipantIdentity(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::GetAddressBook => MethodResponse::GetAddressBook(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::ChangesAddressBook => MethodResponse::ChangesAddressBook(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::SetAddressBook => MethodResponse::SetAddressBook(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::GetContactCard => MethodResponse::GetContactCard(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::ChangesContactCard => MethodResponse::ChangesContactCard(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::QueryContactCard => MethodResponse::QueryContactCard(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::QueryChangesContactCard => MethodResponse::QueryChangesContactCard(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::SetContactCard => MethodResponse::SetContactCard(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::ParseContactCard => MethodResponse::ParseContactCard(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::CopyContactCard => MethodResponse::CopyContactCard(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
