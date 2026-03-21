@@ -1,0 +1,147 @@
+/*
+ * Copyright Stalwart Labs LLC See the COPYING
+ * file at the top-level directory of this distribution.
+ *
+ * Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+ * https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+ * <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your
+ * option. This file may not be copied, modified, or distributed
+ * except according to those terms.
+ */
+
+pub mod get;
+pub mod helpers;
+pub mod set;
+
+use std::fmt::Display;
+
+use serde::{Deserialize, Serialize};
+
+use crate::core::changes::ChangesObject;
+use crate::core::Object;
+use crate::{Get, Set};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CalendarEventNotification<State = Get> {
+    #[serde(skip)]
+    _create_id: Option<usize>,
+
+    #[serde(skip)]
+    _state: std::marker::PhantomData<State>,
+
+    #[serde(rename = "id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+
+    #[serde(rename = "created")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created: Option<String>,
+
+    #[serde(rename = "changedBy")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub changed_by: Option<ChangedBy>,
+
+    #[serde(rename = "calendarEventId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub calendar_event_id: Option<String>,
+
+    #[serde(rename = "isDraft")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_draft: Option<bool>,
+
+    #[serde(rename = "type")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub type_: Option<NotificationType>,
+
+    #[serde(rename = "event")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<serde_json::Value>,
+
+    #[serde(rename = "eventPatch")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event_patch: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChangedBy {
+    #[serde(rename = "name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+
+    #[serde(rename = "email")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+
+    #[serde(rename = "principalId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub principal_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum NotificationType {
+    #[serde(rename = "created")]
+    Created,
+    #[serde(rename = "updated")]
+    Updated,
+    #[serde(rename = "destroyed")]
+    Destroyed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+pub enum Property {
+    #[serde(rename = "id")]
+    Id,
+    #[serde(rename = "created")]
+    Created,
+    #[serde(rename = "changedBy")]
+    ChangedBy,
+    #[serde(rename = "calendarEventId")]
+    CalendarEventId,
+    #[serde(rename = "isDraft")]
+    IsDraft,
+    #[serde(rename = "type")]
+    Type,
+    #[serde(rename = "event")]
+    Event,
+    #[serde(rename = "eventPatch")]
+    EventPatch,
+}
+
+impl Display for Property {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Property::Id => write!(f, "id"),
+            Property::Created => write!(f, "created"),
+            Property::ChangedBy => write!(f, "changedBy"),
+            Property::CalendarEventId => write!(f, "calendarEventId"),
+            Property::IsDraft => write!(f, "isDraft"),
+            Property::Type => write!(f, "type"),
+            Property::Event => write!(f, "event"),
+            Property::EventPatch => write!(f, "eventPatch"),
+        }
+    }
+}
+
+impl Object for CalendarEventNotification<Set> {
+    type Property = Property;
+
+    fn requires_account_id() -> bool {
+        true
+    }
+}
+
+impl Object for CalendarEventNotification<Get> {
+    type Property = Property;
+
+    fn requires_account_id() -> bool {
+        true
+    }
+}
+
+impl ChangesObject for CalendarEventNotification<Set> {
+    type ChangesResponse = ();
+}
+
+impl ChangesObject for CalendarEventNotification<Get> {
+    type ChangesResponse = ();
+}

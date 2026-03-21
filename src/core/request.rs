@@ -11,6 +11,9 @@
 
 use crate::{
     blob::copy::CopyBlobRequest,
+    calendar::Calendar,
+    calendar_event::{parse::CalendarEventParseRequest, CalendarEvent},
+    calendar_event_notification::CalendarEventNotification,
     client::Client,
     email::{
         import::EmailImportRequest, parse::EmailParseRequest,
@@ -19,6 +22,7 @@ use crate::{
     email_submission::EmailSubmission,
     identity::Identity,
     mailbox::Mailbox,
+    participant_identity::ParticipantIdentity,
     principal::Principal,
     push_subscription::PushSubscription,
     sieve::{validate::SieveScriptValidateRequest, SieveScript},
@@ -101,6 +105,17 @@ pub enum Arguments {
     PrincipalQuery(QueryRequest<Principal<Set>>),
     PrincipalQueryChanges(QueryChangesRequest<Principal<Set>>),
     PrincipalSet(SetRequest<Principal<Set>>),
+    CalendarGet(GetRequest<Calendar<Set>>),
+    CalendarSet(SetRequest<Calendar<Set>>),
+    CalendarEventGet(GetRequest<CalendarEvent<Set>>),
+    CalendarEventQuery(QueryRequest<CalendarEvent<Set>>),
+    CalendarEventQueryChanges(QueryChangesRequest<CalendarEvent<Set>>),
+    CalendarEventSet(SetRequest<CalendarEvent<Set>>),
+    CalendarEventParse(CalendarEventParseRequest),
+    CalendarEventNotificationGet(GetRequest<CalendarEventNotification<Set>>),
+    CalendarEventNotificationSet(SetRequest<CalendarEventNotification<Set>>),
+    ParticipantIdentityGet(GetRequest<ParticipantIdentity<Set>>),
+    ParticipantIdentitySet(SetRequest<ParticipantIdentity<Set>>),
 }
 
 impl Arguments {
@@ -237,6 +252,56 @@ impl Arguments {
 
     pub fn principal_set(params: RequestParams) -> Self {
         Arguments::PrincipalSet(SetRequest::new(params))
+    }
+
+    pub fn calendar_get(params: RequestParams) -> Self {
+        Arguments::CalendarGet(GetRequest::new(params))
+    }
+
+    pub fn calendar_set(params: RequestParams) -> Self {
+        Arguments::CalendarSet(SetRequest::new(params))
+    }
+
+    pub fn calendar_event_get(params: RequestParams) -> Self {
+        Arguments::CalendarEventGet(GetRequest::new(params))
+    }
+
+    pub fn calendar_event_query(params: RequestParams) -> Self {
+        Arguments::CalendarEventQuery(QueryRequest::new(params))
+    }
+
+    pub fn calendar_event_query_changes(
+        params: RequestParams,
+        since_query_state: String,
+    ) -> Self {
+        Arguments::CalendarEventQueryChanges(QueryChangesRequest::new(
+            params,
+            since_query_state,
+        ))
+    }
+
+    pub fn calendar_event_set(params: RequestParams) -> Self {
+        Arguments::CalendarEventSet(SetRequest::new(params))
+    }
+
+    pub fn calendar_event_parse(params: RequestParams) -> Self {
+        Arguments::CalendarEventParse(CalendarEventParseRequest::new(params))
+    }
+
+    pub fn calendar_event_notification_get(params: RequestParams) -> Self {
+        Arguments::CalendarEventNotificationGet(GetRequest::new(params))
+    }
+
+    pub fn calendar_event_notification_set(params: RequestParams) -> Self {
+        Arguments::CalendarEventNotificationSet(SetRequest::new(params))
+    }
+
+    pub fn participant_identity_get(params: RequestParams) -> Self {
+        Arguments::ParticipantIdentityGet(GetRequest::new(params))
+    }
+
+    pub fn participant_identity_set(params: RequestParams) -> Self {
+        Arguments::ParticipantIdentitySet(SetRequest::new(params))
     }
 
     pub fn changes_mut(&mut self) -> &mut ChangesRequest {
@@ -468,6 +533,93 @@ impl Arguments {
     pub fn principal_set_mut(&mut self) -> &mut SetRequest<Principal<Set>> {
         match self {
             Arguments::PrincipalSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_get_mut(&mut self) -> &mut GetRequest<Calendar<Set>> {
+        match self {
+            Arguments::CalendarGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_set_mut(&mut self) -> &mut SetRequest<Calendar<Set>> {
+        match self {
+            Arguments::CalendarSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_get_mut(&mut self) -> &mut GetRequest<CalendarEvent<Set>> {
+        match self {
+            Arguments::CalendarEventGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_query_mut(&mut self) -> &mut QueryRequest<CalendarEvent<Set>> {
+        match self {
+            Arguments::CalendarEventQuery(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_query_changes_mut(
+        &mut self,
+    ) -> &mut QueryChangesRequest<CalendarEvent<Set>> {
+        match self {
+            Arguments::CalendarEventQueryChanges(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_set_mut(&mut self) -> &mut SetRequest<CalendarEvent<Set>> {
+        match self {
+            Arguments::CalendarEventSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_parse_mut(&mut self) -> &mut CalendarEventParseRequest {
+        match self {
+            Arguments::CalendarEventParse(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_notification_get_mut(
+        &mut self,
+    ) -> &mut GetRequest<CalendarEventNotification<Set>> {
+        match self {
+            Arguments::CalendarEventNotificationGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_notification_set_mut(
+        &mut self,
+    ) -> &mut SetRequest<CalendarEventNotification<Set>> {
+        match self {
+            Arguments::CalendarEventNotificationSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn participant_identity_get_mut(
+        &mut self,
+    ) -> &mut GetRequest<ParticipantIdentity<Set>> {
+        match self {
+            Arguments::ParticipantIdentityGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn participant_identity_set_mut(
+        &mut self,
+    ) -> &mut SetRequest<ParticipantIdentity<Set>> {
+        match self {
+            Arguments::ParticipantIdentitySet(ref mut r) => r,
             _ => unreachable!(),
         }
     }

@@ -182,6 +182,9 @@
 
 #[forbid(unsafe_code)]
 pub mod blob;
+pub mod calendar;
+pub mod calendar_event;
+pub mod calendar_event_notification;
 pub mod client;
 pub mod core;
 pub mod email;
@@ -190,6 +193,7 @@ pub mod email_submission;
 pub mod event_source;
 pub mod identity;
 pub mod mailbox;
+pub mod participant_identity;
 pub mod principal;
 pub mod push_subscription;
 pub mod sieve;
@@ -327,6 +331,36 @@ pub enum Method {
     QueryChangesPrincipal,
     #[serde(rename = "Principal/set")]
     SetPrincipal,
+    #[serde(rename = "Calendar/get")]
+    GetCalendar,
+    #[serde(rename = "Calendar/changes")]
+    ChangesCalendar,
+    #[serde(rename = "Calendar/set")]
+    SetCalendar,
+    #[serde(rename = "CalendarEvent/get")]
+    GetCalendarEvent,
+    #[serde(rename = "CalendarEvent/changes")]
+    ChangesCalendarEvent,
+    #[serde(rename = "CalendarEvent/query")]
+    QueryCalendarEvent,
+    #[serde(rename = "CalendarEvent/queryChanges")]
+    QueryChangesCalendarEvent,
+    #[serde(rename = "CalendarEvent/set")]
+    SetCalendarEvent,
+    #[serde(rename = "CalendarEvent/parse")]
+    ParseCalendarEvent,
+    #[serde(rename = "CalendarEventNotification/get")]
+    GetCalendarEventNotification,
+    #[serde(rename = "CalendarEventNotification/changes")]
+    ChangesCalendarEventNotification,
+    #[serde(rename = "CalendarEventNotification/set")]
+    SetCalendarEventNotification,
+    #[serde(rename = "ParticipantIdentity/get")]
+    GetParticipantIdentity,
+    #[serde(rename = "ParticipantIdentity/changes")]
+    ChangesParticipantIdentity,
+    #[serde(rename = "ParticipantIdentity/set")]
+    SetParticipantIdentity,
     #[serde(rename = "error")]
     Error,
 }
