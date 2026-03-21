@@ -87,6 +87,7 @@ impl Client {
 
 impl Request<'_> {
     pub fn get_identity(&mut self) -> &mut GetRequest<Identity<Set>> {
+        self.add_capability(crate::URI::Submission);
         self.add_method_call(
             Method::GetIdentity,
             Arguments::identity_get(self.params(Method::GetIdentity)),
@@ -100,6 +101,7 @@ impl Request<'_> {
     }
 
     pub fn set_identity(&mut self) -> &mut SetRequest<Identity<Set>> {
+        self.add_capability(crate::URI::Submission);
         self.add_method_call(
             Method::SetIdentity,
             Arguments::identity_set(self.params(Method::SetIdentity)),
@@ -113,6 +115,7 @@ impl Request<'_> {
     }
 
     pub fn changes_identity(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
+        self.add_capability(crate::URI::Submission);
         self.add_method_call(
             Method::ChangesIdentity,
             Arguments::changes(self.params(Method::ChangesIdentity), since_state.into()),
