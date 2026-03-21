@@ -150,6 +150,7 @@ pub type CalendarChangesResponse = ChangesResponse<Calendar<Get>>;
 pub type CalendarEventGetResponse = GetResponse<CalendarEvent<Get>>;
 pub type CalendarEventSetResponse = SetResponse<CalendarEvent<Get>>;
 pub type CalendarEventChangesResponse = ChangesResponse<CalendarEvent<Get>>;
+pub type CalendarEventCopyResponse = CopyResponse<CalendarEvent<Get>>;
 pub type CalendarEventNotificationGetResponse = GetResponse<CalendarEventNotification<Get>>;
 pub type CalendarEventNotificationSetResponse = SetResponse<CalendarEventNotification<Get>>;
 pub type CalendarEventNotificationChangesResponse =
@@ -222,8 +223,11 @@ pub enum MethodResponse {
     QueryChangesCalendarEvent(QueryChangesResponse),
     SetCalendarEvent(CalendarEventSetResponse),
     ParseCalendarEvent(CalendarEventParseResponse),
+    CopyCalendarEvent(CalendarEventCopyResponse),
     GetCalendarEventNotification(CalendarEventNotificationGetResponse),
     ChangesCalendarEventNotification(CalendarEventNotificationChangesResponse),
+    QueryCalendarEventNotification(QueryResponse),
+    QueryChangesCalendarEventNotification(QueryChangesResponse),
     SetCalendarEventNotification(CalendarEventNotificationSetResponse),
     GetParticipantIdentity(ParticipantIdentityGetResponse),
     ChangesParticipantIdentity(ParticipantIdentityChangesResponse),
@@ -360,12 +364,24 @@ impl TaggedMethodResponse {
                     Method::ParseCalendarEvent
                 )
                 | (
+                    MethodResponse::CopyCalendarEvent(_),
+                    Method::CopyCalendarEvent
+                )
+                | (
                     MethodResponse::GetCalendarEventNotification(_),
                     Method::GetCalendarEventNotification
                 )
                 | (
                     MethodResponse::ChangesCalendarEventNotification(_),
                     Method::ChangesCalendarEventNotification
+                )
+                | (
+                    MethodResponse::QueryCalendarEventNotification(_),
+                    Method::QueryCalendarEventNotification
+                )
+                | (
+                    MethodResponse::QueryChangesCalendarEventNotification(_),
+                    Method::QueryChangesCalendarEventNotification
                 )
                 | (
                     MethodResponse::SetCalendarEventNotification(_),
@@ -796,6 +812,14 @@ impl TaggedMethodResponse {
         }
     }
 
+    pub fn unwrap_copy_calendar_event(self) -> crate::Result<CalendarEventCopyResponse> {
+        match self.response {
+            MethodResponse::CopyCalendarEvent(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
     pub fn unwrap_get_calendar_event_notification(
         self,
     ) -> crate::Result<CalendarEventNotificationGetResponse> {
@@ -811,6 +835,24 @@ impl TaggedMethodResponse {
     ) -> crate::Result<CalendarEventNotificationChangesResponse> {
         match self.response {
             MethodResponse::ChangesCalendarEventNotification(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_query_calendar_event_notification(self) -> crate::Result<QueryResponse> {
+        match self.response {
+            MethodResponse::QueryCalendarEventNotification(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_query_changes_calendar_event_notification(
+        self,
+    ) -> crate::Result<QueryChangesResponse> {
+        match self.response {
+            MethodResponse::QueryChangesCalendarEventNotification(response) => Ok(response),
             MethodResponse::Error(err) => Err(err.into()),
             _ => Err("Response type mismatch".into()),
         }
@@ -1167,6 +1209,10 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
+            Method::CopyCalendarEvent => MethodResponse::CopyCalendarEvent(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
             Method::GetCalendarEventNotification => {
                 MethodResponse::GetCalendarEventNotification(
                     seq.next_element()?
@@ -1177,6 +1223,22 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
             }
             Method::ChangesCalendarEventNotification => {
                 MethodResponse::ChangesCalendarEventNotification(
+                    seq.next_element()?
+                        .ok_or_else(|| {
+                            serde::de::Error::custom("Expected a method response")
+                        })?,
+                )
+            }
+            Method::QueryCalendarEventNotification => {
+                MethodResponse::QueryCalendarEventNotification(
+                    seq.next_element()?
+                        .ok_or_else(|| {
+                            serde::de::Error::custom("Expected a method response")
+                        })?,
+                )
+            }
+            Method::QueryChangesCalendarEventNotification => {
+                MethodResponse::QueryChangesCalendarEventNotification(
                     seq.next_element()?
                         .ok_or_else(|| {
                             serde::de::Error::custom("Expected a method response")

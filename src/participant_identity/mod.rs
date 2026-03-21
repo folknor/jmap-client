@@ -23,6 +23,23 @@ use crate::core::set::map_not_set;
 use crate::core::Object;
 use crate::{Get, Set};
 
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct ParticipantIdentitySetArguments {
+    #[serde(rename = "onSuccessSetIsDefault")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub on_success_set_is_default: Option<String>,
+}
+
+impl ParticipantIdentitySetArguments {
+    /// Set the given participant identity as default after a successful
+    /// create/update. The value is a creation id reference (e.g. `"#c0"`)
+    /// or an existing id.
+    pub fn on_success_set_is_default(&mut self, id: impl Into<String>) -> &mut Self {
+        self.on_success_set_is_default = Some(id.into());
+        self
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParticipantIdentity<State = Get> {
     #[serde(skip)]

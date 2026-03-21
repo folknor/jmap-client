@@ -33,7 +33,7 @@ impl ParticipantIdentity<Set> {
 }
 
 impl SetObject for ParticipantIdentity<Set> {
-    type SetArguments = ();
+    type SetArguments = super::ParticipantIdentitySetArguments;
 
     fn new(_create_id: Option<usize>) -> Self {
         ParticipantIdentity {
@@ -52,7 +52,7 @@ impl SetObject for ParticipantIdentity<Set> {
 }
 
 impl SetObject for ParticipantIdentity<Get> {
-    type SetArguments = ();
+    type SetArguments = super::ParticipantIdentitySetArguments;
 
     fn new(_create_id: Option<usize>) -> Self {
         unimplemented!()

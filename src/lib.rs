@@ -351,10 +351,16 @@ pub enum Method {
     SetCalendarEvent,
     #[serde(rename = "CalendarEvent/parse")]
     ParseCalendarEvent,
+    #[serde(rename = "CalendarEvent/copy")]
+    CopyCalendarEvent,
     #[serde(rename = "CalendarEventNotification/get")]
     GetCalendarEventNotification,
     #[serde(rename = "CalendarEventNotification/changes")]
     ChangesCalendarEventNotification,
+    #[serde(rename = "CalendarEventNotification/query")]
+    QueryCalendarEventNotification,
+    #[serde(rename = "CalendarEventNotification/queryChanges")]
+    QueryChangesCalendarEventNotification,
     #[serde(rename = "CalendarEventNotification/set")]
     SetCalendarEventNotification,
     #[serde(rename = "ParticipantIdentity/get")]

@@ -13,11 +13,14 @@ use crate::{
     client::Client,
     core::{
         changes::{ChangesRequest, ChangesResponse},
+        copy::CopyRequest,
         get::GetRequest,
         query::{Comparator, Filter, QueryRequest, QueryResponse},
         query_changes::{QueryChangesRequest, QueryChangesResponse},
         request::{Arguments, Request},
-        response::{CalendarEventGetResponse, CalendarEventSetResponse},
+        response::{
+            CalendarEventCopyResponse, CalendarEventGetResponse, CalendarEventSetResponse,
+        },
         set::SetRequest,
     },
     Get, Method, Set,
@@ -106,6 +109,26 @@ impl Client {
 }
 
 impl Request<'_> {
+    pub fn copy_calendar_event(
+        &mut self,
+        from_account_id: impl Into<String>,
+    ) -> &mut CopyRequest<CalendarEvent<Set>> {
+        self.add_capability(crate::URI::Calendars);
+        self.add_method_call(
+            Method::CopyCalendarEvent,
+            Arguments::calendar_event_copy(
+                self.params(Method::CopyCalendarEvent),
+                from_account_id.into(),
+            ),
+        )
+        .calendar_event_copy_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_copy_calendar_event(self) -> crate::Result<CalendarEventCopyResponse> {
+        self.send_single().await
+    }
+
     pub fn get_calendar_event(&mut self) -> &mut GetRequest<CalendarEvent<Set>> {
         self.add_capability(crate::URI::Calendars);
         self.add_method_call(

@@ -14,6 +14,8 @@ use crate::{
     core::{
         changes::{ChangesRequest, ChangesResponse},
         get::GetRequest,
+        query::{Comparator, Filter, QueryRequest, QueryResponse},
+        query_changes::{QueryChangesRequest, QueryChangesResponse},
         request::{Arguments, Request},
         response::{
             CalendarEventNotificationGetResponse, CalendarEventNotificationSetResponse,
@@ -64,6 +66,25 @@ impl Client {
             .changes_calendar_event_notification(since_state)
             .max_changes(max_changes);
         request.send_single().await
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn calendar_event_notification_query(
+        &self,
+        filter: Option<impl Into<Filter<super::query::Filter>>>,
+        sort: Option<
+            impl IntoIterator<Item = Comparator<super::query::Comparator>>,
+        >,
+    ) -> crate::Result<QueryResponse> {
+        let mut request = self.build();
+        let query_request = request.query_calendar_event_notification();
+        if let Some(filter) = filter {
+            query_request.filter(filter);
+        }
+        if let Some(sort) = sort {
+            query_request.sort(sort.into_iter());
+        }
+        request.send_single::<QueryResponse>().await
     }
 }
 
@@ -127,6 +148,48 @@ impl Request<'_> {
     pub async fn send_changes_calendar_event_notification(
         self,
     ) -> crate::Result<ChangesResponse<CalendarEventNotification<Get>>> {
+        self.send_single().await
+    }
+
+    pub fn query_calendar_event_notification(
+        &mut self,
+    ) -> &mut QueryRequest<CalendarEventNotification<Set>> {
+        self.add_capability(crate::URI::Calendars);
+        self.add_method_call(
+            Method::QueryCalendarEventNotification,
+            Arguments::calendar_event_notification_query(
+                self.params(Method::QueryCalendarEventNotification),
+            ),
+        )
+        .calendar_event_notification_query_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_query_calendar_event_notification(
+        self,
+    ) -> crate::Result<QueryResponse> {
+        self.send_single().await
+    }
+
+    pub fn query_calendar_event_notification_changes(
+        &mut self,
+        since_query_state: impl Into<String>,
+    ) -> &mut QueryChangesRequest<CalendarEventNotification<Set>> {
+        self.add_capability(crate::URI::Calendars);
+        self.add_method_call(
+            Method::QueryChangesCalendarEventNotification,
+            Arguments::calendar_event_notification_query_changes(
+                self.params(Method::QueryChangesCalendarEventNotification),
+                since_query_state.into(),
+            ),
+        )
+        .calendar_event_notification_query_changes_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_query_calendar_event_notification_changes(
+        self,
+    ) -> crate::Result<QueryChangesResponse> {
         self.send_single().await
     }
 }

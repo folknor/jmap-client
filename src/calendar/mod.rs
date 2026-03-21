@@ -142,11 +142,22 @@ pub struct CalendarSetArguments {
     #[serde(rename = "onDestroyRemoveEvents")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub on_destroy_remove_events: Option<bool>,
+
+    #[serde(rename = "onSuccessSetIsDefault")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub on_success_set_is_default: Option<String>,
 }
 
 impl CalendarSetArguments {
     pub fn on_destroy_remove_events(&mut self, remove: bool) -> &mut Self {
         self.on_destroy_remove_events = Some(remove);
+        self
+    }
+
+    /// Set the given calendar as default after a successful create/update.
+    /// The value is a creation id reference (e.g. `"#c0"`) or an existing id.
+    pub fn on_success_set_is_default(&mut self, id: impl Into<String>) -> &mut Self {
+        self.on_success_set_is_default = Some(id.into());
         self
     }
 }

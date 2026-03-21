@@ -114,7 +114,10 @@ pub enum Arguments {
     CalendarEventQueryChanges(QueryChangesRequest<CalendarEvent<Set>>),
     CalendarEventSet(SetRequest<CalendarEvent<Set>>),
     CalendarEventParse(CalendarEventParseRequest),
+    CalendarEventCopy(CopyRequest<CalendarEvent<Set>>),
     CalendarEventNotificationGet(GetRequest<CalendarEventNotification<Set>>),
+    CalendarEventNotificationQuery(QueryRequest<CalendarEventNotification<Set>>),
+    CalendarEventNotificationQueryChanges(QueryChangesRequest<CalendarEventNotification<Set>>),
     CalendarEventNotificationSet(SetRequest<CalendarEventNotification<Set>>),
     ParticipantIdentityGet(GetRequest<ParticipantIdentity<Set>>),
     ParticipantIdentitySet(SetRequest<ParticipantIdentity<Set>>),
@@ -298,8 +301,26 @@ impl Arguments {
         Arguments::CalendarEventParse(CalendarEventParseRequest::new(params))
     }
 
+    pub fn calendar_event_copy(params: RequestParams, from_account_id: String) -> Self {
+        Arguments::CalendarEventCopy(CopyRequest::new(params, from_account_id))
+    }
+
     pub fn calendar_event_notification_get(params: RequestParams) -> Self {
         Arguments::CalendarEventNotificationGet(GetRequest::new(params))
+    }
+
+    pub fn calendar_event_notification_query(params: RequestParams) -> Self {
+        Arguments::CalendarEventNotificationQuery(QueryRequest::new(params))
+    }
+
+    pub fn calendar_event_notification_query_changes(
+        params: RequestParams,
+        since_query_state: String,
+    ) -> Self {
+        Arguments::CalendarEventNotificationQueryChanges(QueryChangesRequest::new(
+            params,
+            since_query_state,
+        ))
     }
 
     pub fn calendar_event_notification_set(params: RequestParams) -> Self {
@@ -636,11 +657,36 @@ impl Arguments {
         }
     }
 
+    pub fn calendar_event_copy_mut(&mut self) -> &mut CopyRequest<CalendarEvent<Set>> {
+        match self {
+            Arguments::CalendarEventCopy(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
     pub fn calendar_event_notification_get_mut(
         &mut self,
     ) -> &mut GetRequest<CalendarEventNotification<Set>> {
         match self {
             Arguments::CalendarEventNotificationGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_notification_query_mut(
+        &mut self,
+    ) -> &mut QueryRequest<CalendarEventNotification<Set>> {
+        match self {
+            Arguments::CalendarEventNotificationQuery(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn calendar_event_notification_query_changes_mut(
+        &mut self,
+    ) -> &mut QueryChangesRequest<CalendarEventNotification<Set>> {
+        match self {
+            Arguments::CalendarEventNotificationQueryChanges(ref mut r) => r,
             _ => unreachable!(),
         }
     }

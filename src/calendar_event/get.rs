@@ -70,8 +70,15 @@ impl CalendarEvent<Get> {
         self.properties.get("duration")?.as_str()
     }
 
-    pub fn time_zone(&self) -> Option<&str> {
-        self.properties.get("timeZone")?.as_str()
+    /// Returns `None` if the property is absent, `Some(None)` if explicitly
+    /// null, or `Some(Some(tz))` if set to a timezone string.
+    pub fn time_zone(&self) -> Option<Option<&str>> {
+        let v = self.properties.get("timeZone")?;
+        if v.is_null() {
+            Some(None)
+        } else {
+            Some(v.as_str())
+        }
     }
 
     pub fn show_without_time(&self) -> Option<bool> {
@@ -112,12 +119,26 @@ impl CalendarEvent<Get> {
         self.properties.get("priority")?.as_u64()
     }
 
-    pub fn color(&self) -> Option<&str> {
-        self.properties.get("color")?.as_str()
+    /// Returns `None` if absent, `Some(None)` if explicitly null,
+    /// `Some(Some(color))` if set.
+    pub fn color(&self) -> Option<Option<&str>> {
+        let v = self.properties.get("color")?;
+        if v.is_null() {
+            Some(None)
+        } else {
+            Some(v.as_str())
+        }
     }
 
-    pub fn locale(&self) -> Option<&str> {
-        self.properties.get("locale")?.as_str()
+    /// Returns `None` if absent, `Some(None)` if explicitly null,
+    /// `Some(Some(locale))` if set.
+    pub fn locale(&self) -> Option<Option<&str>> {
+        let v = self.properties.get("locale")?;
+        if v.is_null() {
+            Some(None)
+        } else {
+            Some(v.as_str())
+        }
     }
 
     pub fn keywords(
@@ -152,10 +173,17 @@ impl CalendarEvent<Get> {
         self.properties.get("useDefaultAlerts")?.as_bool()
     }
 
+    /// Returns `None` if absent, `Some(None)` if explicitly null (no alerts),
+    /// `Some(Some(map))` if set to an alerts object.
     pub fn alerts(
         &self,
-    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
-        self.properties.get("alerts")?.as_object()
+    ) -> Option<Option<&serde_json::Map<String, serde_json::Value>>> {
+        let v = self.properties.get("alerts")?;
+        if v.is_null() {
+            Some(None)
+        } else {
+            Some(v.as_object())
+        }
     }
 
     pub fn locations(
