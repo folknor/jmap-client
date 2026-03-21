@@ -90,11 +90,22 @@ pub struct AddressBookSetArguments {
     #[serde(rename = "onDestroyRemoveContents")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub on_destroy_remove_contents: Option<bool>,
+
+    #[serde(rename = "onSuccessSetIsDefault")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub on_success_set_is_default: Option<String>,
 }
 
 impl AddressBookSetArguments {
     pub fn on_destroy_remove_contents(&mut self, remove: bool) -> &mut Self {
         self.on_destroy_remove_contents = Some(remove);
+        self
+    }
+
+    /// Set the given address book as default after a successful create/update.
+    /// The value is a creation id reference (e.g. `"#c0"`) or an existing id.
+    pub fn on_success_set_is_default(&mut self, id: impl Into<String>) -> &mut Self {
+        self.on_success_set_is_default = Some(id.into());
         self
     }
 }

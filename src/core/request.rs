@@ -14,8 +14,8 @@ use crate::{
     blob::copy::CopyBlobRequest,
     calendar::Calendar,
     calendar_event::{parse::CalendarEventParseRequest, CalendarEvent},
-    contact_card::{parse::ContactCardParseRequest, ContactCard},
     calendar_event_notification::CalendarEventNotification,
+    contact_card::{parse::ContactCardParseRequest, ContactCard},
     client::Client,
     email::{
         import::EmailImportRequest, parse::EmailParseRequest,

@@ -42,10 +42,6 @@ impl ContactCard<Get> {
         self.properties.get("kind")?.as_str()
     }
 
-    pub fn full_name(&self) -> Option<&str> {
-        self.properties.get("fullName")?.as_str()
-    }
-
     pub fn name(
         &self,
     ) -> Option<&serde_json::Map<String, serde_json::Value>> {
@@ -92,6 +88,12 @@ impl ContactCard<Get> {
         &self,
     ) -> Option<&serde_json::Map<String, serde_json::Value>> {
         self.properties.get("notes")?.as_object()
+    }
+
+    pub fn media(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("media")?.as_object()
     }
 
     pub fn created(&self) -> Option<&str> {

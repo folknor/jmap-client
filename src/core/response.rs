@@ -18,8 +18,8 @@ use crate::{
     blob::copy::CopyBlobResponse,
     calendar::Calendar,
     calendar_event::{parse::CalendarEventParseResponse, CalendarEvent},
-    contact_card::{parse::ContactCardParseResponse, ContactCard},
     calendar_event_notification::CalendarEventNotification,
+    contact_card::{parse::ContactCardParseResponse, ContactCard},
     email::{
         import::EmailImportResponse, parse::EmailParseResponse,
         search_snippet::SearchSnippetGetResponse, Email,

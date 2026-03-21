@@ -13,11 +13,12 @@ use crate::{
     client::Client,
     core::{
         changes::{ChangesRequest, ChangesResponse},
+        copy::CopyRequest,
         get::GetRequest,
         query::{Comparator, Filter, QueryRequest, QueryResponse},
         query_changes::{QueryChangesRequest, QueryChangesResponse},
         request::{Arguments, Request},
-        response::{ContactCardGetResponse, ContactCardSetResponse},
+        response::{ContactCardCopyResponse, ContactCardGetResponse, ContactCardSetResponse},
         set::SetRequest,
     },
     Get, Method, Set,
@@ -187,6 +188,26 @@ impl Request<'_> {
 
     #[maybe_async::maybe_async]
     pub async fn send_query_contact_card_changes(self) -> crate::Result<QueryChangesResponse> {
+        self.send_single().await
+    }
+
+    pub fn copy_contact_card(
+        &mut self,
+        from_account_id: impl Into<String>,
+    ) -> &mut CopyRequest<ContactCard<Set>> {
+        self.add_capability(crate::URI::Contacts);
+        self.add_method_call(
+            Method::CopyContactCard,
+            Arguments::contact_card_copy(
+                self.params(Method::CopyContactCard),
+                from_account_id.into(),
+            ),
+        )
+        .contact_card_copy_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_copy_contact_card(self) -> crate::Result<ContactCardCopyResponse> {
         self.send_single().await
     }
 

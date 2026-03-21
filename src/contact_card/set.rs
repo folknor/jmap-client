@@ -57,18 +57,21 @@ impl ContactCard<Set> {
         self
     }
 
-    pub fn full_name(&mut self, full_name: impl Into<String>) -> &mut Self {
-        self.properties
-            .insert("fullName".into(), serde_json::Value::String(full_name.into()));
-        self
-    }
-
     pub fn name(
         &mut self,
         name: serde_json::Map<String, serde_json::Value>,
     ) -> &mut Self {
         self.properties
             .insert("name".into(), serde_json::Value::Object(name));
+        self
+    }
+
+    pub fn nicknames(
+        &mut self,
+        nicknames: serde_json::Map<String, serde_json::Value>,
+    ) -> &mut Self {
+        self.properties
+            .insert("nicknames".into(), serde_json::Value::Object(nicknames));
         self
     }
 
