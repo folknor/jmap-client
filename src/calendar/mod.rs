@@ -53,14 +53,6 @@ pub struct Calendar<State = Get> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_order: Option<u32>,
 
-    #[serde(rename = "defaultAlertsWithTime")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_alerts_with_time: Option<Option<AHashMap<String, Alert>>>,
-
-    #[serde(rename = "defaultAlertsWithoutTime")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_alerts_without_time: Option<Option<AHashMap<String, Alert>>>,
-
     #[serde(rename = "isSubscribed")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_subscribed: Option<bool>,
@@ -69,21 +61,47 @@ pub struct Calendar<State = Get> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_visible: Option<bool>,
 
+    #[serde(rename = "isDefault")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_default: Option<bool>,
+
+    #[serde(rename = "includeInAvailability")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_in_availability: Option<IncludeInAvailability>,
+
+    #[serde(rename = "defaultAlertsWithTime")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_alerts_with_time: Option<Option<AHashMap<String, Alert>>>,
+
+    #[serde(rename = "defaultAlertsWithoutTime")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_alerts_without_time: Option<Option<AHashMap<String, Alert>>>,
+
     #[serde(rename = "timeZone")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_zone: Option<Option<String>>,
 
     #[serde(rename = "shareWith")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub share_with: Option<Option<AHashMap<String, ShareRights>>>,
+    pub share_with: Option<Option<AHashMap<String, CalendarRights>>>,
 
     #[serde(rename = "myRights")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub my_rights: Option<ShareRights>,
+    pub my_rights: Option<CalendarRights>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IncludeInAvailability {
+    #[serde(rename = "all")]
+    All,
+    #[serde(rename = "attending")]
+    Attending,
+    #[serde(rename = "none")]
+    None,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ShareRights {
+pub struct CalendarRights {
     #[serde(rename = "mayReadFreeBusy")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub may_read_free_busy: Option<bool>,
@@ -92,9 +110,13 @@ pub struct ShareRights {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub may_read_items: Option<bool>,
 
-    #[serde(rename = "mayAddItems")]
+    #[serde(rename = "mayWriteAll")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub may_add_items: Option<bool>,
+    pub may_write_all: Option<bool>,
+
+    #[serde(rename = "mayWriteOwn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub may_write_own: Option<bool>,
 
     #[serde(rename = "mayUpdatePrivate")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,29 +126,29 @@ pub struct ShareRights {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub may_rsvp: Option<bool>,
 
-    #[serde(rename = "mayUpdateOwn")]
+    #[serde(rename = "mayShare")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub may_update_own: Option<bool>,
-
-    #[serde(rename = "mayUpdateAll")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub may_update_all: Option<bool>,
-
-    #[serde(rename = "mayRemoveOwn")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub may_remove_own: Option<bool>,
-
-    #[serde(rename = "mayRemoveAll")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub may_remove_all: Option<bool>,
-
-    #[serde(rename = "mayAdmin")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub may_admin: Option<bool>,
+    pub may_share: Option<bool>,
 
     #[serde(rename = "mayDelete")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub may_delete: Option<bool>,
+}
+
+// ---- Calendar/set arguments ----
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct CalendarSetArguments {
+    #[serde(rename = "onDestroyRemoveEvents")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub on_destroy_remove_events: Option<bool>,
+}
+
+impl CalendarSetArguments {
+    pub fn on_destroy_remove_events(&mut self, remove: bool) -> &mut Self {
+        self.on_destroy_remove_events = Some(remove);
+        self
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
@@ -141,14 +163,18 @@ pub enum Property {
     Color,
     #[serde(rename = "sortOrder")]
     SortOrder,
-    #[serde(rename = "defaultAlertsWithTime")]
-    DefaultAlertsWithTime,
-    #[serde(rename = "defaultAlertsWithoutTime")]
-    DefaultAlertsWithoutTime,
     #[serde(rename = "isSubscribed")]
     IsSubscribed,
     #[serde(rename = "isVisible")]
     IsVisible,
+    #[serde(rename = "isDefault")]
+    IsDefault,
+    #[serde(rename = "includeInAvailability")]
+    IncludeInAvailability,
+    #[serde(rename = "defaultAlertsWithTime")]
+    DefaultAlertsWithTime,
+    #[serde(rename = "defaultAlertsWithoutTime")]
+    DefaultAlertsWithoutTime,
     #[serde(rename = "timeZone")]
     TimeZone,
     #[serde(rename = "shareWith")]
@@ -165,10 +191,12 @@ impl Display for Property {
             Property::Description => write!(f, "description"),
             Property::Color => write!(f, "color"),
             Property::SortOrder => write!(f, "sortOrder"),
-            Property::DefaultAlertsWithTime => write!(f, "defaultAlertsWithTime"),
-            Property::DefaultAlertsWithoutTime => write!(f, "defaultAlertsWithoutTime"),
             Property::IsSubscribed => write!(f, "isSubscribed"),
             Property::IsVisible => write!(f, "isVisible"),
+            Property::IsDefault => write!(f, "isDefault"),
+            Property::IncludeInAvailability => write!(f, "includeInAvailability"),
+            Property::DefaultAlertsWithTime => write!(f, "defaultAlertsWithTime"),
+            Property::DefaultAlertsWithoutTime => write!(f, "defaultAlertsWithoutTime"),
             Property::TimeZone => write!(f, "timeZone"),
             Property::ShareWith => write!(f, "shareWith"),
             Property::MyRights => write!(f, "myRights"),

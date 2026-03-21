@@ -17,7 +17,7 @@ use crate::{
     Get, Set,
 };
 
-use super::{Calendar, ShareRights};
+use super::{Calendar, CalendarRights, IncludeInAvailability};
 
 impl Calendar<Get> {
     pub fn id(&self) -> Option<&str> {
@@ -46,6 +46,22 @@ impl Calendar<Get> {
         self.sort_order
     }
 
+    pub fn is_subscribed(&self) -> Option<bool> {
+        self.is_subscribed
+    }
+
+    pub fn is_visible(&self) -> Option<bool> {
+        self.is_visible
+    }
+
+    pub fn is_default(&self) -> Option<bool> {
+        self.is_default
+    }
+
+    pub fn include_in_availability(&self) -> Option<&IncludeInAvailability> {
+        self.include_in_availability.as_ref()
+    }
+
     pub fn default_alerts_with_time(&self) -> Option<Option<&AHashMap<String, Alert>>> {
         self.default_alerts_with_time
             .as_ref()
@@ -58,23 +74,15 @@ impl Calendar<Get> {
             .map(|a| a.as_ref())
     }
 
-    pub fn is_subscribed(&self) -> Option<bool> {
-        self.is_subscribed
-    }
-
-    pub fn is_visible(&self) -> Option<bool> {
-        self.is_visible
-    }
-
     pub fn time_zone(&self) -> Option<Option<&str>> {
         self.time_zone.as_ref().map(|t| t.as_deref())
     }
 
-    pub fn share_with(&self) -> Option<Option<&AHashMap<String, ShareRights>>> {
+    pub fn share_with(&self) -> Option<Option<&AHashMap<String, CalendarRights>>> {
         self.share_with.as_ref().map(|s| s.as_ref())
     }
 
-    pub fn my_rights(&self) -> Option<&ShareRights> {
+    pub fn my_rights(&self) -> Option<&CalendarRights> {
         self.my_rights.as_ref()
     }
 }

@@ -9,319 +9,101 @@
  * except according to those terms.
  */
 
+//! CalendarEvent wraps a JSCalendar Event (RFC 8984) object.
+//!
+//! Unlike Email or Mailbox, a CalendarEvent IS a JSCalendar object — its
+//! property set is open-ended and includes vendor extension properties
+//! (e.g. `example.com:custom-field`). The struct therefore stores all
+//! properties in a `serde_json::Map` for round-trip fidelity.
+//!
+//! Typed accessor and builder methods are provided for common properties.
+//! For extension or less-common properties, use [`CalendarEvent::property()`]
+//! and [`CalendarEvent::set_property()`].
+//!
+//! For iCalendar ↔ JSCalendar conversion, the `calcard` crate (re-exported
+//! from this crate) can parse the serialized JSON.
+
 pub mod get;
 pub mod helpers;
 pub mod parse;
 pub mod query;
 pub mod set;
 
-use std::fmt::Display;
+use std::fmt::{self, Display};
 
-use ahash::AHashMap;
-use serde::{Deserialize, Serialize};
+use serde::de::{self, MapAccess, Visitor};
+use serde::ser::SerializeMap;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::core::changes::ChangesObject;
-use crate::core::set::{list_not_set, map_not_set, string_not_set};
 use crate::core::Object;
 use crate::{Get, Set};
 
+// Re-export calcard for users who want iCalendar conversion or deep
+// JSCalendar type access.
+pub use calcard;
+
 // ---- CalendarEvent ----
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// A calendar event backed by a JSCalendar JSON object.
+///
+/// All JSCalendar properties (standard and extension) are preserved in the
+/// underlying `serde_json::Map`. Typed accessor methods are convenience
+/// wrappers that read from / write to this map.
+#[derive(Debug, Clone)]
 pub struct CalendarEvent<State = Get> {
-    #[serde(skip)]
     _create_id: Option<usize>,
-
-    #[serde(skip)]
     _state: std::marker::PhantomData<State>,
-
-    #[serde(rename = "id")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub id: Option<String>,
-
-    #[serde(rename = "uid")]
-    #[serde(skip_serializing_if = "string_not_set")]
-    pub uid: Option<String>,
-
-    #[serde(rename = "calendarIds")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub calendar_ids: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "title")]
-    #[serde(skip_serializing_if = "string_not_set")]
-    pub title: Option<String>,
-
-    #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "string_not_set")]
-    pub description: Option<String>,
-
-    #[serde(rename = "descriptionContentType")]
-    #[serde(skip_serializing_if = "string_not_set")]
-    pub description_content_type: Option<String>,
-
-    #[serde(rename = "created")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub created: Option<String>,
-
-    #[serde(rename = "updated")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub updated: Option<String>,
-
-    #[serde(rename = "start")]
-    #[serde(skip_serializing_if = "string_not_set")]
-    pub start: Option<String>,
-
-    #[serde(rename = "duration")]
-    #[serde(skip_serializing_if = "string_not_set")]
-    pub duration: Option<String>,
-
-    #[serde(rename = "timeZone")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub time_zone: Option<Option<String>>,
-
-    #[serde(rename = "showWithoutTime")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub show_without_time: Option<bool>,
-
-    #[serde(rename = "status")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<EventStatus>,
-
-    #[serde(rename = "freeBusyStatus")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub free_busy_status: Option<FreeBusyStatus>,
-
-    #[serde(rename = "recurrenceId")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub recurrence_id: Option<String>,
-
-    #[serde(rename = "recurrenceIdTimeZone")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub recurrence_id_time_zone: Option<Option<String>>,
-
-    #[serde(rename = "recurrenceRules")]
-    #[serde(skip_serializing_if = "list_not_set")]
-    pub recurrence_rules: Option<Vec<RecurrenceRule>>,
-
-    #[serde(rename = "recurrenceOverrides")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub recurrence_overrides: Option<AHashMap<String, serde_json::Value>>,
-
-    #[serde(rename = "excludedRecurrenceRules")]
-    #[serde(skip_serializing_if = "list_not_set")]
-    pub excluded_recurrence_rules: Option<Vec<RecurrenceRule>>,
-
-    #[serde(rename = "priority")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub priority: Option<u8>,
-
-    #[serde(rename = "color")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub color: Option<Option<String>>,
-
-    #[serde(rename = "locale")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub locale: Option<Option<String>>,
-
-    #[serde(rename = "keywords")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub keywords: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "categories")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub categories: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "prodId")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub prod_id: Option<String>,
-
-    #[serde(rename = "replyTo")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub reply_to: Option<AHashMap<String, String>>,
-
-    #[serde(rename = "participants")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub participants: Option<AHashMap<String, Participant>>,
-
-    #[serde(rename = "useDefaultAlerts")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub use_default_alerts: Option<bool>,
-
-    #[serde(rename = "alerts")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub alerts: Option<Option<AHashMap<String, Alert>>>,
-
-    #[serde(rename = "locations")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub locations: Option<AHashMap<String, Location>>,
-
-    #[serde(rename = "virtualLocations")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub virtual_locations: Option<AHashMap<String, VirtualLocation>>,
-
-    #[serde(rename = "links")]
-    #[serde(skip_serializing_if = "map_not_set")]
-    pub links: Option<AHashMap<String, Link>>,
-
-    #[serde(rename = "method")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub method: Option<String>,
-
-    #[serde(rename = "sequence")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sequence: Option<u32>,
+    /// The raw JSCalendar properties. Every key/value from the server is
+    /// preserved here, including vendor extension properties.
+    pub properties: serde_json::Map<String, serde_json::Value>,
 }
 
-// ---- JSCalendar types (RFC 8984) ----
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum EventStatus {
-    #[serde(rename = "confirmed")]
-    Confirmed,
-    #[serde(rename = "tentative")]
-    Tentative,
-    #[serde(rename = "cancelled")]
-    Cancelled,
+impl<State> Serialize for CalendarEvent<State> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(Some(self.properties.len()))?;
+        for (k, v) in &self.properties {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum FreeBusyStatus {
-    #[serde(rename = "busy")]
-    Busy,
-    #[serde(rename = "free")]
-    Free,
+impl<'de, State> Deserialize<'de> for CalendarEvent<State> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct CalendarEventVisitor<S>(std::marker::PhantomData<S>);
+
+        impl<'de, S> Visitor<'de> for CalendarEventVisitor<S> {
+            type Value = CalendarEvent<S>;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("a JSCalendar object")
+            }
+
+            fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<Self::Value, M::Error> {
+                let mut properties = serde_json::Map::new();
+                while let Some((key, value)) = map.next_entry::<String, serde_json::Value>()? {
+                    properties.insert(key, value);
+                }
+                Ok(CalendarEvent {
+                    _create_id: None,
+                    _state: std::marker::PhantomData,
+                    properties,
+                })
+            }
+        }
+
+        deserializer.deserialize_map(CalendarEventVisitor(std::marker::PhantomData))
+    }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RecurrenceRule {
-    #[serde(rename = "@type")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
+// ---- Alert type (used by both CalendarEvent and Calendar default alerts) ----
 
-    #[serde(rename = "frequency")]
-    pub frequency: Frequency,
-
-    #[serde(rename = "interval")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub interval: Option<u32>,
-
-    #[serde(rename = "rscale")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rscale: Option<String>,
-
-    #[serde(rename = "skip")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub skip: Option<Skip>,
-
-    #[serde(rename = "firstDayOfWeek")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub first_day_of_week: Option<Day>,
-
-    #[serde(rename = "byDay")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_day: Option<Vec<NDay>>,
-
-    #[serde(rename = "byMonthDay")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_month_day: Option<Vec<i32>>,
-
-    #[serde(rename = "byMonth")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_month: Option<Vec<String>>,
-
-    #[serde(rename = "byYearDay")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_year_day: Option<Vec<i32>>,
-
-    #[serde(rename = "byWeekNo")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_week_no: Option<Vec<i32>>,
-
-    #[serde(rename = "byHour")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_hour: Option<Vec<u32>>,
-
-    #[serde(rename = "byMinute")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_minute: Option<Vec<u32>>,
-
-    #[serde(rename = "bySecond")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_second: Option<Vec<u32>>,
-
-    #[serde(rename = "bySetPosition")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub by_set_position: Option<Vec<i32>>,
-
-    #[serde(rename = "count")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub count: Option<u32>,
-
-    #[serde(rename = "until")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub until: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum Frequency {
-    #[serde(rename = "yearly")]
-    Yearly,
-    #[serde(rename = "monthly")]
-    Monthly,
-    #[serde(rename = "weekly")]
-    Weekly,
-    #[serde(rename = "daily")]
-    Daily,
-    #[serde(rename = "hourly")]
-    Hourly,
-    #[serde(rename = "minutely")]
-    Minutely,
-    #[serde(rename = "secondly")]
-    Secondly,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum Skip {
-    #[serde(rename = "omit")]
-    Omit,
-    #[serde(rename = "backward")]
-    Backward,
-    #[serde(rename = "forward")]
-    Forward,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum Day {
-    #[serde(rename = "mo")]
-    Monday,
-    #[serde(rename = "tu")]
-    Tuesday,
-    #[serde(rename = "we")]
-    Wednesday,
-    #[serde(rename = "th")]
-    Thursday,
-    #[serde(rename = "fr")]
-    Friday,
-    #[serde(rename = "sa")]
-    Saturday,
-    #[serde(rename = "su")]
-    Sunday,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NDay {
-    #[serde(rename = "@type")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
-
-    #[serde(rename = "day")]
-    pub day: Day,
-
-    #[serde(rename = "nthOfPeriod")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub nth_of_period: Option<i32>,
-}
-
+/// JSCalendar Alert object (RFC 8984 Section 4.5).
+///
+/// Used directly in Calendar's `defaultAlertsWithTime` /
+/// `defaultAlertsWithoutTime`, and also representable in CalendarEvent's
+/// `alerts` map (though CalendarEvent stores all properties as JSON).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Alert {
     #[serde(rename = "@type")]
@@ -341,7 +123,7 @@ pub struct Alert {
 
     #[serde(rename = "relatedTo")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub related_to: Option<AHashMap<String, Relation>>,
+    pub related_to: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -381,334 +163,261 @@ pub enum RelativeTo {
     End,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Relation {
-    #[serde(rename = "@type")]
+// ---- CalendarEvent/get arguments ----
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct GetArguments {
+    #[serde(rename = "recurrenceOverridesBefore")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
+    pub recurrence_overrides_before: Option<String>,
 
-    #[serde(rename = "relation")]
+    #[serde(rename = "recurrenceOverridesAfter")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub relation: Option<AHashMap<String, bool>>,
-}
+    pub recurrence_overrides_after: Option<String>,
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Participant {
-    #[serde(rename = "@type")]
+    #[serde(rename = "reduceParticipants")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
-
-    #[serde(rename = "name")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-
-    #[serde(rename = "email")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub email: Option<String>,
-
-    #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-
-    #[serde(rename = "sendTo")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub send_to: Option<AHashMap<String, String>>,
-
-    #[serde(rename = "kind")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kind: Option<ParticipantKind>,
-
-    #[serde(rename = "roles")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub roles: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "participationStatus")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub participation_status: Option<ParticipationStatus>,
-
-    #[serde(rename = "participationComment")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub participation_comment: Option<String>,
-
-    #[serde(rename = "expectReply")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expect_reply: Option<bool>,
-
-    #[serde(rename = "scheduleAgent")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schedule_agent: Option<ScheduleAgent>,
-
-    #[serde(rename = "scheduleForceSend")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schedule_force_send: Option<bool>,
-
-    #[serde(rename = "scheduleSequence")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schedule_sequence: Option<u32>,
-
-    #[serde(rename = "scheduleStatus")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schedule_status: Option<Vec<String>>,
-
-    #[serde(rename = "scheduleUpdated")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schedule_updated: Option<String>,
-
-    #[serde(rename = "invitedBy")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub invited_by: Option<String>,
-
-    #[serde(rename = "delegatedTo")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub delegated_to: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "delegatedFrom")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub delegated_from: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "memberOf")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub member_of: Option<AHashMap<String, bool>>,
-
-    #[serde(rename = "links")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub links: Option<AHashMap<String, Link>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ParticipantKind {
-    #[serde(rename = "individual")]
-    Individual,
-    #[serde(rename = "group")]
-    Group,
-    #[serde(rename = "resource")]
-    Resource,
-    #[serde(rename = "location")]
-    Location,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ParticipationStatus {
-    #[serde(rename = "needs-action")]
-    NeedsAction,
-    #[serde(rename = "accepted")]
-    Accepted,
-    #[serde(rename = "declined")]
-    Declined,
-    #[serde(rename = "tentative")]
-    Tentative,
-    #[serde(rename = "delegated")]
-    Delegated,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ScheduleAgent {
-    #[serde(rename = "server")]
-    Server,
-    #[serde(rename = "client")]
-    Client,
-    #[serde(rename = "none")]
-    None,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Location {
-    #[serde(rename = "@type")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
-
-    #[serde(rename = "name")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-
-    #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-
-    #[serde(rename = "relativeTo")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub relative_to: Option<RelativeTo>,
+    pub reduce_participants: Option<bool>,
 
     #[serde(rename = "timeZone")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_zone: Option<String>,
-
-    #[serde(rename = "coordinates")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub coordinates: Option<String>,
-
-    #[serde(rename = "links")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub links: Option<AHashMap<String, Link>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VirtualLocation {
-    #[serde(rename = "@type")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
+impl GetArguments {
+    pub fn recurrence_overrides_before(
+        &mut self,
+        before: impl Into<String>,
+    ) -> &mut Self {
+        self.recurrence_overrides_before = Some(before.into());
+        self
+    }
 
-    #[serde(rename = "name")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    pub fn recurrence_overrides_after(
+        &mut self,
+        after: impl Into<String>,
+    ) -> &mut Self {
+        self.recurrence_overrides_after = Some(after.into());
+        self
+    }
 
-    #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
+    pub fn reduce_participants(&mut self, reduce: bool) -> &mut Self {
+        self.reduce_participants = Some(reduce);
+        self
+    }
 
-    #[serde(rename = "uri")]
-    pub uri: String,
-
-    #[serde(rename = "features")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub features: Option<AHashMap<String, bool>>,
+    pub fn time_zone(&mut self, tz: impl Into<String>) -> &mut Self {
+        self.time_zone = Some(tz.into());
+        self
+    }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Link {
-    #[serde(rename = "@type")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
+// ---- CalendarEvent/set arguments ----
 
-    #[serde(rename = "href")]
-    pub href: String,
-
-    #[serde(rename = "cid")]
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct SetArguments {
+    #[serde(rename = "sendSchedulingMessages")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cid: Option<String>,
+    pub send_scheduling_messages: Option<bool>,
+}
 
-    #[serde(rename = "contentType")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub content_type: Option<String>,
+impl SetArguments {
+    pub fn send_scheduling_messages(&mut self, send: bool) -> &mut Self {
+        self.send_scheduling_messages = Some(send);
+        self
+    }
+}
 
-    #[serde(rename = "size")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub size: Option<u64>,
+// ---- CalendarEvent/query arguments ----
 
-    #[serde(rename = "rel")]
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct QueryArguments {
+    #[serde(rename = "expandRecurrences")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rel: Option<String>,
+    pub expand_recurrences: Option<bool>,
 
-    #[serde(rename = "display")]
+    #[serde(rename = "timeZone")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub display: Option<String>,
+    pub time_zone: Option<String>,
+}
 
-    #[serde(rename = "title")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
+impl QueryArguments {
+    pub fn expand_recurrences(&mut self, expand: bool) -> &mut Self {
+        self.expand_recurrences = Some(expand);
+        self
+    }
+
+    pub fn time_zone(&mut self, tz: impl Into<String>) -> &mut Self {
+        self.time_zone = Some(tz.into());
+        self
+    }
 }
 
 // ---- Property enum ----
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+/// Property names for CalendarEvent/get `properties` lists.
+///
+/// Common JSCalendar properties have typed variants. Extension or
+/// less-common properties use `Other(String)`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Property {
-    #[serde(rename = "id")]
     Id,
-    #[serde(rename = "uid")]
     Uid,
-    #[serde(rename = "calendarIds")]
     CalendarIds,
-    #[serde(rename = "title")]
+    IsDraft,
     Title,
-    #[serde(rename = "description")]
     Description,
-    #[serde(rename = "descriptionContentType")]
     DescriptionContentType,
-    #[serde(rename = "created")]
     Created,
-    #[serde(rename = "updated")]
     Updated,
-    #[serde(rename = "start")]
     Start,
-    #[serde(rename = "duration")]
     Duration,
-    #[serde(rename = "timeZone")]
     TimeZone,
-    #[serde(rename = "showWithoutTime")]
     ShowWithoutTime,
-    #[serde(rename = "status")]
     Status,
-    #[serde(rename = "freeBusyStatus")]
     FreeBusyStatus,
-    #[serde(rename = "recurrenceId")]
     RecurrenceId,
-    #[serde(rename = "recurrenceIdTimeZone")]
     RecurrenceIdTimeZone,
-    #[serde(rename = "recurrenceRules")]
     RecurrenceRules,
-    #[serde(rename = "recurrenceOverrides")]
     RecurrenceOverrides,
-    #[serde(rename = "excludedRecurrenceRules")]
     ExcludedRecurrenceRules,
-    #[serde(rename = "priority")]
     Priority,
-    #[serde(rename = "color")]
     Color,
-    #[serde(rename = "locale")]
     Locale,
-    #[serde(rename = "keywords")]
     Keywords,
-    #[serde(rename = "categories")]
     Categories,
-    #[serde(rename = "prodId")]
     ProdId,
-    #[serde(rename = "replyTo")]
     ReplyTo,
-    #[serde(rename = "participants")]
     Participants,
-    #[serde(rename = "useDefaultAlerts")]
     UseDefaultAlerts,
-    #[serde(rename = "alerts")]
     Alerts,
-    #[serde(rename = "locations")]
     Locations,
-    #[serde(rename = "virtualLocations")]
     VirtualLocations,
-    #[serde(rename = "links")]
     Links,
-    #[serde(rename = "method")]
+    RelatedTo,
+    ExcludedDates,
+    Localizations,
     Method,
-    #[serde(rename = "sequence")]
     Sequence,
+    /// Any JSCalendar property not covered by the typed variants,
+    /// including vendor extension properties.
+    Other(String),
 }
 
 impl Display for Property {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Property::Id => write!(f, "id"),
-            Property::Uid => write!(f, "uid"),
-            Property::CalendarIds => write!(f, "calendarIds"),
-            Property::Title => write!(f, "title"),
-            Property::Description => write!(f, "description"),
-            Property::DescriptionContentType => write!(f, "descriptionContentType"),
-            Property::Created => write!(f, "created"),
-            Property::Updated => write!(f, "updated"),
-            Property::Start => write!(f, "start"),
-            Property::Duration => write!(f, "duration"),
-            Property::TimeZone => write!(f, "timeZone"),
-            Property::ShowWithoutTime => write!(f, "showWithoutTime"),
-            Property::Status => write!(f, "status"),
-            Property::FreeBusyStatus => write!(f, "freeBusyStatus"),
-            Property::RecurrenceId => write!(f, "recurrenceId"),
-            Property::RecurrenceIdTimeZone => write!(f, "recurrenceIdTimeZone"),
-            Property::RecurrenceRules => write!(f, "recurrenceRules"),
-            Property::RecurrenceOverrides => write!(f, "recurrenceOverrides"),
-            Property::ExcludedRecurrenceRules => write!(f, "excludedRecurrenceRules"),
-            Property::Priority => write!(f, "priority"),
-            Property::Color => write!(f, "color"),
-            Property::Locale => write!(f, "locale"),
-            Property::Keywords => write!(f, "keywords"),
-            Property::Categories => write!(f, "categories"),
-            Property::ProdId => write!(f, "prodId"),
-            Property::ReplyTo => write!(f, "replyTo"),
-            Property::Participants => write!(f, "participants"),
-            Property::UseDefaultAlerts => write!(f, "useDefaultAlerts"),
-            Property::Alerts => write!(f, "alerts"),
-            Property::Locations => write!(f, "locations"),
-            Property::VirtualLocations => write!(f, "virtualLocations"),
-            Property::Links => write!(f, "links"),
-            Property::Method => write!(f, "method"),
-            Property::Sequence => write!(f, "sequence"),
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Property::Id => "id",
+            Property::Uid => "uid",
+            Property::CalendarIds => "calendarIds",
+            Property::IsDraft => "isDraft",
+            Property::Title => "title",
+            Property::Description => "description",
+            Property::DescriptionContentType => "descriptionContentType",
+            Property::Created => "created",
+            Property::Updated => "updated",
+            Property::Start => "start",
+            Property::Duration => "duration",
+            Property::TimeZone => "timeZone",
+            Property::ShowWithoutTime => "showWithoutTime",
+            Property::Status => "status",
+            Property::FreeBusyStatus => "freeBusyStatus",
+            Property::RecurrenceId => "recurrenceId",
+            Property::RecurrenceIdTimeZone => "recurrenceIdTimeZone",
+            Property::RecurrenceRules => "recurrenceRules",
+            Property::RecurrenceOverrides => "recurrenceOverrides",
+            Property::ExcludedRecurrenceRules => "excludedRecurrenceRules",
+            Property::Priority => "priority",
+            Property::Color => "color",
+            Property::Locale => "locale",
+            Property::Keywords => "keywords",
+            Property::Categories => "categories",
+            Property::ProdId => "prodId",
+            Property::ReplyTo => "replyTo",
+            Property::Participants => "participants",
+            Property::UseDefaultAlerts => "useDefaultAlerts",
+            Property::Alerts => "alerts",
+            Property::Locations => "locations",
+            Property::VirtualLocations => "virtualLocations",
+            Property::Links => "links",
+            Property::RelatedTo => "relatedTo",
+            Property::ExcludedDates => "excludedDates",
+            Property::Localizations => "localizations",
+            Property::Method => "method",
+            Property::Sequence => "sequence",
+            Property::Other(s) => s.as_str(),
+        })
+    }
+}
+
+impl Serialize for Property {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for Property {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct PropertyVisitor;
+
+        impl<'de> Visitor<'de> for PropertyVisitor {
+            type Value = Property;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("a JSCalendar property name")
+            }
+
+            fn visit_str<E: de::Error>(self, v: &str) -> Result<Property, E> {
+                Ok(Property::from(v))
+            }
+        }
+
+        deserializer.deserialize_str(PropertyVisitor)
+    }
+}
+
+impl From<&str> for Property {
+    fn from(s: &str) -> Self {
+        match s {
+            "id" => Property::Id,
+            "uid" => Property::Uid,
+            "calendarIds" => Property::CalendarIds,
+            "isDraft" => Property::IsDraft,
+            "title" => Property::Title,
+            "description" => Property::Description,
+            "descriptionContentType" => Property::DescriptionContentType,
+            "created" => Property::Created,
+            "updated" => Property::Updated,
+            "start" => Property::Start,
+            "duration" => Property::Duration,
+            "timeZone" => Property::TimeZone,
+            "showWithoutTime" => Property::ShowWithoutTime,
+            "status" => Property::Status,
+            "freeBusyStatus" => Property::FreeBusyStatus,
+            "recurrenceId" => Property::RecurrenceId,
+            "recurrenceIdTimeZone" => Property::RecurrenceIdTimeZone,
+            "recurrenceRules" => Property::RecurrenceRules,
+            "recurrenceOverrides" => Property::RecurrenceOverrides,
+            "excludedRecurrenceRules" => Property::ExcludedRecurrenceRules,
+            "priority" => Property::Priority,
+            "color" => Property::Color,
+            "locale" => Property::Locale,
+            "keywords" => Property::Keywords,
+            "categories" => Property::Categories,
+            "prodId" => Property::ProdId,
+            "replyTo" => Property::ReplyTo,
+            "participants" => Property::Participants,
+            "useDefaultAlerts" => Property::UseDefaultAlerts,
+            "alerts" => Property::Alerts,
+            "locations" => Property::Locations,
+            "virtualLocations" => Property::VirtualLocations,
+            "links" => Property::Links,
+            "relatedTo" => Property::RelatedTo,
+            "excludedDates" => Property::ExcludedDates,
+            "localizations" => Property::Localizations,
+            "method" => Property::Method,
+            "sequence" => Property::Sequence,
+            other => Property::Other(other.to_string()),
         }
     }
 }

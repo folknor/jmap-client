@@ -9,157 +9,203 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
-
 use crate::{core::get::GetObject, Get, Set};
 
-use super::{
-    Alert, CalendarEvent, EventStatus, FreeBusyStatus, Link, Location, Participant,
-    RecurrenceRule, VirtualLocation,
-};
+use super::{CalendarEvent, GetArguments};
 
 impl CalendarEvent<Get> {
     pub fn id(&self) -> Option<&str> {
-        self.id.as_deref()
+        self.properties.get("id")?.as_str()
     }
 
     pub fn take_id(&mut self) -> String {
-        self.id.take().unwrap_or_default()
+        self.properties
+            .remove("id")
+            .and_then(|v| match v {
+                serde_json::Value::String(s) => Some(s),
+                _ => None,
+            })
+            .unwrap_or_default()
     }
 
     pub fn uid(&self) -> Option<&str> {
-        self.uid.as_deref()
+        self.properties.get("uid")?.as_str()
     }
 
-    pub fn calendar_ids(&self) -> Option<&AHashMap<String, bool>> {
-        self.calendar_ids.as_ref()
+    pub fn calendar_ids(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("calendarIds")?.as_object()
+    }
+
+    pub fn is_draft(&self) -> Option<bool> {
+        self.properties.get("isDraft")?.as_bool()
     }
 
     pub fn title(&self) -> Option<&str> {
-        self.title.as_deref()
+        self.properties.get("title")?.as_str()
     }
 
     pub fn description(&self) -> Option<&str> {
-        self.description.as_deref()
+        self.properties.get("description")?.as_str()
     }
 
     pub fn description_content_type(&self) -> Option<&str> {
-        self.description_content_type.as_deref()
+        self.properties.get("descriptionContentType")?.as_str()
     }
 
     pub fn created(&self) -> Option<&str> {
-        self.created.as_deref()
+        self.properties.get("created")?.as_str()
     }
 
     pub fn updated(&self) -> Option<&str> {
-        self.updated.as_deref()
+        self.properties.get("updated")?.as_str()
     }
 
     pub fn start(&self) -> Option<&str> {
-        self.start.as_deref()
+        self.properties.get("start")?.as_str()
     }
 
     pub fn duration(&self) -> Option<&str> {
-        self.duration.as_deref()
+        self.properties.get("duration")?.as_str()
     }
 
-    pub fn time_zone(&self) -> Option<Option<&str>> {
-        self.time_zone.as_ref().map(|t| t.as_deref())
+    pub fn time_zone(&self) -> Option<&str> {
+        self.properties.get("timeZone")?.as_str()
     }
 
     pub fn show_without_time(&self) -> Option<bool> {
-        self.show_without_time
+        self.properties.get("showWithoutTime")?.as_bool()
     }
 
-    pub fn status(&self) -> Option<&EventStatus> {
-        self.status.as_ref()
+    pub fn status(&self) -> Option<&str> {
+        self.properties.get("status")?.as_str()
     }
 
-    pub fn free_busy_status(&self) -> Option<&FreeBusyStatus> {
-        self.free_busy_status.as_ref()
+    pub fn free_busy_status(&self) -> Option<&str> {
+        self.properties.get("freeBusyStatus")?.as_str()
     }
 
     pub fn recurrence_id(&self) -> Option<&str> {
-        self.recurrence_id.as_deref()
+        self.properties.get("recurrenceId")?.as_str()
     }
 
-    pub fn recurrence_rules(&self) -> Option<&[RecurrenceRule]> {
-        self.recurrence_rules.as_deref()
+    pub fn recurrence_rules(&self) -> Option<&Vec<serde_json::Value>> {
+        self.properties.get("recurrenceRules")?.as_array()
     }
 
-    pub fn recurrence_overrides(&self) -> Option<&AHashMap<String, serde_json::Value>> {
-        self.recurrence_overrides.as_ref()
+    pub fn recurrence_overrides(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("recurrenceOverrides")?.as_object()
     }
 
-    pub fn excluded_recurrence_rules(&self) -> Option<&[RecurrenceRule]> {
-        self.excluded_recurrence_rules.as_deref()
+    pub fn excluded_recurrence_rules(&self) -> Option<&Vec<serde_json::Value>> {
+        self.properties.get("excludedRecurrenceRules")?.as_array()
     }
 
-    pub fn priority(&self) -> Option<u8> {
-        self.priority
+    pub fn excluded_dates(&self) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("excludedDates")?.as_object()
     }
 
-    pub fn color(&self) -> Option<Option<&str>> {
-        self.color.as_ref().map(|c| c.as_deref())
+    pub fn priority(&self) -> Option<u64> {
+        self.properties.get("priority")?.as_u64()
     }
 
-    pub fn locale(&self) -> Option<Option<&str>> {
-        self.locale.as_ref().map(|l| l.as_deref())
+    pub fn color(&self) -> Option<&str> {
+        self.properties.get("color")?.as_str()
     }
 
-    pub fn keywords(&self) -> Option<&AHashMap<String, bool>> {
-        self.keywords.as_ref()
+    pub fn locale(&self) -> Option<&str> {
+        self.properties.get("locale")?.as_str()
     }
 
-    pub fn categories(&self) -> Option<&AHashMap<String, bool>> {
-        self.categories.as_ref()
+    pub fn keywords(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("keywords")?.as_object()
+    }
+
+    pub fn categories(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("categories")?.as_object()
     }
 
     pub fn prod_id(&self) -> Option<&str> {
-        self.prod_id.as_deref()
+        self.properties.get("prodId")?.as_str()
     }
 
-    pub fn reply_to(&self) -> Option<&AHashMap<String, String>> {
-        self.reply_to.as_ref()
+    pub fn reply_to(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("replyTo")?.as_object()
     }
 
-    pub fn participants(&self) -> Option<&AHashMap<String, Participant>> {
-        self.participants.as_ref()
+    pub fn participants(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("participants")?.as_object()
     }
 
     pub fn use_default_alerts(&self) -> Option<bool> {
-        self.use_default_alerts
+        self.properties.get("useDefaultAlerts")?.as_bool()
     }
 
-    pub fn alerts(&self) -> Option<Option<&AHashMap<String, Alert>>> {
-        self.alerts.as_ref().map(|a| a.as_ref())
+    pub fn alerts(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("alerts")?.as_object()
     }
 
-    pub fn locations(&self) -> Option<&AHashMap<String, Location>> {
-        self.locations.as_ref()
+    pub fn locations(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("locations")?.as_object()
     }
 
-    pub fn virtual_locations(&self) -> Option<&AHashMap<String, VirtualLocation>> {
-        self.virtual_locations.as_ref()
+    pub fn virtual_locations(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("virtualLocations")?.as_object()
     }
 
-    pub fn links(&self) -> Option<&AHashMap<String, Link>> {
-        self.links.as_ref()
+    pub fn links(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("links")?.as_object()
+    }
+
+    pub fn related_to(
+        &self,
+    ) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.properties.get("relatedTo")?.as_object()
     }
 
     pub fn method(&self) -> Option<&str> {
-        self.method.as_deref()
+        self.properties.get("method")?.as_str()
     }
 
-    pub fn sequence(&self) -> Option<u32> {
-        self.sequence
+    pub fn sequence(&self) -> Option<u64> {
+        self.properties.get("sequence")?.as_u64()
+    }
+
+    /// Access any property as a raw JSON value, including extension
+    /// properties not covered by the typed accessors.
+    pub fn property(&self, name: &str) -> Option<&serde_json::Value> {
+        self.properties.get(name)
+    }
+
+    /// Access the full underlying JSCalendar properties map.
+    pub fn as_properties(&self) -> &serde_json::Map<String, serde_json::Value> {
+        &self.properties
     }
 }
 
 impl GetObject for CalendarEvent<Set> {
-    type GetArguments = ();
+    type GetArguments = GetArguments;
 }
 
 impl GetObject for CalendarEvent<Get> {
-    type GetArguments = ();
+    type GetArguments = GetArguments;
 }

@@ -13,7 +13,7 @@ use ahash::AHashMap;
 
 use crate::{calendar_event::Alert, core::set::SetObject, Get, Set};
 
-use super::{Calendar, ShareRights};
+use super::{Calendar, CalendarRights, CalendarSetArguments, IncludeInAvailability};
 
 impl Calendar<Set> {
     pub fn name(&mut self, name: impl Into<String>) -> &mut Self {
@@ -36,6 +36,24 @@ impl Calendar<Set> {
         self
     }
 
+    pub fn is_subscribed(&mut self, is_subscribed: bool) -> &mut Self {
+        self.is_subscribed = Some(is_subscribed);
+        self
+    }
+
+    pub fn is_visible(&mut self, is_visible: bool) -> &mut Self {
+        self.is_visible = Some(is_visible);
+        self
+    }
+
+    pub fn include_in_availability(
+        &mut self,
+        include: IncludeInAvailability,
+    ) -> &mut Self {
+        self.include_in_availability = Some(include);
+        self
+    }
+
     pub fn default_alerts_with_time(
         &mut self,
         alerts: Option<AHashMap<String, Alert>>,
@@ -52,16 +70,6 @@ impl Calendar<Set> {
         self
     }
 
-    pub fn is_subscribed(&mut self, is_subscribed: bool) -> &mut Self {
-        self.is_subscribed = Some(is_subscribed);
-        self
-    }
-
-    pub fn is_visible(&mut self, is_visible: bool) -> &mut Self {
-        self.is_visible = Some(is_visible);
-        self
-    }
-
     pub fn time_zone(&mut self, time_zone: Option<impl Into<String>>) -> &mut Self {
         self.time_zone = Some(time_zone.map(|t| t.into()));
         self
@@ -69,7 +77,7 @@ impl Calendar<Set> {
 
     pub fn share_with(
         &mut self,
-        share_with: Option<AHashMap<String, ShareRights>>,
+        share_with: Option<AHashMap<String, CalendarRights>>,
     ) -> &mut Self {
         self.share_with = Some(share_with);
         self
@@ -77,7 +85,7 @@ impl Calendar<Set> {
 }
 
 impl SetObject for Calendar<Set> {
-    type SetArguments = ();
+    type SetArguments = CalendarSetArguments;
 
     fn new(_create_id: Option<usize>) -> Self {
         Calendar {
@@ -88,10 +96,12 @@ impl SetObject for Calendar<Set> {
             description: None,
             color: None,
             sort_order: None,
-            default_alerts_with_time: None,
-            default_alerts_without_time: None,
             is_subscribed: None,
             is_visible: None,
+            is_default: None,
+            include_in_availability: None,
+            default_alerts_with_time: None,
+            default_alerts_without_time: None,
             time_zone: None,
             share_with: None,
             my_rights: None,
@@ -104,7 +114,7 @@ impl SetObject for Calendar<Set> {
 }
 
 impl SetObject for Calendar<Get> {
-    type SetArguments = ();
+    type SetArguments = CalendarSetArguments;
 
     fn new(_create_id: Option<usize>) -> Self {
         unimplemented!()

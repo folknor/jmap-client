@@ -45,9 +45,17 @@ impl Client {
     }
 
     #[maybe_async::maybe_async]
-    pub async fn calendar_destroy(&self, id: &str) -> crate::Result<()> {
+    pub async fn calendar_destroy(
+        &self,
+        id: &str,
+        remove_events: bool,
+    ) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_calendar().destroy([id]);
+        request
+            .set_calendar()
+            .destroy([id])
+            .arguments()
+            .on_destroy_remove_events(remove_events);
         request
             .send_single::<CalendarSetResponse>()
             .await?

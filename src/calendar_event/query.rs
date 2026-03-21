@@ -16,7 +16,7 @@ use crate::{
     Set,
 };
 
-use super::CalendarEvent;
+use super::{CalendarEvent, QueryArguments};
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
@@ -68,6 +68,10 @@ pub enum Filter {
 pub enum Comparator {
     #[serde(rename = "start")]
     Start,
+    #[serde(rename = "uid")]
+    Uid,
+    #[serde(rename = "recurrenceId")]
+    RecurrenceId,
     #[serde(rename = "created")]
     Created,
     #[serde(rename = "updated")]
@@ -145,6 +149,14 @@ impl Comparator {
         query::Comparator::new(Comparator::Start)
     }
 
+    pub fn uid() -> query::Comparator<Comparator> {
+        query::Comparator::new(Comparator::Uid)
+    }
+
+    pub fn recurrence_id() -> query::Comparator<Comparator> {
+        query::Comparator::new(Comparator::RecurrenceId)
+    }
+
     pub fn created() -> query::Comparator<Comparator> {
         query::Comparator::new(Comparator::Created)
     }
@@ -155,7 +167,7 @@ impl Comparator {
 }
 
 impl QueryObject for CalendarEvent<Set> {
-    type QueryArguments = ();
+    type QueryArguments = QueryArguments;
     type Filter = Filter;
     type Sort = Comparator;
 }
