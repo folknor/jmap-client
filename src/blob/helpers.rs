@@ -15,7 +15,13 @@ use crate::{
     Method,
 };
 
-use super::copy::{CopyBlobRequest, CopyBlobResponse};
+use super::{
+    copy::{CopyBlobRequest, CopyBlobResponse},
+    manage::{
+        BlobGetRequest, BlobGetResponse, BlobLookupRequest, BlobLookupResponse,
+        BlobUploadRequest, BlobUploadResponse,
+    },
+};
 
 impl Client {
     #[maybe_async::maybe_async]
@@ -32,6 +38,21 @@ impl Client {
             .await?
             .copied(&blob_id)
     }
+
+    #[maybe_async::maybe_async]
+    pub async fn blob_upload_text(
+        &self,
+        text: impl Into<String>,
+        type_: Option<impl Into<String>>,
+    ) -> crate::Result<String> {
+        let mut request = self.build();
+        let id = request.upload_blob().create_from_text(text, type_);
+        request
+            .send_single::<BlobUploadResponse>()
+            .await?
+            .created(&id)
+            .map(|c| c.id)
+    }
 }
 
 impl Request<'_> {
@@ -46,6 +67,48 @@ impl Request<'_> {
 
     #[maybe_async::maybe_async]
     pub async fn send_copy_blob(self) -> crate::Result<CopyBlobResponse> {
+        self.send_single().await
+    }
+
+    pub fn upload_blob(&mut self) -> &mut BlobUploadRequest {
+        self.add_capability(crate::URI::Blob);
+        self.add_method_call(
+            Method::UploadBlob,
+            Arguments::blob_upload(self.params(Method::UploadBlob)),
+        )
+        .blob_upload_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_upload_blob(self) -> crate::Result<BlobUploadResponse> {
+        self.send_single().await
+    }
+
+    pub fn get_blob(&mut self) -> &mut BlobGetRequest {
+        self.add_capability(crate::URI::Blob);
+        self.add_method_call(
+            Method::GetBlob,
+            Arguments::blob_get(self.params(Method::GetBlob)),
+        )
+        .blob_get_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_get_blob(self) -> crate::Result<BlobGetResponse> {
+        self.send_single().await
+    }
+
+    pub fn lookup_blob(&mut self) -> &mut BlobLookupRequest {
+        self.add_capability(crate::URI::Blob);
+        self.add_method_call(
+            Method::LookupBlob,
+            Arguments::blob_lookup(self.params(Method::LookupBlob)),
+        )
+        .blob_lookup_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_lookup_blob(self) -> crate::Result<BlobLookupResponse> {
         self.send_single().await
     }
 }

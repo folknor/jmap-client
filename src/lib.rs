@@ -230,6 +230,8 @@ pub enum URI {
     CalendarsParse,
     #[serde(rename = "urn:ietf:params:jmap:contacts:parse")]
     ContactsParse,
+    #[serde(rename = "urn:ietf:params:jmap:blob")]
+    Blob,
     #[serde(rename = "urn:ietf:params:jmap:websocket")]
     WebSocket,
     #[serde(rename = "urn:ietf:params:jmap:sieve")]
@@ -248,6 +250,7 @@ impl AsRef<str> for URI {
             URI::Submission => "urn:ietf:params:jmap:submission",
             URI::VacationResponse => "urn:ietf:params:jmap:vacationresponse",
             URI::Contacts => "urn:ietf:params:jmap:contacts",
+            URI::Blob => "urn:ietf:params:jmap:blob",
             URI::Calendars => "urn:ietf:params:jmap:calendars",
             URI::CalendarsParse => "urn:ietf:params:jmap:calendars:parse",
             URI::ContactsParse => "urn:ietf:params:jmap:contacts:parse",
@@ -265,6 +268,12 @@ pub enum Method {
     Echo,
     #[serde(rename = "Blob/copy")]
     CopyBlob,
+    #[serde(rename = "Blob/upload")]
+    UploadBlob,
+    #[serde(rename = "Blob/get")]
+    GetBlob,
+    #[serde(rename = "Blob/lookup")]
+    LookupBlob,
     #[serde(rename = "PushSubscription/get")]
     GetPushSubscription,
     #[serde(rename = "PushSubscription/set")]

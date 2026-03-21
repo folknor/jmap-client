@@ -14,6 +14,7 @@ use crate::core::session::URLParser;
 pub mod copy;
 pub mod download;
 pub mod helpers;
+pub mod manage;
 pub mod upload;
 
 pub enum URLParameter {

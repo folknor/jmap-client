@@ -11,7 +11,10 @@
 
 use crate::{
     address_book::AddressBook,
-    blob::copy::CopyBlobRequest,
+    blob::{
+        copy::CopyBlobRequest,
+        manage::{BlobGetRequest, BlobLookupRequest, BlobUploadRequest},
+    },
     calendar::Calendar,
     calendar_event::{parse::CalendarEventParseRequest, CalendarEvent},
     calendar_event_notification::CalendarEventNotification,
@@ -78,6 +81,9 @@ pub enum Arguments {
     PushGet(GetRequest<PushSubscription<Set>>),
     PushSet(SetRequest<PushSubscription<Set>>),
     BlobCopy(CopyBlobRequest),
+    BlobUpload(BlobUploadRequest),
+    BlobGet(BlobGetRequest),
+    BlobLookup(BlobLookupRequest),
     MailboxGet(GetRequest<Mailbox<Set>>),
     MailboxQuery(QueryRequest<Mailbox<Set>>),
     MailboxQueryChanges(QueryChangesRequest<Mailbox<Set>>),
@@ -147,6 +153,18 @@ impl Arguments {
 
     pub fn blob_copy(params: RequestParams, from_account_id: String) -> Self {
         Arguments::BlobCopy(CopyBlobRequest::new(params, from_account_id))
+    }
+
+    pub fn blob_upload(params: RequestParams) -> Self {
+        Arguments::BlobUpload(BlobUploadRequest::new(params))
+    }
+
+    pub fn blob_get(params: RequestParams) -> Self {
+        Arguments::BlobGet(BlobGetRequest::new(params))
+    }
+
+    pub fn blob_lookup(params: RequestParams) -> Self {
+        Arguments::BlobLookup(BlobLookupRequest::new(params))
     }
 
     pub fn mailbox_get(params: RequestParams) -> Self {
@@ -409,6 +427,27 @@ impl Arguments {
     pub fn blob_copy_mut(&mut self) -> &mut CopyBlobRequest {
         match self {
             Arguments::BlobCopy(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn blob_upload_mut(&mut self) -> &mut BlobUploadRequest {
+        match self {
+            Arguments::BlobUpload(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn blob_get_mut(&mut self) -> &mut BlobGetRequest {
+        match self {
+            Arguments::BlobGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn blob_lookup_mut(&mut self) -> &mut BlobLookupRequest {
+        match self {
+            Arguments::BlobLookup(ref mut r) => r,
             _ => unreachable!(),
         }
     }

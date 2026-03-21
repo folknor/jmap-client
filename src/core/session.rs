@@ -70,6 +70,7 @@ pub enum Capabilities {
     Submission(SubmissionCapabilities),
     WebSocket(WebSocketCapabilities),
     Sieve(SieveCapabilities),
+    Blob(BlobCapabilities),
     Calendars(CalendarsCapabilities),
     Contacts(ContactsCapabilities),
     Empty(EmptyCapabilities),
@@ -129,6 +130,26 @@ pub struct SieveCapabilities {
     notification_methods: Option<Vec<String>>,
     #[serde(rename = "externalLists")]
     ext_lists: Option<Vec<String>>,
+}
+
+/// Capabilities for `urn:ietf:params:jmap:blob` (RFC 9404).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BlobCapabilities {
+    #[serde(rename = "maxSizeBlobSet")]
+    #[serde(default)]
+    max_size_blob_set: Option<u64>,
+
+    #[serde(rename = "supportedDigestAlgorithms")]
+    #[serde(default)]
+    supported_digest_algorithms: Vec<String>,
+
+    #[serde(rename = "supportedTypeNames")]
+    #[serde(default)]
+    supported_type_names: Vec<String>,
+
+    /// Remaining/unknown properties.
+    #[serde(flatten)]
+    other: AHashMap<String, JsonValue>,
 }
 
 /// Capabilities for `urn:ietf:params:jmap:calendars`.
@@ -236,6 +257,15 @@ impl Session {
             .get(URI::Sieve.as_ref())
             .and_then(|v| match v {
                 Capabilities::Sieve(capabilities) => Some(capabilities),
+                _ => None,
+            })
+    }
+
+    pub fn blob_capabilities(&self) -> Option<&BlobCapabilities> {
+        self.capabilities
+            .get(URI::Blob.as_ref())
+            .and_then(|v| match v {
+                Capabilities::Blob(capabilities) => Some(capabilities),
                 _ => None,
             })
     }
@@ -388,6 +418,20 @@ impl SieveCapabilities {
 
     pub fn external_lists(&self) -> Option<&[String]> {
         self.ext_lists.as_deref()
+    }
+}
+
+impl BlobCapabilities {
+    pub fn max_size_blob_set(&self) -> Option<u64> {
+        self.max_size_blob_set
+    }
+
+    pub fn supported_digest_algorithms(&self) -> &[String] {
+        &self.supported_digest_algorithms
+    }
+
+    pub fn supported_type_names(&self) -> &[String] {
+        &self.supported_type_names
     }
 }
 

@@ -15,7 +15,10 @@ use std::fmt;
 
 use crate::{
     address_book::AddressBook,
-    blob::copy::CopyBlobResponse,
+    blob::{
+        copy::CopyBlobResponse,
+        manage::{BlobGetResponse, BlobLookupResponse, BlobUploadResponse},
+    },
     calendar::Calendar,
     calendar_event::{parse::CalendarEventParseResponse, CalendarEvent},
     calendar_event_notification::CalendarEventNotification,
@@ -175,6 +178,9 @@ pub struct TaggedMethodResponse {
 #[derive(Debug)]
 pub enum MethodResponse {
     CopyBlob(CopyBlobResponse),
+    UploadBlob(BlobUploadResponse),
+    GetBlob(BlobGetResponse),
+    LookupBlob(BlobLookupResponse),
     GetPushSubscription(PushSubscriptionGetResponse),
     SetPushSubscription(PushSubscriptionSetResponse),
     GetMailbox(MailboxGetResponse),
@@ -258,6 +264,9 @@ impl TaggedMethodResponse {
         matches!(
             (&self.response, type_),
             (MethodResponse::CopyBlob(_), Method::CopyBlob)
+                | (MethodResponse::UploadBlob(_), Method::UploadBlob)
+                | (MethodResponse::GetBlob(_), Method::GetBlob)
+                | (MethodResponse::LookupBlob(_), Method::LookupBlob)
                 | (
                     MethodResponse::GetPushSubscription(_),
                     Method::GetPushSubscription
@@ -439,6 +448,30 @@ impl TaggedMethodResponse {
 
     pub fn unwrap_method_response(self) -> MethodResponse {
         self.response
+    }
+
+    pub fn unwrap_upload_blob(self) -> crate::Result<BlobUploadResponse> {
+        match self.response {
+            MethodResponse::UploadBlob(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_get_blob(self) -> crate::Result<BlobGetResponse> {
+        match self.response {
+            MethodResponse::GetBlob(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_lookup_blob(self) -> crate::Result<BlobLookupResponse> {
+        match self.response {
+            MethodResponse::LookupBlob(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
     }
 
     pub fn unwrap_copy_blob(self) -> crate::Result<CopyBlobResponse> {
@@ -1033,6 +1066,18 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
             .ok_or_else(|| serde::de::Error::custom("Expected a method name"))?
         {
             Method::Echo => MethodResponse::Echo(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::UploadBlob => MethodResponse::UploadBlob(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::GetBlob => MethodResponse::GetBlob(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::LookupBlob => MethodResponse::LookupBlob(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
