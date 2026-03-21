@@ -339,6 +339,8 @@ pub enum Method {
     QueryChangesPrincipal,
     #[serde(rename = "Principal/set")]
     SetPrincipal,
+    #[serde(rename = "Principal/getAvailability")]
+    GetAvailabilityPrincipal,
     #[serde(rename = "Calendar/get")]
     GetCalendar,
     #[serde(rename = "Calendar/changes")]

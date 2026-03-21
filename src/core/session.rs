@@ -13,6 +13,7 @@ use crate::{
     email::{MailCapabilities, SubmissionCapabilities},
     URI,
 };
+use serde_json::Value as JsonValue;
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 
@@ -69,6 +70,8 @@ pub enum Capabilities {
     Submission(SubmissionCapabilities),
     WebSocket(WebSocketCapabilities),
     Sieve(SieveCapabilities),
+    Calendars(CalendarsCapabilities),
+    Contacts(ContactsCapabilities),
     Empty(EmptyCapabilities),
     Other(serde_json::Value),
 }
@@ -128,6 +131,54 @@ pub struct SieveCapabilities {
     ext_lists: Option<Vec<String>>,
 }
 
+/// Capabilities for `urn:ietf:params:jmap:calendars`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CalendarsCapabilities {
+    #[serde(rename = "mayCreateCalendar")]
+    #[serde(default)]
+    may_create_calendar: bool,
+
+    #[serde(rename = "maxCalendarsPerEvent")]
+    #[serde(default)]
+    max_calendars_per_event: Option<usize>,
+
+    /// Remaining/unknown properties.
+    #[serde(flatten)]
+    other: AHashMap<String, JsonValue>,
+}
+
+/// Capabilities for `urn:ietf:params:jmap:contacts`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContactsCapabilities {
+    #[serde(rename = "mayCreateAddressBook")]
+    #[serde(default)]
+    may_create_address_book: bool,
+
+    #[serde(rename = "maxAddressBooksPerCard")]
+    #[serde(default)]
+    max_address_books_per_card: Option<usize>,
+
+    /// Remaining/unknown properties.
+    #[serde(flatten)]
+    other: AHashMap<String, JsonValue>,
+}
+
+/// Capabilities for `urn:ietf:params:jmap:principals`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PrincipalsCapabilities {
+    #[serde(rename = "currentUserPrincipalId")]
+    #[serde(default)]
+    current_user_principal_id: Option<String>,
+
+    #[serde(rename = "accountIdForPrincipal")]
+    #[serde(default)]
+    account_id_for_principal: Option<String>,
+
+    /// Remaining/unknown properties.
+    #[serde(flatten)]
+    other: AHashMap<String, JsonValue>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmptyCapabilities {}
 
@@ -185,6 +236,24 @@ impl Session {
             .get(URI::Sieve.as_ref())
             .and_then(|v| match v {
                 Capabilities::Sieve(capabilities) => Some(capabilities),
+                _ => None,
+            })
+    }
+
+    pub fn calendars_capabilities(&self) -> Option<&CalendarsCapabilities> {
+        self.capabilities
+            .get(URI::Calendars.as_ref())
+            .and_then(|v| match v {
+                Capabilities::Calendars(capabilities) => Some(capabilities),
+                _ => None,
+            })
+    }
+
+    pub fn contacts_capabilities(&self) -> Option<&ContactsCapabilities> {
+        self.capabilities
+            .get(URI::Contacts.as_ref())
+            .and_then(|v| match v {
+                Capabilities::Contacts(capabilities) => Some(capabilities),
                 _ => None,
             })
     }
@@ -319,6 +388,36 @@ impl SieveCapabilities {
 
     pub fn external_lists(&self) -> Option<&[String]> {
         self.ext_lists.as_deref()
+    }
+}
+
+impl CalendarsCapabilities {
+    pub fn may_create_calendar(&self) -> bool {
+        self.may_create_calendar
+    }
+
+    pub fn max_calendars_per_event(&self) -> Option<usize> {
+        self.max_calendars_per_event
+    }
+}
+
+impl ContactsCapabilities {
+    pub fn may_create_address_book(&self) -> bool {
+        self.may_create_address_book
+    }
+
+    pub fn max_address_books_per_card(&self) -> Option<usize> {
+        self.max_address_books_per_card
+    }
+}
+
+impl PrincipalsCapabilities {
+    pub fn current_user_principal_id(&self) -> Option<&str> {
+        self.current_user_principal_id.as_deref()
+    }
+
+    pub fn account_id_for_principal(&self) -> Option<&str> {
+        self.account_id_for_principal.as_deref()
     }
 }
 

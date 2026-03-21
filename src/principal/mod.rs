@@ -9,6 +9,7 @@
  * except according to those terms.
  */
 
+pub mod availability;
 pub mod get;
 pub mod helpers;
 pub mod query;

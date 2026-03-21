@@ -23,7 +23,10 @@ use crate::{
     Get, Method, Set,
 };
 
-use super::{Principal, Property, Type, DKIM};
+use super::{
+    availability::{PrincipalGetAvailabilityRequest, PrincipalGetAvailabilityResponse},
+    Principal, Property, Type, DKIM,
+};
 
 impl Client {
     #[maybe_async::maybe_async]
@@ -359,6 +362,32 @@ impl Request<'_> {
 
     #[maybe_async::maybe_async]
     pub async fn send_set_principal(self) -> crate::Result<PrincipalSetResponse> {
+        self.send_single().await
+    }
+
+    pub fn get_availability_principal(
+        &mut self,
+        id: impl Into<String>,
+        utc_start: impl Into<String>,
+        utc_end: impl Into<String>,
+    ) -> &mut PrincipalGetAvailabilityRequest {
+        self.add_capability(crate::URI::Principals);
+        self.add_method_call(
+            Method::GetAvailabilityPrincipal,
+            Arguments::principal_get_availability(
+                self.params(Method::GetAvailabilityPrincipal),
+                id,
+                utc_start,
+                utc_end,
+            ),
+        )
+        .principal_get_availability_mut()
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn send_get_availability_principal(
+        self,
+    ) -> crate::Result<PrincipalGetAvailabilityResponse> {
         self.send_single().await
     }
 }

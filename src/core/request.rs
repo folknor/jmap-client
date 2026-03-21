@@ -25,7 +25,7 @@ use crate::{
     identity::Identity,
     mailbox::Mailbox,
     participant_identity::ParticipantIdentity,
-    principal::Principal,
+    principal::{availability::PrincipalGetAvailabilityRequest, Principal},
     push_subscription::PushSubscription,
     sieve::{validate::SieveScriptValidateRequest, SieveScript},
     thread::Thread,
@@ -107,6 +107,7 @@ pub enum Arguments {
     PrincipalQuery(QueryRequest<Principal<Set>>),
     PrincipalQueryChanges(QueryChangesRequest<Principal<Set>>),
     PrincipalSet(SetRequest<Principal<Set>>),
+    PrincipalGetAvailability(PrincipalGetAvailabilityRequest),
     CalendarGet(GetRequest<Calendar<Set>>),
     CalendarSet(SetRequest<Calendar<Set>>),
     CalendarEventGet(GetRequest<CalendarEvent<Set>>),
@@ -265,6 +266,17 @@ impl Arguments {
 
     pub fn principal_set(params: RequestParams) -> Self {
         Arguments::PrincipalSet(SetRequest::new(params))
+    }
+
+    pub fn principal_get_availability(
+        params: RequestParams,
+        id: impl Into<String>,
+        utc_start: impl Into<String>,
+        utc_end: impl Into<String>,
+    ) -> Self {
+        Arguments::PrincipalGetAvailability(PrincipalGetAvailabilityRequest::new(
+            params, id, utc_start, utc_end,
+        ))
     }
 
     pub fn calendar_get(params: RequestParams) -> Self {
@@ -602,6 +614,15 @@ impl Arguments {
     pub fn principal_set_mut(&mut self) -> &mut SetRequest<Principal<Set>> {
         match self {
             Arguments::PrincipalSet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn principal_get_availability_mut(
+        &mut self,
+    ) -> &mut PrincipalGetAvailabilityRequest {
+        match self {
+            Arguments::PrincipalGetAvailability(ref mut r) => r,
             _ => unreachable!(),
         }
     }

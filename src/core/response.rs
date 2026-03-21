@@ -28,7 +28,7 @@ use crate::{
     identity::Identity,
     mailbox::Mailbox,
     participant_identity::ParticipantIdentity,
-    principal::Principal,
+    principal::{availability::PrincipalGetAvailabilityResponse, Principal},
     push_subscription::PushSubscription,
     sieve::{validate::SieveScriptValidateResponse, SieveScript},
     thread::Thread,
@@ -213,6 +213,7 @@ pub enum MethodResponse {
     QueryPrincipal(QueryResponse),
     QueryChangesPrincipal(QueryChangesResponse),
     SetPrincipal(PrincipalSetResponse),
+    GetAvailabilityPrincipal(PrincipalGetAvailabilityResponse),
 
     GetCalendar(CalendarGetResponse),
     ChangesCalendar(CalendarChangesResponse),
@@ -342,6 +343,10 @@ impl TaggedMethodResponse {
                     Method::QueryChangesPrincipal
                 )
                 | (MethodResponse::SetPrincipal(_), Method::SetPrincipal)
+                | (
+                    MethodResponse::GetAvailabilityPrincipal(_),
+                    Method::GetAvailabilityPrincipal
+                )
                 | (MethodResponse::GetCalendar(_), Method::GetCalendar)
                 | (MethodResponse::ChangesCalendar(_), Method::ChangesCalendar)
                 | (MethodResponse::SetCalendar(_), Method::SetCalendar)
@@ -735,6 +740,16 @@ impl TaggedMethodResponse {
     pub fn unwrap_set_principal(self) -> crate::Result<PrincipalSetResponse> {
         match self.response {
             MethodResponse::SetPrincipal(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_get_availability_principal(
+        self,
+    ) -> crate::Result<PrincipalGetAvailabilityResponse> {
+        match self.response {
+            MethodResponse::GetAvailabilityPrincipal(response) => Ok(response),
             MethodResponse::Error(err) => Err(err.into()),
             _ => Err("Response type mismatch".into()),
         }
@@ -1170,6 +1185,10 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
             Method::SetPrincipal => MethodResponse::SetPrincipal(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::GetAvailabilityPrincipal => MethodResponse::GetAvailabilityPrincipal(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
