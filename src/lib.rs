@@ -43,217 +43,6 @@ use std::fmt::Display;
 #[cfg(feature = "websockets")]
 pub mod client_ws;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum URI {
-    #[serde(rename = "urn:ietf:params:jmap:core")]
-    Core,
-    #[serde(rename = "urn:ietf:params:jmap:mail")]
-    Mail,
-    #[serde(rename = "urn:ietf:params:jmap:submission")]
-    Submission,
-    #[serde(rename = "urn:ietf:params:jmap:vacationresponse")]
-    VacationResponse,
-    #[serde(rename = "urn:ietf:params:jmap:contacts")]
-    Contacts,
-    #[serde(rename = "urn:ietf:params:jmap:calendars")]
-    Calendars,
-    #[serde(rename = "urn:ietf:params:jmap:calendars:parse")]
-    CalendarsParse,
-    #[serde(rename = "urn:ietf:params:jmap:contacts:parse")]
-    ContactsParse,
-    #[serde(rename = "urn:ietf:params:jmap:blob")]
-    Blob,
-    #[serde(rename = "urn:ietf:params:jmap:quota")]
-    Quota,
-    #[serde(rename = "urn:ietf:params:jmap:websocket")]
-    WebSocket,
-    #[serde(rename = "urn:ietf:params:jmap:sieve")]
-    Sieve,
-    #[serde(rename = "urn:ietf:params:jmap:principals")]
-    Principals,
-    #[serde(rename = "urn:ietf:params:jmap:principals:owner")]
-    PrincipalsOwner,
-}
-
-impl AsRef<str> for URI {
-    fn as_ref(&self) -> &str {
-        match self {
-            URI::Core => "urn:ietf:params:jmap:core",
-            URI::Mail => "urn:ietf:params:jmap:mail",
-            URI::Submission => "urn:ietf:params:jmap:submission",
-            URI::VacationResponse => "urn:ietf:params:jmap:vacationresponse",
-            URI::Contacts => "urn:ietf:params:jmap:contacts",
-            URI::Quota => "urn:ietf:params:jmap:quota",
-            URI::Blob => "urn:ietf:params:jmap:blob",
-            URI::Calendars => "urn:ietf:params:jmap:calendars",
-            URI::CalendarsParse => "urn:ietf:params:jmap:calendars:parse",
-            URI::ContactsParse => "urn:ietf:params:jmap:contacts:parse",
-            URI::WebSocket => "urn:ietf:params:jmap:websocket",
-            URI::Sieve => "urn:ietf:params:jmap:sieve",
-            URI::Principals => "urn:ietf:params:jmap:principals",
-            URI::PrincipalsOwner => "urn:ietf:params:jmap:principals:owner",
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[non_exhaustive]
-pub enum Method {
-    #[serde(rename = "Core/echo")]
-    Echo,
-    #[serde(rename = "Blob/copy")]
-    CopyBlob,
-    #[serde(rename = "Blob/upload")]
-    UploadBlob,
-    #[serde(rename = "Blob/get")]
-    GetBlob,
-    #[serde(rename = "Blob/lookup")]
-    LookupBlob,
-    #[serde(rename = "PushSubscription/get")]
-    GetPushSubscription,
-    #[serde(rename = "PushSubscription/set")]
-    SetPushSubscription,
-    #[serde(rename = "Mailbox/get")]
-    GetMailbox,
-    #[serde(rename = "Mailbox/changes")]
-    ChangesMailbox,
-    #[serde(rename = "Mailbox/query")]
-    QueryMailbox,
-    #[serde(rename = "Mailbox/queryChanges")]
-    QueryChangesMailbox,
-    #[serde(rename = "Mailbox/set")]
-    SetMailbox,
-    #[serde(rename = "Thread/get")]
-    GetThread,
-    #[serde(rename = "Thread/changes")]
-    ChangesThread,
-    #[serde(rename = "Email/get")]
-    GetEmail,
-    #[serde(rename = "Email/changes")]
-    ChangesEmail,
-    #[serde(rename = "Email/query")]
-    QueryEmail,
-    #[serde(rename = "Email/queryChanges")]
-    QueryChangesEmail,
-    #[serde(rename = "Email/set")]
-    SetEmail,
-    #[serde(rename = "Email/copy")]
-    CopyEmail,
-    #[serde(rename = "Email/import")]
-    ImportEmail,
-    #[serde(rename = "Email/parse")]
-    ParseEmail,
-    #[serde(rename = "SearchSnippet/get")]
-    GetSearchSnippet,
-    #[serde(rename = "Identity/get")]
-    GetIdentity,
-    #[serde(rename = "Identity/changes")]
-    ChangesIdentity,
-    #[serde(rename = "Identity/set")]
-    SetIdentity,
-    #[serde(rename = "EmailSubmission/get")]
-    GetEmailSubmission,
-    #[serde(rename = "EmailSubmission/changes")]
-    ChangesEmailSubmission,
-    #[serde(rename = "EmailSubmission/query")]
-    QueryEmailSubmission,
-    #[serde(rename = "EmailSubmission/queryChanges")]
-    QueryChangesEmailSubmission,
-    #[serde(rename = "EmailSubmission/set")]
-    SetEmailSubmission,
-    #[serde(rename = "VacationResponse/get")]
-    GetVacationResponse,
-    #[serde(rename = "VacationResponse/set")]
-    SetVacationResponse,
-    #[serde(rename = "SieveScript/get")]
-    GetSieveScript,
-    #[serde(rename = "SieveScript/set")]
-    SetSieveScript,
-    #[serde(rename = "SieveScript/query")]
-    QuerySieveScript,
-    #[serde(rename = "SieveScript/validate")]
-    ValidateSieveScript,
-    #[serde(rename = "Principal/get")]
-    GetPrincipal,
-    #[serde(rename = "Principal/changes")]
-    ChangesPrincipal,
-    #[serde(rename = "Principal/query")]
-    QueryPrincipal,
-    #[serde(rename = "Principal/queryChanges")]
-    QueryChangesPrincipal,
-    #[serde(rename = "Principal/set")]
-    SetPrincipal,
-    #[serde(rename = "Principal/getAvailability")]
-    GetAvailabilityPrincipal,
-    #[serde(rename = "Quota/get")]
-    GetQuota,
-    #[serde(rename = "Quota/changes")]
-    ChangesQuota,
-    #[serde(rename = "Quota/query")]
-    QueryQuota,
-    #[serde(rename = "Quota/queryChanges")]
-    QueryChangesQuota,
-    #[serde(rename = "Calendar/get")]
-    GetCalendar,
-    #[serde(rename = "Calendar/changes")]
-    ChangesCalendar,
-    #[serde(rename = "Calendar/set")]
-    SetCalendar,
-    #[serde(rename = "CalendarEvent/get")]
-    GetCalendarEvent,
-    #[serde(rename = "CalendarEvent/changes")]
-    ChangesCalendarEvent,
-    #[serde(rename = "CalendarEvent/query")]
-    QueryCalendarEvent,
-    #[serde(rename = "CalendarEvent/queryChanges")]
-    QueryChangesCalendarEvent,
-    #[serde(rename = "CalendarEvent/set")]
-    SetCalendarEvent,
-    #[serde(rename = "CalendarEvent/parse")]
-    ParseCalendarEvent,
-    #[serde(rename = "CalendarEvent/copy")]
-    CopyCalendarEvent,
-    #[serde(rename = "CalendarEventNotification/get")]
-    GetCalendarEventNotification,
-    #[serde(rename = "CalendarEventNotification/changes")]
-    ChangesCalendarEventNotification,
-    #[serde(rename = "CalendarEventNotification/query")]
-    QueryCalendarEventNotification,
-    #[serde(rename = "CalendarEventNotification/queryChanges")]
-    QueryChangesCalendarEventNotification,
-    #[serde(rename = "CalendarEventNotification/set")]
-    SetCalendarEventNotification,
-    #[serde(rename = "ParticipantIdentity/get")]
-    GetParticipantIdentity,
-    #[serde(rename = "ParticipantIdentity/changes")]
-    ChangesParticipantIdentity,
-    #[serde(rename = "ParticipantIdentity/set")]
-    SetParticipantIdentity,
-    #[serde(rename = "AddressBook/get")]
-    GetAddressBook,
-    #[serde(rename = "AddressBook/changes")]
-    ChangesAddressBook,
-    #[serde(rename = "AddressBook/set")]
-    SetAddressBook,
-    #[serde(rename = "ContactCard/get")]
-    GetContactCard,
-    #[serde(rename = "ContactCard/changes")]
-    ChangesContactCard,
-    #[serde(rename = "ContactCard/query")]
-    QueryContactCard,
-    #[serde(rename = "ContactCard/queryChanges")]
-    QueryChangesContactCard,
-    #[serde(rename = "ContactCard/set")]
-    SetContactCard,
-    #[serde(rename = "ContactCard/parse")]
-    ParseContactCard,
-    #[serde(rename = "ContactCard/copy")]
-    CopyContactCard,
-    #[serde(rename = "error")]
-    Error,
-}
-
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Clone)]
 #[non_exhaustive]
 pub enum DataType {
@@ -346,11 +135,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
-    Transport(reqwest::Error),
+    Transport(core::transport::TransportError),
     Parse(serde_json::Error),
     Internal(String),
     Problem(Box<ProblemDetails>),
-    Server(String),
     Method(MethodError),
     Set(SetError<String>),
     #[cfg(feature = "websockets")]
@@ -359,9 +147,15 @@ pub enum Error {
 
 impl std::error::Error for Error {}
 
+impl From<core::transport::TransportError> for Error {
+    fn from(e: core::transport::TransportError) -> Self {
+        Error::Transport(e)
+    }
+}
+
 impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
-        Error::Transport(e)
+        Error::Transport(core::transport::TransportError::with_source("HTTP request failed", e))
     }
 }
 
@@ -409,11 +203,10 @@ impl Display for Error {
             Error::Parse(e) => write!(f, "Parse error: {e}"),
             Error::Internal(e) => write!(f, "Internal error: {e}"),
             Error::Problem(e) => write!(f, "Request failed: {e}"),
-            Error::Server(e) => write!(f, "Server failed: {e}"),
-            Error::Method(e) => write!(f, "Request failed: {e}"),
-            Error::Set(e) => write!(f, "Set failed: {e}"),
+            Error::Method(e) => write!(f, "Method error: {e}"),
+            Error::Set(e) => write!(f, "Set error: {e}"),
             #[cfg(feature = "websockets")]
-            Error::WebSocket(e) => write!(f, "WebSockets error: {e}"),
+            Error::WebSocket(e) => write!(f, "WebSocket error: {e}"),
         }
     }
 }

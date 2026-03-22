@@ -25,6 +25,7 @@ pub mod request;
 pub mod response;
 pub mod session;
 pub mod set;
+pub mod transport;
 
 pub trait Object: Sized {
     type Property: Display + Serialize + for<'de> Deserialize<'de>;

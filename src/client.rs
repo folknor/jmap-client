@@ -448,7 +448,7 @@ impl Client {
                 &response.bytes().await?,
             )?))
         } else {
-            Err(Error::Server(format!("{}", response.status())))
+            Err(Error::Internal(format!("{}", response.status())))
         }
     }
 }

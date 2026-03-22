@@ -9,10 +9,8 @@
  * except according to those terms.
  */
 
-use crate::{
-    email::{MailCapabilities, SubmissionCapabilities},
-    URI,
-};
+use crate::core::capability::Capability;
+use crate::email::{MailCapabilities, SubmissionCapabilities};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -259,7 +257,7 @@ impl Session {
 
     pub fn websocket_capabilities(&self) -> Option<&WebSocketCapabilities> {
         self.capabilities
-            .get(URI::WebSocket.as_ref())
+            .get(crate::core::capability::WebSocket::URI)
             .and_then(|v| match v {
                 Capabilities::WebSocket(capabilities) => Some(capabilities),
                 _ => None,
@@ -268,7 +266,7 @@ impl Session {
 
     pub fn core_capabilities(&self) -> Option<&CoreCapabilities> {
         self.capabilities
-            .get(URI::Core.as_ref())
+            .get(crate::core::capability::Core::URI)
             .and_then(|v| match v {
                 Capabilities::Core(capabilities) => Some(capabilities),
                 _ => None,
@@ -277,7 +275,7 @@ impl Session {
 
     pub fn mail_capabilities(&self) -> Option<&MailCapabilities> {
         self.capabilities
-            .get(URI::Mail.as_ref())
+            .get(crate::core::capability::Mail::URI)
             .and_then(|v| match v {
                 Capabilities::Mail(capabilities) => Some(capabilities),
                 _ => None,
@@ -286,7 +284,7 @@ impl Session {
 
     pub fn submission_capabilities(&self) -> Option<&SubmissionCapabilities> {
         self.capabilities
-            .get(URI::Submission.as_ref())
+            .get(crate::core::capability::Submission::URI)
             .and_then(|v| match v {
                 Capabilities::Submission(capabilities) => Some(capabilities),
                 _ => None,
@@ -295,7 +293,7 @@ impl Session {
 
     pub fn sieve_capabilities(&self) -> Option<&SieveCapabilities> {
         self.capabilities
-            .get(URI::Sieve.as_ref())
+            .get(crate::core::capability::Sieve::URI)
             .and_then(|v| match v {
                 Capabilities::Sieve(capabilities) => Some(capabilities),
                 _ => None,
@@ -304,7 +302,7 @@ impl Session {
 
     pub fn quota_capabilities(&self) -> Option<&QuotaCapabilities> {
         self.capabilities
-            .get(URI::Quota.as_ref())
+            .get(crate::core::capability::Quota::URI)
             .and_then(|v| match v {
                 Capabilities::Quota(capabilities) => Some(capabilities),
                 _ => None,
@@ -313,7 +311,7 @@ impl Session {
 
     pub fn blob_capabilities(&self) -> Option<&BlobCapabilities> {
         self.capabilities
-            .get(URI::Blob.as_ref())
+            .get(crate::core::capability::Blob::URI)
             .and_then(|v| match v {
                 Capabilities::Blob(capabilities) => Some(capabilities),
                 _ => None,
@@ -322,7 +320,7 @@ impl Session {
 
     pub fn calendars_capabilities(&self) -> Option<&CalendarsCapabilities> {
         self.capabilities
-            .get(URI::Calendars.as_ref())
+            .get(crate::core::capability::Calendars::URI)
             .and_then(|v| match v {
                 Capabilities::Calendars(capabilities) => Some(capabilities),
                 _ => None,
@@ -331,7 +329,7 @@ impl Session {
 
     pub fn contacts_capabilities(&self) -> Option<&ContactsCapabilities> {
         self.capabilities
-            .get(URI::Contacts.as_ref())
+            .get(crate::core::capability::Contacts::URI)
             .and_then(|v| match v {
                 Capabilities::Contacts(capabilities) => Some(capabilities),
                 _ => None,
@@ -340,7 +338,7 @@ impl Session {
 
     pub fn principals_capabilities(&self) -> Option<&PrincipalsCapabilities> {
         self.capabilities
-            .get(URI::Principals.as_ref())
+            .get(crate::core::capability::Principals::URI)
             .and_then(|v| match v {
                 Capabilities::Principals(capabilities) => Some(capabilities),
                 _ => None,
