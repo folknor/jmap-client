@@ -20,6 +20,7 @@ use super::ContactCard;
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     InAddressBook {
         #[serde(rename = "inAddressBook")]
@@ -105,6 +106,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "created")]
     Created,

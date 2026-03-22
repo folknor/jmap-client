@@ -20,6 +20,7 @@ use super::{CalendarEvent, QueryArguments};
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     /// Filter by calendar ID (singular). Used by Stalwart.
     InCalendar {
@@ -71,6 +72,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "start")]
     Start,

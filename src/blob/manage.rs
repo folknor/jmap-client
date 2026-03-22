@@ -13,7 +13,7 @@
 //!
 //! These are JMAP method calls (not HTTP endpoint operations).
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{core::RequestParams, Error};
@@ -27,7 +27,7 @@ pub struct BlobUploadRequest {
     account_id: String,
 
     #[serde(rename = "create")]
-    create: AHashMap<String, BlobUploadCreate>,
+    create: HashMap<String, BlobUploadCreate>,
 }
 
 /// A single blob creation entry.
@@ -47,6 +47,7 @@ pub struct BlobUploadCreate {
 /// blob. Multiple sources are concatenated in order.
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum DataSource {
     /// Reference an existing blob by ID, with optional byte range.
     Blob(DataSourceBlob),
@@ -92,10 +93,10 @@ pub struct BlobUploadResponse {
     account_id: String,
 
     #[serde(rename = "created")]
-    created: Option<AHashMap<String, BlobUploadCreated>>,
+    created: Option<HashMap<String, BlobUploadCreated>>,
 
     #[serde(rename = "notCreated")]
-    not_created: Option<AHashMap<String, serde_json::Value>>,
+    not_created: Option<HashMap<String, serde_json::Value>>,
 }
 
 /// Result of a successfully created blob.
@@ -115,7 +116,7 @@ impl BlobUploadRequest {
     pub fn new(params: RequestParams<'_>) -> Self {
         BlobUploadRequest {
             account_id: params.account_id.to_string(),
-            create: AHashMap::new(),
+            create: HashMap::new(),
         }
     }
 
@@ -286,7 +287,7 @@ pub struct BlobGetResult {
     /// All dynamic properties including `data:asText`, `data:asBase64`,
     /// and `digest:<algorithm>` values.
     #[serde(flatten)]
-    pub properties: AHashMap<String, serde_json::Value>,
+    pub properties: HashMap<String, serde_json::Value>,
 }
 
 impl BlobGetResult {
@@ -417,7 +418,7 @@ pub struct BlobLookupResult {
 
     /// Map of type name → list of object IDs that reference this blob.
     #[serde(rename = "matchedIds")]
-    pub matched_ids: AHashMap<String, Vec<String>>,
+    pub matched_ids: HashMap<String, Vec<String>>,
 }
 
 impl BlobLookupRequest {

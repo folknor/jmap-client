@@ -19,6 +19,7 @@ const MAX_EVENT_SIZE: usize = 1024 * 1024;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[derive(Default)]
+#[non_exhaustive]
 pub enum EventType {
     Ping,
     #[default]
@@ -117,9 +118,9 @@ impl EventParser {
                         } else {
                             None
                         },
-                        changes: ahash::AHashMap::from_iter([(
+                        changes: ahash::HashMap::from_iter([(
                             "ping".to_string(),
-                            ahash::AHashMap::new(),
+                            ahash::HashMap::new(),
                         )]),
                     })));
                 }

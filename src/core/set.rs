@@ -10,7 +10,7 @@
  */
 
 use crate::Error;
-use ahash::AHashMap;
+use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
@@ -35,10 +35,10 @@ pub struct SetRequest<O: SetObject> {
     if_in_state: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    create: Option<AHashMap<String, O>>,
+    create: Option<HashMap<String, O>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    update: Option<AHashMap<String, O>>,
+    update: Option<HashMap<String, O>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     destroy: Option<Vec<String>>,
@@ -64,22 +64,22 @@ pub struct SetResponse<O: SetObject> {
     new_state: Option<String>,
 
     #[serde(rename = "created")]
-    created: Option<AHashMap<String, O>>,
+    created: Option<HashMap<String, O>>,
 
     #[serde(rename = "updated")]
-    updated: Option<AHashMap<String, Option<O>>>,
+    updated: Option<HashMap<String, Option<O>>>,
 
     #[serde(rename = "destroyed")]
     destroyed: Option<Vec<String>>,
 
     #[serde(rename = "notCreated")]
-    not_created: Option<AHashMap<String, SetError<O::Property>>>,
+    not_created: Option<HashMap<String, SetError<O::Property>>>,
 
     #[serde(rename = "notUpdated")]
-    not_updated: Option<AHashMap<String, SetError<O::Property>>>,
+    not_updated: Option<HashMap<String, SetError<O::Property>>>,
 
     #[serde(rename = "notDestroyed")]
-    not_destroyed: Option<AHashMap<String, SetError<O::Property>>>,
+    not_destroyed: Option<HashMap<String, SetError<O::Property>>>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -94,6 +94,7 @@ where
 }
 
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum SetErrorType {
     #[serde(rename = "forbidden")]
     Forbidden,
@@ -177,10 +178,10 @@ impl<O: SetObject> SetRequest<O> {
     }
 
     pub fn create(&mut self) -> &mut O {
-        let create_id = self.create.as_ref().map_or(0, |c| c.len());
+        let create_id = self.create.as_ref().map_or(0, std::collections::HashMap::len);
         let create_id_str = format!("c{create_id}");
         self.create
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .entry(create_id_str)
             .or_insert_with(|| O::new(create_id.into()))
     }
@@ -188,16 +189,16 @@ impl<O: SetObject> SetRequest<O> {
     pub fn create_with_id(&mut self, create_id: impl Into<String>) -> &mut O {
         let create_id = create_id.into();
         self.create
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .entry(create_id)
             .or_insert_with(|| O::new(0.into()))
     }
 
     pub fn create_item(&mut self, item: O) -> String {
-        let create_id = self.create.as_ref().map_or(0, |c| c.len());
+        let create_id = self.create.as_ref().map_or(0, std::collections::HashMap::len);
         let create_id_str = format!("c{create_id}");
         self.create
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(create_id_str.clone(), item);
         create_id_str
     }
@@ -205,14 +206,14 @@ impl<O: SetObject> SetRequest<O> {
     pub fn update(&mut self, id: impl Into<String>) -> &mut O {
         let id: String = id.into();
         self.update
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .entry(id)
             .or_insert_with(|| O::new(None))
     }
 
     pub fn update_item(&mut self, id: impl Into<String>, item: O) {
         self.update
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(id.into(), item);
     }
 
@@ -301,7 +302,7 @@ impl<O: SetObject> SetResponse<O> {
     pub fn take_updated_ids(&mut self) -> Option<Vec<String>> {
         self.updated
             .take()
-            .map(|map| map.into_iter().map(|(k, _)| k).collect())
+            .map(|map| map.into_keys().collect())
     }
 
     pub fn destroyed_ids(&self) -> Option<impl Iterator<Item = &String>> {
@@ -447,6 +448,6 @@ pub fn skip_if_empty_list<O>(list: &Option<Vec<O>>) -> bool {
     matches!(list, Some(list) if list.is_empty() )
 }
 
-pub fn skip_if_empty_map<K, V>(list: &Option<AHashMap<K, V>>) -> bool {
+pub fn skip_if_empty_map<K, V>(list: &Option<HashMap<K, V>>) -> bool {
     matches!(list, Some(list) if list.is_empty() )
 }

@@ -14,7 +14,7 @@ pub mod helpers;
 pub mod query;
 pub mod set;
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -28,7 +28,7 @@ use crate::{
 pub struct SetArguments {
     #[serde(rename = "onSuccessUpdateEmail")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    on_success_update_email: Option<AHashMap<String, Email<Set>>>,
+    on_success_update_email: Option<HashMap<String, Email<Set>>>,
     #[serde(rename = "onSuccessDestroyEmail")]
     #[serde(skip_serializing_if = "Option::is_none")]
     on_success_destroy_email: Option<Vec<String>>,
@@ -72,7 +72,7 @@ pub struct EmailSubmission<State = Get> {
 
     #[serde(rename = "deliveryStatus")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    delivery_status: Option<AHashMap<String, DeliveryStatus>>,
+    delivery_status: Option<HashMap<String, DeliveryStatus>>,
 
     #[serde(rename = "dsnBlobIds")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -98,10 +98,11 @@ pub struct Address<State = Get> {
     _state: std::marker::PhantomData<State>,
 
     email: String,
-    parameters: Option<AHashMap<String, Option<String>>>,
+    parameters: Option<HashMap<String, Option<String>>>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum UndoStatus {
     #[serde(rename = "pending")]
     Pending,
@@ -124,6 +125,7 @@ pub struct DeliveryStatus {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Delivered {
     #[serde(rename = "queued")]
     Queued,
@@ -136,6 +138,7 @@ pub enum Delivered {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Displayed {
     #[serde(rename = "unknown")]
     Unknown,
@@ -144,6 +147,7 @@ pub enum Displayed {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id,

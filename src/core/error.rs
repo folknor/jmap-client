@@ -25,6 +25,7 @@ pub struct ProblemDetails {
 }
 
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub enum JMAPError {
     #[serde(rename = "urn:ietf:params:jmap:error:unknownCapability")]
     UnknownCapability,
@@ -38,6 +39,7 @@ pub enum JMAPError {
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum ProblemType {
     JMAP(JMAPError),
     Other(String),
@@ -50,6 +52,7 @@ pub struct MethodError {
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum MethodErrorType {
     #[serde(rename = "serverUnavailable")]
     ServerUnavailable,

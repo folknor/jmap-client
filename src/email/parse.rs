@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{BodyProperty, Email, Property};
 use crate::{core::RequestParams, Error};
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct EmailParseRequest {
@@ -54,7 +54,7 @@ pub struct EmailParseResponse {
     account_id: String,
 
     #[serde(rename = "parsed")]
-    parsed: Option<AHashMap<String, Email>>,
+    parsed: Option<HashMap<String, Email>>,
 
     #[serde(rename = "notParsable")]
     not_parsable: Option<Vec<String>>,

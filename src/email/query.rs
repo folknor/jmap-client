@@ -24,6 +24,7 @@ use super::{Email, QueryArguments};
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     InMailbox {
         #[serde(rename = "inMailbox")]
@@ -127,6 +128,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "receivedAt")]
     ReceivedAt,

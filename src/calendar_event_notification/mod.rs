@@ -77,6 +77,7 @@ pub struct ChangedBy {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum NotificationType {
     #[serde(rename = "created")]
     Created,
@@ -87,6 +88,7 @@ pub enum NotificationType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id,

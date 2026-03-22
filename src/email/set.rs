@@ -20,7 +20,7 @@ use crate::{
     },
     Get, Set,
 };
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 impl Email<Set> {
     pub fn mailbox_ids<T, U>(&mut self, mailbox_ids: T) -> &mut Self
@@ -42,7 +42,7 @@ impl Email<Set> {
     pub fn mailbox_id(&mut self, mailbox_id: &str, set: bool) -> &mut Self {
         self.mailbox_ids = None;
         self.patch
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(
                 format!("mailboxIds/{mailbox_id}"),
                 if set {
@@ -66,7 +66,7 @@ impl Email<Set> {
     pub fn keyword(&mut self, keyword: &str, set: bool) -> &mut Self {
         self.keywords = None;
         self.patch
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(
                 format!("keywords/{keyword}"),
                 if set {
@@ -176,7 +176,7 @@ impl Email<Set> {
 
     pub fn body_value(&mut self, id: String, body_value: impl Into<EmailBodyValue>) -> &mut Self {
         self.body_values
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(id, body_value.into());
         self
     }

@@ -13,9 +13,10 @@ pub mod parser;
 pub mod stream;
 
 use crate::{core::session::URLParser, CalendarAlert, DataType};
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
+#[non_exhaustive]
 pub enum URLParameter {
     Types,
     CloseAfter,
@@ -34,6 +35,7 @@ impl URLParser for URLParameter {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum PushNotification {
     StateChange(Changes),
     CalendarAlert(CalendarAlert),
@@ -42,11 +44,11 @@ pub enum PushNotification {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Changes {
     id: Option<String>,
-    changes: AHashMap<String, AHashMap<DataType, String>>,
+    changes: HashMap<String, HashMap<DataType, String>>,
 }
 
 impl Changes {
-    pub fn new(id: Option<String>, changes: AHashMap<String, AHashMap<DataType, String>>) -> Self {
+    pub fn new(id: Option<String>, changes: HashMap<String, HashMap<DataType, String>>) -> Self {
         Self { id, changes }
     }
 
@@ -54,7 +56,7 @@ impl Changes {
         self.id.as_deref()
     }
 
-    pub fn account_changes(&mut self, account_id: &str) -> Option<AHashMap<DataType, String>> {
+    pub fn account_changes(&mut self, account_id: &str) -> Option<HashMap<DataType, String>> {
         self.changes.remove(account_id)
     }
 
@@ -72,7 +74,7 @@ impl Changes {
             .any(|changes| changes.contains_key(&type_))
     }
 
-    pub fn into_inner(self) -> AHashMap<String, AHashMap<DataType, String>> {
+    pub fn into_inner(self) -> HashMap<String, HashMap<DataType, String>> {
         self.changes
     }
 

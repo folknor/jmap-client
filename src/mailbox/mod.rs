@@ -18,7 +18,7 @@ use crate::core::set::{skip_if_empty_map, skip_if_empty_str};
 use crate::mailbox::set::role_not_set;
 use crate::principal::ACL;
 use crate::Get;
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -97,22 +97,23 @@ pub struct Mailbox<State = Get> {
 
     #[serde(rename = "shareWith")]
     #[serde(skip_serializing_if = "skip_if_empty_map")]
-    share_with: Option<AHashMap<String, AHashMap<ACL, bool>>>,
+    share_with: Option<HashMap<String, HashMap<ACL, bool>>>,
 
     #[serde(flatten)]
     #[serde(skip_deserializing)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    acl_patch: Option<AHashMap<String, ACLPatch>>,
+    acl_patch: Option<HashMap<String, ACLPatch>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub(crate) enum ACLPatch {
-    Replace(AHashMap<ACL, bool>),
+    Replace(HashMap<ACL, bool>),
     Set(bool),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[non_exhaustive]
 pub enum Role {
     Archive,
     Drafts,
@@ -166,6 +167,7 @@ pub struct MailboxRights {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id,

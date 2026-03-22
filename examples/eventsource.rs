@@ -64,6 +64,7 @@ async fn event_source() {
                     calendar_alert.calendar_event_id, calendar_alert.alert_id
                 );
             }
+            _ => {}
         }
     }
 }

@@ -13,7 +13,7 @@ use crate::{
     email::{MailCapabilities, SubmissionCapabilities},
     URI,
 };
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
@@ -21,13 +21,13 @@ use serde_json::Value as JsonValue;
 pub struct Session {
     #[serde(rename = "capabilities")]
     #[serde(deserialize_with = "deserialize_capabilities_map")]
-    capabilities: AHashMap<String, Capabilities>,
+    capabilities: HashMap<String, Capabilities>,
 
     #[serde(rename = "accounts")]
-    accounts: AHashMap<String, Account>,
+    accounts: HashMap<String, Account>,
 
     #[serde(rename = "primaryAccounts")]
-    primary_accounts: AHashMap<String, String>,
+    primary_accounts: HashMap<String, String>,
 
     #[serde(rename = "username")]
     username: String,
@@ -61,13 +61,14 @@ pub struct Account {
 
     #[serde(rename = "accountCapabilities")]
     #[serde(deserialize_with = "deserialize_capabilities_map")]
-    account_capabilities: AHashMap<String, Capabilities>,
+    account_capabilities: HashMap<String, Capabilities>,
 }
 
 /// Session/account capability value. The correct variant is selected by
 /// the map key (capability URI), not by the value shape.
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Capabilities {
     Core(CoreCapabilities),
     Mail(MailCapabilities),
@@ -82,17 +83,17 @@ pub enum Capabilities {
     Other(serde_json::Value),
 }
 
-/// Custom deserializer for `AHashMap<String, Capabilities>` that
+/// Custom deserializer for `HashMap<String, Capabilities>` that
 /// dispatches to the correct `Capabilities` variant based on the URI
 /// key, rather than relying on `#[serde(untagged)]` trial-and-error.
 fn deserialize_capabilities_map<'de, D>(
     deserializer: D,
-) -> Result<AHashMap<String, Capabilities>, D::Error>
+) -> Result<HashMap<String, Capabilities>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    let raw: AHashMap<String, JsonValue> = AHashMap::deserialize(deserializer)?;
-    let mut result = AHashMap::with_capacity(raw.len());
+    let raw: HashMap<String, JsonValue> = HashMap::deserialize(deserializer)?;
+    let mut result = HashMap::with_capacity(raw.len());
 
     /// Try to deserialize a capability value as a typed struct,
     /// falling back to `Other(original_value)` on parse failure.
@@ -527,6 +528,7 @@ pub trait URLParser: Sized {
     fn parse(value: &str) -> Option<Self>;
 }
 
+#[non_exhaustive]
 pub enum URLPart<T: URLParser> {
     Value(String),
     Parameter(T),

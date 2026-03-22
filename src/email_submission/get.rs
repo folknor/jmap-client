@@ -11,7 +11,7 @@
 
 use super::{Address, Delivered, DeliveryStatus, Displayed, EmailSubmission, UndoStatus};
 use crate::{core::get::GetObject, Get, Set};
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 impl EmailSubmission<Get> {
     pub fn id(&self) -> Option<&str> {
@@ -54,7 +54,7 @@ impl EmailSubmission<Get> {
         self.delivery_status.as_ref().and_then(|ds| ds.get(email))
     }
 
-    pub fn delivery_status(&self) -> Option<&AHashMap<String, DeliveryStatus>> {
+    pub fn delivery_status(&self) -> Option<&HashMap<String, DeliveryStatus>> {
         self.delivery_status.as_ref()
     }
 

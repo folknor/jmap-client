@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{de::Visitor, Deserialize};
 use std::fmt;
 
@@ -194,7 +194,7 @@ pub struct Response<T> {
     method_responses: Vec<T>,
 
     #[serde(rename = "createdIds")]
-    created_ids: Option<AHashMap<String, String>>,
+    created_ids: Option<HashMap<String, String>>,
 
     #[serde(rename = "sessionState")]
     session_state: String,
@@ -205,7 +205,7 @@ pub struct Response<T> {
 impl<T> Response<T> {
     pub fn new(
         method_responses: Vec<T>,
-        created_ids: Option<AHashMap<String, String>>,
+        created_ids: Option<HashMap<String, String>>,
         session_state: String,
         request_id: Option<String>,
     ) -> Self {
@@ -260,6 +260,7 @@ impl Response<TaggedMethodResponse> {
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum SingleMethodResponse<T> {
     // Ok must come before Error — with untagged enums, serde tries
     // variants in order. Ok's first element is a method name String,
@@ -271,6 +272,7 @@ pub enum SingleMethodResponse<T> {
 }
 
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub enum Error {
     #[serde(rename = "error")]
     Error,

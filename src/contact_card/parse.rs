@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{ContactCard, Property};
 use crate::{core::RequestParams, Error};
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ContactCardParseRequest {
@@ -34,7 +34,7 @@ pub struct ContactCardParseResponse {
     account_id: String,
 
     #[serde(rename = "parsed")]
-    parsed: Option<AHashMap<String, Vec<ContactCard>>>,
+    parsed: Option<HashMap<String, Vec<ContactCard>>>,
 
     #[serde(rename = "notParsable")]
     not_parsable: Option<Vec<String>>,

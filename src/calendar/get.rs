@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::{
     calendar_event::Alert,
@@ -62,13 +62,13 @@ impl Calendar<Get> {
         self.include_in_availability.as_ref()
     }
 
-    pub fn default_alerts_with_time(&self) -> Option<Option<&AHashMap<String, Alert>>> {
+    pub fn default_alerts_with_time(&self) -> Option<Option<&HashMap<String, Alert>>> {
         self.default_alerts_with_time
             .as_ref()
             .map(|a| a.as_ref())
     }
 
-    pub fn default_alerts_without_time(&self) -> Option<Option<&AHashMap<String, Alert>>> {
+    pub fn default_alerts_without_time(&self) -> Option<Option<&HashMap<String, Alert>>> {
         self.default_alerts_without_time
             .as_ref()
             .map(|a| a.as_ref())
@@ -78,7 +78,7 @@ impl Calendar<Get> {
         self.time_zone.as_ref().map(|t| t.as_deref())
     }
 
-    pub fn share_with(&self) -> Option<Option<&AHashMap<String, CalendarRights>>> {
+    pub fn share_with(&self) -> Option<Option<&HashMap<String, CalendarRights>>> {
         self.share_with.as_ref().map(|s| s.as_ref())
     }
 

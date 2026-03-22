@@ -67,6 +67,7 @@ pub struct Alert {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "@type")]
+#[non_exhaustive]
 pub enum AlertTrigger {
     #[serde(rename = "OffsetTrigger")]
     OffsetTrigger {
@@ -89,6 +90,7 @@ pub enum AlertTrigger {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum AlertAction {
     #[serde(rename = "display")]
     Display,
@@ -97,6 +99,7 @@ pub enum AlertAction {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum RelativeTo {
     #[serde(rename = "start")]
     Start,
@@ -201,6 +204,7 @@ impl QueryArguments {
 /// Common JSCalendar properties have typed variants. Extension or
 /// less-common properties use `Other(String)`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Property {
     Id,
     Uid,

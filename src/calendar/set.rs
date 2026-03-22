@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::{calendar_event::Alert, core::set::SetObject, Get, Set};
 
@@ -56,7 +56,7 @@ impl Calendar<Set> {
 
     pub fn default_alerts_with_time(
         &mut self,
-        alerts: Option<AHashMap<String, Alert>>,
+        alerts: Option<HashMap<String, Alert>>,
     ) -> &mut Self {
         self.default_alerts_with_time = Some(alerts);
         self
@@ -64,7 +64,7 @@ impl Calendar<Set> {
 
     pub fn default_alerts_without_time(
         &mut self,
-        alerts: Option<AHashMap<String, Alert>>,
+        alerts: Option<HashMap<String, Alert>>,
     ) -> &mut Self {
         self.default_alerts_without_time = Some(alerts);
         self
@@ -77,7 +77,7 @@ impl Calendar<Set> {
 
     pub fn share_with(
         &mut self,
-        share_with: Option<AHashMap<String, CalendarRights>>,
+        share_with: Option<HashMap<String, CalendarRights>>,
     ) -> &mut Self {
         self.share_with = Some(share_with);
         self

@@ -43,6 +43,7 @@ crate::json_object_struct!(ContactCard, "a JSContact object", Property, ());
 /// Common JSContact properties have typed variants. Extension or
 /// less-common properties use `Other(String)`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Property {
     Id,
     Uid,

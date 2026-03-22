@@ -11,7 +11,7 @@
 
 use super::{Mailbox, MailboxRights, Role};
 use crate::{core::get::GetObject, principal::ACL, Get, Set};
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 impl Mailbox<Get> {
     pub fn id(&self) -> Option<&str> {
@@ -62,11 +62,11 @@ impl Mailbox<Get> {
         self.my_rights.as_ref()
     }
 
-    pub fn acl(&self) -> Option<&AHashMap<String, AHashMap<ACL, bool>>> {
+    pub fn acl(&self) -> Option<&HashMap<String, HashMap<ACL, bool>>> {
         self.share_with.as_ref()
     }
 
-    pub fn take_acl(&mut self) -> Option<AHashMap<String, AHashMap<ACL, bool>>> {
+    pub fn take_acl(&mut self) -> Option<HashMap<String, HashMap<ACL, bool>>> {
         self.share_with.take()
     }
 }

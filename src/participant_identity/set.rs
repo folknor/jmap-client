@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::{core::set::SetObject, Get, Set};
 
@@ -21,7 +21,7 @@ impl ParticipantIdentity<Set> {
         self
     }
 
-    pub fn send_to(&mut self, send_to: AHashMap<String, String>) -> &mut Self {
+    pub fn send_to(&mut self, send_to: HashMap<String, String>) -> &mut Self {
         self.send_to = Some(send_to);
         self
     }

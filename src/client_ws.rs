@@ -11,7 +11,7 @@
 
 use std::{pin::Pin, sync::Arc};
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use futures_util::{stream::SplitSink, SinkExt, Stream, StreamExt};
 use reqwest::header::SEC_WEBSOCKET_PROTOCOL;
 use rustls::{
@@ -50,7 +50,7 @@ struct WebSocketRequest {
 
     #[serde(rename = "createdIds")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    created_ids: Option<AHashMap<String, String>>,
+    created_ids: Option<HashMap<String, String>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -65,7 +65,7 @@ pub struct WebSocketResponse {
     method_responses: Vec<TaggedMethodResponse>,
 
     #[serde(rename = "createdIds")]
-    created_ids: Option<AHashMap<String, String>>,
+    created_ids: Option<HashMap<String, String>>,
 
     #[serde(rename = "sessionState")]
     session_state: String,
@@ -137,6 +137,7 @@ pub struct WebSocketError {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[non_exhaustive]
 pub enum WebSocketErrorType {
     RequestError,
 }
@@ -150,6 +151,7 @@ enum WebSocketMessage_ {
 }
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum WebSocketMessage {
     Response(Response<TaggedMethodResponse>),
     PushNotification(PushObject),

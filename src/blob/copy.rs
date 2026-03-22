@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -34,9 +34,9 @@ pub struct CopyBlobResponse {
     #[serde(rename = "accountId")]
     account_id: String,
     #[serde(rename = "copied")]
-    copied: Option<AHashMap<String, String>>,
+    copied: Option<HashMap<String, String>>,
     #[serde(rename = "notCopied")]
-    not_copied: Option<AHashMap<String, SetError<String>>>,
+    not_copied: Option<HashMap<String, SetError<String>>>,
 }
 
 impl CopyBlobRequest {

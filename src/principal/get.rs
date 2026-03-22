@@ -11,7 +11,7 @@
 
 use super::{Principal, Type, ACL, DKIM};
 use crate::{core::get::GetObject, Get, Set};
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 impl Principal<Get> {
     pub fn id(&self) -> Option<&str> {
@@ -70,7 +70,7 @@ impl Principal<Get> {
         self.dkim.as_ref()
     }
 
-    pub fn acl(&self) -> Option<&AHashMap<String, Vec<ACL>>> {
+    pub fn acl(&self) -> Option<&HashMap<String, Vec<ACL>>> {
         self.acl.as_ref()
     }
 }

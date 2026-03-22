@@ -15,7 +15,7 @@ pub mod set;
 
 use std::fmt::Display;
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::core::set::skip_if_empty_map;
@@ -56,7 +56,7 @@ pub struct ParticipantIdentity<State = Get> {
 
     #[serde(rename = "sendTo")]
     #[serde(skip_serializing_if = "skip_if_empty_map")]
-    pub send_to: Option<AHashMap<String, String>>,
+    pub send_to: Option<HashMap<String, String>>,
 
     #[serde(rename = "isDefault")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,6 +64,7 @@ pub struct ParticipantIdentity<State = Get> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id,

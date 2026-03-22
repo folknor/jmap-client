@@ -11,7 +11,7 @@
 
 use super::{Principal, Property, Type, ACL, DKIM};
 use crate::{core::set::SetObject, Get, Set};
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 impl Principal<Set> {
     pub fn name(&mut self, name: impl Into<String>) -> &mut Self {
@@ -59,7 +59,7 @@ impl Principal<Set> {
         self
     }
 
-    pub fn acl(&mut self, acl: Option<AHashMap<String, Vec<ACL>>>) -> &mut Self {
+    pub fn acl(&mut self, acl: Option<HashMap<String, Vec<ACL>>>) -> &mut Self {
         self.acl = acl;
         self
     }
@@ -75,7 +75,7 @@ impl Principal<Set> {
 
     pub fn alias(&mut self, alias: &str, set: bool) -> &mut Self {
         self.property_patch
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(format!("{}/{}", Property::Aliases, alias), set);
         self
     }
@@ -100,7 +100,7 @@ impl Principal<Set> {
 
     pub fn member(&mut self, member: &str, set: bool) -> &mut Self {
         self.property_patch
-            .get_or_insert_with(AHashMap::new)
+            .get_or_insert_with(HashMap::new)
             .insert(format!("{}/{}", Property::Members, member), set);
         self
     }
@@ -126,7 +126,7 @@ impl SetObject for Principal<Set> {
             quota: None,
             picture: String::new().into(),
             members: Vec::with_capacity(0).into(),
-            acl: AHashMap::with_capacity(0).into(),
+            acl: HashMap::with_capacity(0).into(),
             property_patch: None,
         }
     }

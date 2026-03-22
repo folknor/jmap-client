@@ -36,7 +36,7 @@ use crate::{
     vacation_response::VacationResponse,
     Error, Method, Set, URI,
 };
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{de::DeserializeOwned, Serialize};
 
 use super::{
@@ -64,7 +64,7 @@ pub struct Request<'x> {
 
     #[serde(rename = "createdIds")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub created_ids: Option<AHashMap<String, String>>,
+    pub created_ids: Option<HashMap<String, String>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -77,6 +77,7 @@ pub struct ResultReference {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Arguments {
     Changes(Box<ChangesRequest>),
     PushGet(Box<GetRequest<PushSubscription<Set>>>),

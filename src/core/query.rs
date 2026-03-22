@@ -63,6 +63,7 @@ pub struct QueryRequest<O: QueryObject> {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter<T> {
     FilterOperator(FilterOperator<T>),
     FilterCondition(T),
@@ -75,6 +76,7 @@ pub struct FilterOperator<T> {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Operator {
     #[serde(rename = "AND")]
     And,

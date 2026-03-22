@@ -49,11 +49,13 @@ impl PushSubscription<Get> {
 
 impl Keys {
     pub fn p256dh(&self) -> Option<Vec<u8>> {
-        base64::decode_config(&self.p256dh, base64::URL_SAFE).ok()
+        use base64::{Engine, engine::general_purpose::URL_SAFE};
+        URL_SAFE.decode(&self.p256dh).ok()
     }
 
     pub fn auth(&self) -> Option<Vec<u8>> {
-        base64::decode_config(&self.auth, base64::URL_SAFE).ok()
+        use base64::{Engine, engine::general_purpose::URL_SAFE};
+        URL_SAFE.decode(&self.auth).ok()
     }
 }
 

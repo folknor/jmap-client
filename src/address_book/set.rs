@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::{core::set::SetObject, Get, Set};
 
@@ -38,7 +38,7 @@ impl AddressBook<Set> {
 
     pub fn share_with(
         &mut self,
-        share_with: Option<AHashMap<String, AddressBookRights>>,
+        share_with: Option<HashMap<String, AddressBookRights>>,
     ) -> &mut Self {
         self.share_with = Some(share_with);
         self

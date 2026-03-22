@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::Error;
@@ -36,7 +36,7 @@ pub struct CopyRequest<O: SetObject> {
     if_in_state: Option<String>,
 
     #[serde(rename = "create")]
-    create: AHashMap<String, O>,
+    create: HashMap<String, O>,
 
     #[serde(rename = "onSuccessDestroyOriginal")]
     on_success_destroy_original: bool,
@@ -61,10 +61,10 @@ pub struct CopyResponse<O: SetObject> {
     new_state: String,
 
     #[serde(rename = "created")]
-    created: Option<AHashMap<String, O>>,
+    created: Option<HashMap<String, O>>,
 
     #[serde(rename = "notCreated")]
-    not_created: Option<AHashMap<String, SetError<O::Property>>>,
+    not_created: Option<HashMap<String, SetError<O::Property>>>,
 }
 
 impl<T: SetObject> CopyRequest<T> {
@@ -74,7 +74,7 @@ impl<T: SetObject> CopyRequest<T> {
             if_from_in_state: None,
             account_id: params.account_id.to_string(),
             if_in_state: None,
-            create: AHashMap::new(),
+            create: HashMap::new(),
             on_success_destroy_original: false,
             destroy_from_if_in_state: None,
         }
@@ -145,7 +145,7 @@ impl<O: SetObject> CopyResponse<O> {
     pub fn take_created(&mut self) -> Option<Vec<O>> {
         self.created
             .take()
-            .map(|map| map.into_iter().map(|(_, v)| v).collect())
+            .map(|map| map.into_values().collect())
     }
 
     pub fn created_ids(&self) -> Option<impl Iterator<Item = &String>> {

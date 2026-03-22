@@ -16,7 +16,7 @@ pub mod parse;
 pub mod query;
 pub mod search_snippet;
 pub mod set;
-use ahash::AHashMap;
+use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use serde::{de::Visitor, Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
@@ -50,7 +50,7 @@ pub struct Email<State = Get> {
 
     #[serde(rename = "mailboxIds")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    mailbox_ids: Option<AHashMap<String, bool>>,
+    mailbox_ids: Option<HashMap<String, bool>>,
 
     #[serde(rename = "#mailboxIds")]
     #[serde(skip_deserializing)]
@@ -59,7 +59,7 @@ pub struct Email<State = Get> {
 
     #[serde(rename = "keywords")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    keywords: Option<AHashMap<String, bool>>,
+    keywords: Option<HashMap<String, bool>>,
 
     #[serde(rename = "size")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -139,7 +139,7 @@ pub struct Email<State = Get> {
 
     #[serde(rename = "bodyValues")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    body_values: Option<AHashMap<String, EmailBodyValue>>,
+    body_values: Option<HashMap<String, EmailBodyValue>>,
 
     #[serde(rename = "textBody")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -163,12 +163,12 @@ pub struct Email<State = Get> {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "std::collections::HashMap::is_empty")]
-    headers: AHashMap<Header, Option<HeaderValue>>,
+    headers: HashMap<Header, Option<HeaderValue>>,
 
     #[serde(flatten)]
     #[serde(skip_deserializing)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    patch: Option<AHashMap<String, serde_json::Value>>,
+    patch: Option<HashMap<String, serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -226,7 +226,7 @@ pub struct EmailBodyPart<State = Get> {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    header: Option<AHashMap<Header, HeaderValue>>,
+    header: Option<HashMap<Header, HeaderValue>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -274,6 +274,7 @@ pub struct EmailHeader<State = Get> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Property {
     Id,
     BlobId,
@@ -306,6 +307,7 @@ pub enum Property {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum HeaderValue {
     // Most-specific (nested) variants first for correct untagged deserialization.
     AsGroupedAddressesAll(Vec<Vec<EmailAddressGroup>>),
@@ -327,6 +329,7 @@ pub struct Header {
 }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum HeaderForm {
     Raw,
     Text,
@@ -603,6 +606,7 @@ impl Display for HeaderForm {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum BodyProperty {
     PartId,
     BlobId,
@@ -727,7 +731,7 @@ pub struct SubmissionCapabilities {
 
     #[serde(rename = "submissionExtensions")]
     #[serde(default)]
-    submission_extensions: AHashMap<String, Vec<String>>,
+    submission_extensions: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -827,7 +831,7 @@ impl SubmissionCapabilities {
         self.max_delayed_send
     }
 
-    pub fn submission_extensions(&self) -> &AHashMap<String, Vec<String>> {
+    pub fn submission_extensions(&self) -> &HashMap<String, Vec<String>> {
         &self.submission_extensions
     }
 }

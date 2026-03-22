@@ -15,7 +15,7 @@ pub mod set;
 
 use std::fmt::Display;
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::core::set::skip_if_empty_str;
@@ -69,11 +69,11 @@ pub struct Calendar<State = Get> {
 
     #[serde(rename = "defaultAlertsWithTime")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_alerts_with_time: Option<Option<AHashMap<String, Alert>>>,
+    pub default_alerts_with_time: Option<Option<HashMap<String, Alert>>>,
 
     #[serde(rename = "defaultAlertsWithoutTime")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_alerts_without_time: Option<Option<AHashMap<String, Alert>>>,
+    pub default_alerts_without_time: Option<Option<HashMap<String, Alert>>>,
 
     #[serde(rename = "timeZone")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -81,7 +81,7 @@ pub struct Calendar<State = Get> {
 
     #[serde(rename = "shareWith")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub share_with: Option<Option<AHashMap<String, CalendarRights>>>,
+    pub share_with: Option<Option<HashMap<String, CalendarRights>>>,
 
     #[serde(rename = "myRights")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -89,6 +89,7 @@ pub struct Calendar<State = Get> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum IncludeInAvailability {
     #[serde(rename = "all")]
     All,
@@ -161,6 +162,7 @@ impl CalendarSetArguments {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id,

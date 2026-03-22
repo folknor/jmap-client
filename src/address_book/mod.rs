@@ -15,7 +15,7 @@ pub mod set;
 
 use std::fmt::Display;
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::core::set::skip_if_empty_str;
@@ -55,7 +55,7 @@ pub struct AddressBook<State = Get> {
 
     #[serde(rename = "shareWith")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub share_with: Option<Option<AHashMap<String, AddressBookRights>>>,
+    pub share_with: Option<Option<HashMap<String, AddressBookRights>>>,
 
     #[serde(rename = "myRights")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -109,6 +109,7 @@ impl AddressBookSetArguments {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id,

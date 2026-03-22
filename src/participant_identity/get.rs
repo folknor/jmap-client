@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::{core::get::GetObject, Get, Set};
 
@@ -28,7 +28,7 @@ impl ParticipantIdentity<Get> {
         self.name.as_deref()
     }
 
-    pub fn send_to(&self) -> Option<&AHashMap<String, String>> {
+    pub fn send_to(&self) -> Option<&HashMap<String, String>> {
         self.send_to.as_ref()
     }
 

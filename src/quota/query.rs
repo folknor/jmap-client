@@ -20,6 +20,7 @@ use super::Quota;
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     Name {
         #[serde(rename = "name")]
@@ -41,6 +42,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "name")]
     Name,

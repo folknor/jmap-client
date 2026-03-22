@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::{
     core::get::GetObject,
@@ -49,7 +49,7 @@ impl AddressBook<Get> {
         self.is_subscribed
     }
 
-    pub fn share_with(&self) -> Option<Option<&AHashMap<String, AddressBookRights>>> {
+    pub fn share_with(&self) -> Option<Option<&HashMap<String, AddressBookRights>>> {
         self.share_with.as_ref().map(|s| s.as_ref())
     }
 

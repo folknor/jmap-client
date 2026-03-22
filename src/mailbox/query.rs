@@ -20,6 +20,7 @@ use super::{Mailbox, QueryArguments, Role};
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     ParentId {
         #[serde(rename = "parentId")]
@@ -45,6 +46,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "name")]
     Name,

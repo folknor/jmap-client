@@ -20,6 +20,7 @@ use super::{Principal, Type};
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     Email {
         #[serde(rename = "email")]
@@ -61,6 +62,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "type")]
     Type,

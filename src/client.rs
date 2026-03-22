@@ -18,7 +18,7 @@ use std::{
     time::Duration,
 };
 
-use ahash::AHashSet;
+use std::collections::HashSet;
 use reqwest::{
     header::{self},
     redirect,
@@ -41,17 +41,18 @@ const DEFAULT_TIMEOUT_MS: u64 = 10 * 1000;
 static USER_AGENT: &str = concat!("jmap-client/", env!("CARGO_PKG_VERSION"));
 
 #[derive(Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Credentials {
     Basic(String),
     Bearer(String),
 }
 
 pub struct Client {
-    session: parking_lot::Mutex<Arc<Session>>,
+    session: std::sync::Mutex<Arc<Session>>,
     session_url: String,
     api_url: String,
     session_updated: AtomicBool,
-    trusted_hosts: Arc<AHashSet<String>>,
+    trusted_hosts: Arc<HashSet<String>>,
 
     upload_url: Vec<URLPart<blob::URLParameter>>,
     download_url: Vec<URLPart<blob::URLParameter>>,
@@ -70,7 +71,7 @@ pub struct Client {
 
 pub struct ClientBuilder {
     credentials: Option<Credentials>,
-    trusted_hosts: AHashSet<String>,
+    trusted_hosts: HashSet<String>,
     forwarded_for: Option<String>,
     accept_invalid_certs: bool,
     timeout: Duration,
@@ -89,7 +90,7 @@ impl ClientBuilder {
     pub fn new() -> Self {
         Self {
             credentials: None,
-            trusted_hosts: AHashSet::new(),
+            trusted_hosts: HashSet::new(),
             timeout: Duration::from_millis(DEFAULT_TIMEOUT_MS),
             forwarded_for: None,
             accept_invalid_certs: false,
@@ -251,7 +252,7 @@ impl ClientBuilder {
             upload_url: URLPart::parse(session.upload_url())?,
             event_source_url: URLPart::parse(session.event_source_url())?,
             api_url: session.api_url().to_string(),
-            session: parking_lot::Mutex::new(Arc::new(session)),
+            session: std::sync::Mutex::new(Arc::new(session)),
             session_url,
             session_updated: true.into(),
             accept_invalid_certs: self.accept_invalid_certs,
@@ -291,7 +292,7 @@ impl Client {
     }
 
     pub fn session(&self) -> Arc<Session> {
-        self.session.lock().clone()
+        self.session.lock().expect("session mutex poisoned").clone()
     }
 
     pub fn session_url(&self) -> &str {
@@ -345,7 +346,7 @@ impl Client {
             .await?,
         )?;
 
-        if response.session_state() != self.session.lock().state() {
+        if response.session_state() != self.session.lock().expect("session mutex poisoned").state() {
             self.session_updated.store(false, Ordering::Relaxed);
         }
 
@@ -369,7 +370,7 @@ impl Client {
             .bytes()
             .await?,
         )?;
-        *self.session.lock() = Arc::new(session);
+        *self.session.lock().expect("session mutex poisoned") = Arc::new(session);
         self.session_updated.store(true, Ordering::Relaxed);
         Ok(())
     }
@@ -422,7 +423,8 @@ impl Client {
 
 impl Credentials {
     pub fn basic(username: &str, password: &str) -> Self {
-        Credentials::Basic(base64::encode(format!("{username}:{password}")))
+        use base64::{Engine, engine::general_purpose::STANDARD};
+        Credentials::Basic(STANDARD.encode(format!("{username}:{password}")))
     }
 
     pub fn bearer(token: impl Into<String>) -> Self {

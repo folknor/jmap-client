@@ -16,7 +16,7 @@ pub mod query;
 pub mod set;
 
 use crate::core::set::{skip_if_empty_list, skip_if_empty_map, skip_if_empty_str};
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -71,15 +71,16 @@ pub struct Principal<State = Get> {
     members: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "skip_if_empty_map")]
-    acl: Option<AHashMap<String, Vec<ACL>>>,
+    acl: Option<HashMap<String, Vec<ACL>>>,
 
     #[serde(flatten)]
     #[serde(skip_deserializing)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    property_patch: Option<AHashMap<String, bool>>,
+    property_patch: Option<HashMap<String, bool>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum Property {
     #[serde(rename = "id")]
     Id = 0,
@@ -112,6 +113,7 @@ pub enum Property {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[non_exhaustive]
 pub enum ACL {
     #[serde(rename = "mayRename")]
     Rename = 1,
@@ -136,6 +138,7 @@ pub enum ACL {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum Type {
     #[serde(rename = "individual")]
     Individual,

@@ -24,6 +24,7 @@ use super::{EmailSubmission, UndoStatus};
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
+#[non_exhaustive]
 pub enum Filter {
     IdentityIds {
         #[serde(rename = "identityIds")]
@@ -53,6 +54,7 @@ pub enum Filter {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "property")]
+#[non_exhaustive]
 pub enum Comparator {
     #[serde(rename = "emailId")]
     EmailId,

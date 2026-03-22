@@ -17,6 +17,7 @@ pub mod helpers;
 pub mod manage;
 pub mod upload;
 
+#[non_exhaustive]
 pub enum URLParameter {
     AccountId,
     BlobId,

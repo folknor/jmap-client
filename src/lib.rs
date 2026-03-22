@@ -36,7 +36,7 @@ pub mod vacation_response;
 use crate::core::error::MethodError;
 use crate::core::error::ProblemDetails;
 use crate::core::set::SetError;
-use ahash::AHashMap;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -44,6 +44,7 @@ use std::fmt::Display;
 pub mod client_ws;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum URI {
     #[serde(rename = "urn:ietf:params:jmap:core")]
     Core,
@@ -97,6 +98,7 @@ impl AsRef<str> for URI {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum Method {
     #[serde(rename = "Core/echo")]
     Echo,
@@ -253,6 +255,7 @@ pub enum Method {
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Clone)]
+#[non_exhaustive]
 pub enum DataType {
     #[serde(rename = "Email")]
     Email = 0,
@@ -304,9 +307,10 @@ pub enum DataType {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "@type")]
+#[non_exhaustive]
 pub enum PushObject {
     StateChange {
-        changed: AHashMap<String, AHashMap<DataType, String>>,
+        changed: HashMap<String, HashMap<DataType, String>>,
     },
     EmailPush {
         #[serde(rename = "accountId")]
@@ -340,6 +344,7 @@ pub struct Set;
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error {
     Transport(reqwest::Error),
     Parse(serde_json::Error),
