@@ -120,6 +120,10 @@ impl Iterator for EventParser {
                                 self.result.id.extend_from_slice(&self.value);
                             }
                             b"data" => {
+                                // Per SSE spec: multiple data lines joined with \n
+                                if !self.result.data.is_empty() {
+                                    self.result.data.push(b'\n');
+                                }
                                 self.result.data.extend_from_slice(&self.value);
                             }
                             b"event" => match &self.value[..] {
@@ -234,7 +238,7 @@ mod tests {
                 EventString {
                     event: EventType::State,
                     id: "".to_string(),
-                    data: "YHOO+210".to_string()
+                    data: "YHOO\n+2\n10".to_string()
                 },
                 EventString {
                     event: EventType::State,
