@@ -21,18 +21,24 @@ _jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in 
 
 ## Features
 
-- Async-only (powered by `reqwest` + `tokio`).
-- WebSocket async streams (`websockets` cargo feature).
-- EventSource async streams.
-- Typed builders and accessors for all JMAP object types.
-- CalendarEvent and ContactCard use JSON map backing for full JSCalendar/JSContact fidelity, including vendor extension properties.
-- Session capability introspection for all supported extensions.
+- **Trait-based method dispatch** — `JmapMethod` trait, typed `CallHandle<M>`, compile-time safe response extraction.
+- **Transport-generic** — `Client<T: HttpTransport>` with `ReqwestTransport` default. Custom transports for testing/WASM.
+- **Async-only** — powered by `reqwest` + `tokio`.
+- **WebSocket and EventSource** streaming.
+- **Feature-gated per RFC** — compile only what you need.
+- **`Field<T>`** — clean three-state nullable semantics (Omitted/Null/Value).
+- **Structured errors** — every variant matchable, no string catch-alls.
 
 ## Cargo Features
 
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `websockets` | Yes | JMAP over WebSocket |
+| `mail` | Yes | Email, Mailbox, Thread, Identity, EmailSubmission, Sieve, VacationResponse |
+| `calendars` | Yes | Calendar, CalendarEvent, CalendarEventNotification, ParticipantIdentity |
+| `contacts` | Yes | AddressBook, ContactCard |
+| `blob` | Yes | Blob/upload, Blob/get, Blob/lookup (RFC 9404) |
+| `quota` | Yes | Quota/get, Quota/query (RFC 9425) |
 
 ## Usage Example
 

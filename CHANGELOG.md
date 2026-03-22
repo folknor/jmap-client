@@ -1,63 +1,44 @@
 jmap-client 0.5.0
 ================================
 
+### Architecture redesign
+- **Trait-based method dispatch** — `JmapMethod` trait replaces the `Arguments` (62 variants), `MethodResponse` (76 variants), and `Method` (60+ variants) god enums. Adding a new JMAP method touches only its own module — zero central files.
+- **Typed `CallHandle<M>`** — compile-time safe response extraction via `Response::get(&handle)`.
+- **`Client<T: HttpTransport>`** — generic over transport. `ReqwestTransport` as default with pooled `reqwest::Client`. `Client::with_transport()` for custom/mock transports.
+- **`SseTransport` trait** — EventSource abstracted behind transport boundary.
+- **`AccountScope<'a, Tr>`** — account-scoped client view for request batching.
+- **`Capability` trait** — typed capability markers with associated `Config` type. `Session::capability_config::<Mail>()`.
+- **`Field<T>`** — three-state nullable: `Omitted`/`Null`/`Value(T)`, replacing `Option<Option<T>>`.
+- **Typed IDs** — `Id<T>`, `AccountId`, `BlobId`, `State` newtypes available for incremental adoption.
+- **Structured errors** — `Error::Internal(String)` eliminated. All variants matchable: `CallNotFound`, `IdNotFound`, `EmptyResponse`, `NotParsable`, `InvalidUrl`, `WebSocketNotConnected`.
+- **Feature gating per RFC** — `mail`, `calendars`, `contacts`, `blob`, `quota` features gate modules, `DataType` variants, `Capabilities` variants, session accessors, tests, and examples independently.
+
 ### New protocol support
-- **JMAP for Calendars** (draft-ietf-jmap-calendars-26): Calendar, CalendarEvent, CalendarEventNotification, ParticipantIdentity with full get/changes/set/query/queryChanges/copy/parse methods.
-- **JMAP for Contacts** (RFC 9610): AddressBook, ContactCard with full get/changes/set/query/queryChanges/copy/parse methods. 20 query filters including `name/given`, `name/surname`, `name/surname2`.
-- **JMAP Blob Management** (RFC 9404): Blob/upload (inline creation from text/base64/blob references), Blob/get (ranged retrieval with digest computation), Blob/lookup (reverse object reference lookup).
-- **JMAP Quotas** (RFC 9425): Read-only Quota object with get/changes/query/queryChanges. 4 filters, 2 comparators.
+- **JMAP for Calendars** (draft-ietf-jmap-calendars-26): Calendar, CalendarEvent, CalendarEventNotification, ParticipantIdentity.
+- **JMAP for Contacts** (RFC 9610): AddressBook, ContactCard with 20 query filters.
+- **JMAP Blob Management** (RFC 9404): Blob/upload, Blob/get, Blob/lookup.
+- **JMAP Quotas** (RFC 9425): Read-only Quota with get/changes/query/queryChanges.
 - **Principal/getAvailability**: Free/busy lookup for scheduling.
 
-### New session capabilities
-- `CalendarsCapabilities` (mayCreateCalendar, maxCalendarsPerEvent)
-- `ContactsCapabilities` (mayCreateAddressBook, maxAddressBooksPerCard)
-- `PrincipalsCapabilities` (currentUserPrincipalId, accountIdForPrincipal)
-- `BlobCapabilities` (maxSizeBlobSet, supportedDigestAlgorithms, supportedTypeNames)
-- `QuotaCapabilities`
-- Capabilities deserialization now dispatches on URI key (not value shape), fixing silent variant misidentification.
-
-### Design
-- CalendarEvent and ContactCard use JSON map backing (`serde_json::Map`) for round-trip fidelity with JSCalendar/JSContact extension properties. Typed accessor/builder methods wrap the map; `set_property()`/`property()` escape hatches for arbitrary properties. `Property::Other(String)` for extension property names.
-- Typed container objects (Calendar, AddressBook) use traditional serde-derived structs.
-- `json_object_struct!` macro generates shared boilerplate for JSON-backed types.
-
-### Breaking changes
-- `SubmissionCapabilities::submission_extensions` changed from `Vec<String>` to `AHashMap<String, Vec<String>>` (RFC 8620/8621 compliance).
-- `HeaderValue` enum variant ordering changed (most-specific first) for correct untagged deserialization.
-- `SingleMethodResponse` variant ordering changed (`Ok` before `Error`).
-- `Response::method_response_by_pos` now returns `Option<T>` instead of panicking.
-- `Request::new` no longer includes `URI::Mail` by default; mail-related helpers add it explicitly.
-- `Calendar::calendar_destroy` now takes a `remove_events: bool` parameter.
-- Minimum Rust edition: 2024.
-
-### Bug fixes
-- **PatchObject null semantics**: `mailbox_id(_, false)`, `keyword(_, false)`, `calendar_id(_, false)`, `address_book_id(_, false)` now serialize as `null` (not `false`) per RFC 8620. Fixes Fastmail compatibility. (stalwartlabs#18)
-- **Identity capability**: Identity request builders now add `URI::Submission` to `using`.
-- **Principal capability**: Principal request builders now add `URI::Principals` to `using`.
-- **Parse capabilities**: CalendarEvent/parse and ContactCard/parse use separate `URI::CalendarsParse` / `URI::ContactsParse` capabilities.
-- **Nullable field semantics**: CalendarEvent getters for `timeZone`, `color`, `locale`, `alerts` return `Option<Option<&T>>` distinguishing absent from null.
-- **`#![forbid(unsafe_code)]`** now applies crate-wide (was scoped to one module).
-- `CoreCapabilities` and `SieveCapabilities` use `#[serde(default)]` for robustness against non-compliant servers.
-- `SetRequest::create/update` uses entry API (avoids clone+re-lookup).
-- `ParticipantIdentity::new()` initializes `send_to` to `None` (was empty map).
-
-### Performance
-- All `Arguments` (62 variants) and `MethodResponse` (76 variants) enum payloads are now `Box`ed, reducing stack usage from hundreds of bytes to pointer-sized.
-- `Property::Serialize` is zero-allocation (direct `&str` match instead of `to_string()`).
-- Macros deduplicate ~1,500 lines of boilerplate in request.rs and response.rs.
-
-### Removed
-- **Blocking support removed** — the crate is now async-only. The `blocking` feature, `maybe-async` dependency, and all 185 `#[maybe_async::maybe_async]` annotations are gone. Fixes the long-standing `--all-features` compilation failure.
-- **`async` feature removed** — async is no longer optional, `futures-util` and `async-stream` are unconditional dependencies.
-- **`ring`/`aws_lc_rs` feature selectors removed** — `rustls` is an implementation detail of the `websockets` feature, not a user-facing TLS backend choice.
-
-### Dependencies
-- `reqwest` 0.12 -> 0.13 (feature `rustls-tls-webpki-roots` renamed to `rustls`).
-- `tokio-tungstenite` 0.28 -> 0.29.
-- `maybe-async` removed.
+### Breaking changes (vs 0.4.0)
+- `Method`, `Arguments`, `MethodResponse`, `URI` enums deleted — use `JmapMethod` trait + `Request::call()`.
+- `Client` is now `Client<T: HttpTransport = ReqwestTransport>`.
+- `Request` is now `Request<'x, T: HttpTransport>`.
+- `Response` is a new type with `Response::get<M>(&handle)` — no more `unwrap_get_email()` etc.
+- `Error` enum restructured — `Internal(String)` removed, 6 structured variants added.
+- `MethodError::error()` renamed to `error_type()`. `SetError::error()` renamed to `error_type()`.
+- `Field<T>` replaces `Option<Option<T>>` for nullable properties.
+- `Account` renamed to `AccountScope`. `client.account()` renamed to `client.account_scope()`.
+- `typed_capability()` renamed to `capability_config()`.
+- Blocking support, `maybe_async`, `ahash`, `parking_lot` all removed.
+- `base64` 0.13 → 0.22, `reqwest` 0.12 → 0.13, edition 2024.
+- All public enums are `#[non_exhaustive]`.
+- WebSocket implementation types (`WebSocketResponse`, `WebSocketError`, etc.) now `pub(crate)`.
+- `download_url()`, `upload_url()`, `event_source_url()` now `pub(crate)`.
+- `ProblemDetails.status`, `MethodError.p_type`, `SetError.type_` now private (getters exist).
 
 ### Testing
-- 57 tests (up from 4) covering serialization, deserialization, nullable semantics, property round-trips, query filters, blob wire format, session capabilities, and alert triggers.
+- 65 tests (up from 4) including orchestration tests for typed handle extraction, method error discrimination, mixed success/error batches, and capability deserialization.
 
 jmap-client 0.4.0
 ================================

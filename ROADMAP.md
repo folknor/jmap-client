@@ -84,8 +84,12 @@ Make the HTTP client generic instead of hardcoding reqwest. Lower priority but w
 
 ## Design principles
 
-- **JSON map backing for JSCalendar/JSContact types** — CalendarEvent and ContactCard use `serde_json::Map` for round-trip fidelity with extension properties
-- **Follow existing patterns** — study how Email is structured (mod.rs, get.rs, set.rs, query.rs)
-- **Implement from the RFCs** — do not copy from Stalwart's AGPL server code
-- **Maintain Apache-2.0 / MIT dual license**
-- **Async-only** — no blocking support
+- **Trait-based method dispatch** — JmapMethod trait, no central enums. Adding a method touches only its own module.
+- **Transport-generic** — Client<T: HttpTransport>, SseTransport for EventSource. ReqwestTransport as default.
+- **JSON map backing for JSCalendar/JSContact** — CalendarEvent and ContactCard use `serde_json::Map` for extension property round-trip fidelity.
+- **Feature-gated per RFC** — mail, calendars, contacts, blob, quota features gate modules independently.
+- **Implement from the RFCs** — do not copy from Stalwart's AGPL server code.
+- **Apache-2.0 / MIT dual license**
+- **Async-only**
+
+Unimplemented spec plans are in `plans/` (SHARING.md, MDN.md, SMIME.md, ARCHITECTURE.md).
