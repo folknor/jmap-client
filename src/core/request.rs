@@ -15,6 +15,7 @@ use serde::ser::{SerializeStruct, SerializeTuple};
 use serde::{Serialize, Serializer};
 
 use crate::client::Client;
+use crate::core::transport::HttpTransport;
 
 use super::capability::Capability;
 use super::method::JmapMethod;
@@ -71,15 +72,15 @@ impl Serialize for RawMethodCall {
 }
 
 /// A JMAP request batch.
-pub struct Request<'x> {
-    client: &'x Client,
+pub struct Request<'x, T: HttpTransport = crate::transport_reqwest::ReqwestTransport> {
+    client: &'x Client<T>,
     account_id: String,
     pub(crate) using: Vec<String>,
     pub(crate) method_calls: Vec<RawMethodCall>,
     pub(crate) created_ids: Option<std::collections::HashMap<String, String>>,
 }
 
-impl Serialize for Request<'_> {
+impl<T: HttpTransport> Serialize for Request<'_, T> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let field_count = if self.created_ids.is_some() { 3 } else { 2 };
         let mut s = serializer.serialize_struct("Request", field_count)?;
@@ -92,8 +93,8 @@ impl Serialize for Request<'_> {
     }
 }
 
-impl<'x> Request<'x> {
-    pub fn new(client: &'x Client) -> Self {
+impl<'x, T: HttpTransport> Request<'x, T> {
+    pub fn new(client: &'x Client<T>) -> Self {
         Request {
             using: vec!["urn:ietf:params:jmap:core".to_string()],
             method_calls: Vec::new(),
@@ -168,7 +169,10 @@ impl<'x> Request<'x> {
         response.get(handle)
     }
 
-    #[cfg(feature = "websockets")]
+}
+
+#[cfg(feature = "websockets")]
+impl Request<'_, crate::transport_reqwest::ReqwestTransport> {
     pub async fn send_ws(self) -> crate::Result<String> {
         self.client.send_ws(self).await
     }

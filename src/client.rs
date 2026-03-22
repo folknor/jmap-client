@@ -41,8 +41,8 @@ pub enum Credentials {
     Bearer(String),
 }
 
-pub struct Client {
-    transport: ReqwestTransport,
+pub struct Client<T: HttpTransport = ReqwestTransport> {
+    transport: T,
     session: std::sync::Mutex<Arc<Session>>,
     session_url: String,
     api_url: String,
@@ -186,13 +186,46 @@ impl ClientBuilder {
     }
 }
 
+/// Default client using reqwest. Use `Client::new()` / `ClientBuilder` to construct.
+pub type DefaultClient = Client<ReqwestTransport>;
+
 impl Client {
+    /// Create a new client builder (uses reqwest transport by default).
     #[allow(clippy::new_ret_no_self)]
     pub fn new() -> ClientBuilder {
         ClientBuilder::new()
     }
+}
 
-    pub fn build(&self) -> Request<'_> {
+impl<T: HttpTransport> Client<T> {
+    /// Create a client with a custom transport and pre-fetched session.
+    pub fn with_transport(transport: T, session: Session) -> crate::Result<Self> {
+        let default_account_id = session
+            .primary_accounts()
+            .next()
+            .map(|a| a.1.clone())
+            .unwrap_or_default();
+
+        Ok(Client {
+            upload_url: URLPart::parse(session.upload_url())?,
+            download_url: URLPart::parse(session.download_url())?,
+            event_source_url: URLPart::parse(session.event_source_url())?,
+            api_url: session.api_url().to_string(),
+            session_url: String::new(),
+            session: std::sync::Mutex::new(Arc::new(session)),
+            session_updated: true.into(),
+            accept_invalid_certs: false,
+            timeout: Duration::from_millis(DEFAULT_TIMEOUT_MS),
+            transport,
+            default_account_id,
+            #[cfg(feature = "websockets")]
+            authorization: String::new(),
+            #[cfg(feature = "websockets")]
+            ws: None.into(),
+        })
+    }
+
+    pub fn build(&self) -> Request<'_, T> {
         Request::new(self)
     }
 
@@ -227,7 +260,7 @@ impl Client {
     /// Send a JMAP request and get a typed Response.
     pub async fn send_request(
         &self,
-        request: &request::Request<'_>,
+        request: &request::Request<'_, T>,
     ) -> crate::Result<response::Response> {
         let body = serde_json::to_vec(request)?;
         let bytes = self
@@ -264,15 +297,14 @@ impl Client {
         self.session_updated.load(Ordering::Relaxed)
     }
 
-    /// Access the transport for direct HTTP operations.
-    pub fn transport(&self) -> &ReqwestTransport {
+    /// Access the underlying transport.
+    pub fn transport(&self) -> &T {
         &self.transport
     }
+}
 
-    // -- reqwest-specific helpers for EventSource/WebSocket streaming --
-    // These are inherently tied to reqwest's streaming API and cannot be
-    // abstracted behind HttpTransport.
-
+// Reqwest-specific methods (EventSource/WebSocket streaming)
+impl Client<ReqwestTransport> {
     pub(crate) fn reqwest_client(&self) -> &reqwest::Client {
         self.transport.reqwest_client()
     }
