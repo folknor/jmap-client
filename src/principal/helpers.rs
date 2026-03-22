@@ -24,7 +24,7 @@ use super::{
     PrincipalSet, Property, Type, DKIM,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn individual_create(
         &self,
         email: impl Into<String>,

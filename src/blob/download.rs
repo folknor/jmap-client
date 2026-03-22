@@ -14,7 +14,7 @@ use crate::{
     core::{session::URLPart, transport::HttpTransport},
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn download(&self, blob_id: &str) -> crate::Result<Vec<u8>> {
         let account_id = self.default_account_id();
         let mut download_url = String::with_capacity(

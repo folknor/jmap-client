@@ -21,7 +21,7 @@ use crate::{
 
 use super::{Property, Quota, QuotaChanges, QuotaGet, QuotaQuery, QuotaQueryChanges};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     /// Fetch all quotas for the default account.
     pub async fn quota_get_all(&self) -> crate::Result<Vec<Quota>> {
         let mut request = self.build();

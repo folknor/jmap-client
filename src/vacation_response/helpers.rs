@@ -16,7 +16,7 @@ use crate::{
 
 use super::{Property, VacationResponse, VacationResponseGet, VacationResponseSet};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn vacation_response_create(
         &self,
         subject: impl Into<String>,

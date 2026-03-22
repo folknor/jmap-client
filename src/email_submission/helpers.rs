@@ -23,7 +23,7 @@ use super::{
     Address, EmailSubmission, EmailSubmissionChanges, EmailSubmissionGet, EmailSubmissionQuery, EmailSubmissionSet, Property, UndoStatus,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn email_submission_create(
         &self,
         email_id: impl Into<String>,

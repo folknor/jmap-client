@@ -19,7 +19,7 @@ use super::{
     ParticipantIdentity, ParticipantIdentityChanges, ParticipantIdentityGet, Property,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn participant_identity_get(
         &self,
         id: &str,

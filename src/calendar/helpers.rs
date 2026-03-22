@@ -20,7 +20,7 @@ use crate::{
 
 use super::{Calendar, CalendarChanges, CalendarGet, CalendarSet, Property};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn calendar_create(
         &self,
         name: impl Into<String>,

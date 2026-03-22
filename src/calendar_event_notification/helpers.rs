@@ -24,7 +24,7 @@ use super::{
     CalendarEventNotificationSet, Property,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn calendar_event_notification_get(
         &self,
         id: &str,

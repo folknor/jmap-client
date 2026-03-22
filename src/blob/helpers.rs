@@ -16,7 +16,7 @@ use super::{
     manage::BlobUploadRequest,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn blob_copy(
         &self,
         from_account_id: impl Into<String>,

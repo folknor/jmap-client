@@ -23,7 +23,7 @@ use super::{
     CalendarEvent, CalendarEventChanges, CalendarEventGet, CalendarEventQuery, CalendarEventSet, Property,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn calendar_event_get(
         &self,
         id: &str,

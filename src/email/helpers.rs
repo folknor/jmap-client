@@ -27,7 +27,7 @@ use super::{
     EmailSet, Property,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn email_import<T, U, V, W>(
         &self,
         raw_message: Vec<u8>,

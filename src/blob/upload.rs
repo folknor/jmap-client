@@ -31,7 +31,7 @@ pub struct UploadResponse {
     size: usize,
 }
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn upload(
         &self,
         account_id: Option<&str>,

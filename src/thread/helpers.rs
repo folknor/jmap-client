@@ -13,7 +13,7 @@ use crate::client::Client;
 
 use super::{Thread, ThreadGet};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn thread_get(&self, id: &str) -> crate::Result<Option<Thread>> {
         let mut request = self.build();
         let account_id = request.default_account_id().to_string();

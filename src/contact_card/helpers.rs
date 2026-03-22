@@ -24,7 +24,7 @@ use super::{
     ContactCardSet, Property,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn contact_card_get(
         &self,
         id: &str,

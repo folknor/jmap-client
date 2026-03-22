@@ -25,7 +25,7 @@ use super::{
     Role,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn mailbox_create(
         &self,
         name: impl Into<String>,

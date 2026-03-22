@@ -22,7 +22,7 @@ use super::{
     Property, SieveScript, SieveScriptGet, SieveScriptQuery, SieveScriptSet,
 };
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn sieve_script_create(
         &self,
         name: impl Into<String>,

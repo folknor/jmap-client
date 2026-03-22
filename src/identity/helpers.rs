@@ -20,7 +20,7 @@ use crate::{
 
 use super::{Identity, IdentityChanges, IdentityGet, IdentitySet, Property};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn identity_create(
         &self,
         name: impl Into<String>,

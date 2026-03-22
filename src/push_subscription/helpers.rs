@@ -17,7 +17,7 @@ use crate::{
 
 use super::{Keys, PushSubscription, PushSubscriptionSet};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn push_subscription_create(
         &self,
         device_client_id: impl Into<String>,

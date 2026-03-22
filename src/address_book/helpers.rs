@@ -20,7 +20,7 @@ use crate::{
 
 use super::{AddressBook, AddressBookChanges, AddressBookGet, AddressBookSet, Property};
 
-impl Client {
+impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn address_book_create(
         &self,
         name: impl Into<String>,
