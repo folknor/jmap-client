@@ -1,16 +1,17 @@
 [package]
 name = "jmap-client"
 description = "JMAP client library for Rust"
-version = "0.4.0"
-edition = "2021"
-authors = [ "Stalwart Labs LLC <hello@stalw.art>"]
+version = "0.5.0"
+edition = "2024"
+authors = [ "Stalwart Labs LLC <hello@stalw.art>", "folk@folk.wtf" ]
 license = "Apache-2.0 OR MIT"
-repository = "https://github.com/stalwartlabs/jmap-client"
-homepage = "https://github.com/stalwartlabs/jmap-client"
+repository = "https://github.com/folknor/jmap-client"
+homepage = "https://github.com/folknor/jmap-client"
 keywords = ["jmap", "email", "mail", "e-mail"]
 categories = ["email"]
 readme = "README.md"
 resolver = "2"
+rust-version = "1.92"
 
 [dependencies]
 reqwest = { version = "0.13.2", default-features = false, features = ["rustls"]}
@@ -29,7 +30,7 @@ base64 = "0.13"
 maybe-async = "0.2"
 
 [features]
-default = ["async", "websockets", "ring"]
+default = ["async", "websockets", "ring", "mail", "calendars", "contacts", "blob", "quota"]
 async = ["futures-util", "async-stream", "reqwest/stream"]
 websockets = ["tokio", "tokio-tungstenite", "rustls"]
 blocking = ["reqwest/blocking", "maybe-async/is_sync"]
@@ -37,6 +38,12 @@ ring = ["rustls/ring"]
 aws_lc_rs = ["rustls/aws_lc_rs"]
 aws-lc-rs = ["aws_lc_rs"]
 debug = []
+# Protocol extension features — disable to reduce compile time
+mail = []
+calendars = []
+contacts = []
+blob = []
+quota = []
 
 [lib]
 doctest = false
