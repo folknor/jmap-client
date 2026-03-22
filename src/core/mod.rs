@@ -29,6 +29,9 @@ pub mod session;
 pub mod set;
 pub mod transport;
 
+#[cfg(test)]
+mod tests;
+
 pub trait Object: Sized {
     type Property: Display + Serialize + for<'de> Deserialize<'de>;
     fn requires_account_id() -> bool;

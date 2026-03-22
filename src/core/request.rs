@@ -28,7 +28,7 @@ use super::response::Response;
 pub struct CallHandle<M: JmapMethod> {
     pub(crate) call_id: String,
     pub(crate) method_name: &'static str,
-    _phantom: PhantomData<M>,
+    pub(crate) _phantom: PhantomData<M>,
 }
 
 impl<M: JmapMethod> CallHandle<M> {
