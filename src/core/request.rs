@@ -57,7 +57,7 @@ pub struct ResultReference {
 /// A type-erased method call stored in the request batch.
 pub(crate) struct RawMethodCall {
     pub(crate) name: &'static str,
-    pub(crate) arguments: serde_json::Value,
+    pub(crate) arguments: Box<serde_json::value::RawValue>,
     pub(crate) call_id: String,
 }
 
@@ -128,8 +128,8 @@ impl<'x, T: HttpTransport> Request<'x, T> {
             self.using.push(uri);
         }
 
-        // Serialize method arguments
-        let arguments = serde_json::to_value(&method)?;
+        // Serialize method arguments once as raw JSON
+        let arguments = serde_json::value::to_raw_value(&method)?;
 
         self.method_calls.push(RawMethodCall {
             name: M::NAME,

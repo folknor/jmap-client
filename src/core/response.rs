@@ -55,7 +55,8 @@ pub struct Response {
 /// A single method call result — either success data or a method error.
 #[derive(Debug)]
 enum RawCallResult {
-    Success(serde_json::Value),
+    /// Raw JSON bytes — deserialized lazily in Response::get().
+    Success(Box<serde_json::value::RawValue>),
     Error(MethodError),
 }
 
@@ -79,8 +80,8 @@ impl Response {
         let (_, result, _) = self.raw.swap_remove(pos);
 
         match result {
-            RawCallResult::Success(value) => {
-                serde_json::from_value(value).map_err(crate::Error::from)
+            RawCallResult::Success(raw) => {
+                serde_json::from_str(raw.get()).map_err(crate::Error::from)
             }
             RawCallResult::Error(e) => Err(e.into()),
         }
@@ -103,7 +104,7 @@ impl<'de> Deserialize<'de> for Response {
         #[derive(Deserialize)]
         struct RawEnvelope {
             #[serde(rename = "methodResponses")]
-            method_responses: Vec<serde_json::Value>,
+            method_responses: Vec<(String, Box<serde_json::value::RawValue>, String)>,
             #[serde(rename = "createdIds")]
             created_ids: Option<HashMap<String, String>>,
             #[serde(rename = "sessionState")]
@@ -113,31 +114,13 @@ impl<'de> Deserialize<'de> for Response {
         let envelope = RawEnvelope::deserialize(deserializer)?;
         let mut raw = Vec::with_capacity(envelope.method_responses.len());
 
-        for entry in envelope.method_responses {
-            let arr = entry
-                .as_array()
-                .ok_or_else(|| de::Error::custom("method response must be an array"))?;
-
-            if arr.len() != 3 {
-                return Err(de::Error::custom("method response must have 3 elements"));
-            }
-
-            let method_name = arr[0]
-                .as_str()
-                .ok_or_else(|| de::Error::custom("method name must be a string"))?
-                .to_string();
-
-            let call_id = arr[2]
-                .as_str()
-                .ok_or_else(|| de::Error::custom("call id must be a string"))?
-                .to_string();
-
+        for (method_name, data, call_id) in envelope.method_responses {
             let result = if method_name == "error" {
                 let error: MethodError =
-                    serde_json::from_value(arr[1].clone()).map_err(de::Error::custom)?;
+                    serde_json::from_str(data.get()).map_err(de::Error::custom)?;
                 RawCallResult::Error(error)
             } else {
-                RawCallResult::Success(arr[1].clone())
+                RawCallResult::Success(data)
             };
 
             raw.push((method_name, result, call_id));
