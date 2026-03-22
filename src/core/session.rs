@@ -13,13 +13,14 @@ use crate::{
     email::{MailCapabilities, SubmissionCapabilities},
     URI,
 };
-use serde_json::Value as JsonValue;
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
     #[serde(rename = "capabilities")]
+    #[serde(deserialize_with = "deserialize_capabilities_map")]
     capabilities: AHashMap<String, Capabilities>,
 
     #[serde(rename = "accounts")]
@@ -59,10 +60,13 @@ pub struct Account {
     is_read_only: bool,
 
     #[serde(rename = "accountCapabilities")]
+    #[serde(deserialize_with = "deserialize_capabilities_map")]
     account_capabilities: AHashMap<String, Capabilities>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Session/account capability value. The correct variant is selected by
+/// the map key (capability URI), not by the value shape.
+#[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Capabilities {
     Core(CoreCapabilities),
@@ -73,8 +77,57 @@ pub enum Capabilities {
     Blob(BlobCapabilities),
     Calendars(CalendarsCapabilities),
     Contacts(ContactsCapabilities),
-    Empty(EmptyCapabilities),
+    Principals(PrincipalsCapabilities),
     Other(serde_json::Value),
+}
+
+/// Custom deserializer for `AHashMap<String, Capabilities>` that
+/// dispatches to the correct `Capabilities` variant based on the URI
+/// key, rather than relying on `#[serde(untagged)]` trial-and-error.
+fn deserialize_capabilities_map<'de, D>(
+    deserializer: D,
+) -> Result<AHashMap<String, Capabilities>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let raw: AHashMap<String, JsonValue> = AHashMap::deserialize(deserializer)?;
+    let mut result = AHashMap::with_capacity(raw.len());
+
+    for (key, value) in raw {
+        let cap = match key.as_str() {
+            "urn:ietf:params:jmap:core" => serde_json::from_value(value)
+                .map(Capabilities::Core)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:mail" => serde_json::from_value(value)
+                .map(Capabilities::Mail)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:submission" => serde_json::from_value(value)
+                .map(Capabilities::Submission)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:websocket" => serde_json::from_value(value)
+                .map(Capabilities::WebSocket)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:sieve" => serde_json::from_value(value)
+                .map(Capabilities::Sieve)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:blob" => serde_json::from_value(value)
+                .map(Capabilities::Blob)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:calendars" => serde_json::from_value(value)
+                .map(Capabilities::Calendars)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:contacts" => serde_json::from_value(value)
+                .map(Capabilities::Contacts)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:principals" => serde_json::from_value(value)
+                .map(Capabilities::Principals)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            _ => Capabilities::Other(value),
+        };
+        result.insert(key, cap);
+    }
+
+    Ok(result)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -146,10 +199,6 @@ pub struct BlobCapabilities {
     #[serde(rename = "supportedTypeNames")]
     #[serde(default)]
     supported_type_names: Vec<String>,
-
-    /// Remaining/unknown properties.
-    #[serde(flatten)]
-    other: AHashMap<String, JsonValue>,
 }
 
 /// Capabilities for `urn:ietf:params:jmap:calendars`.
@@ -162,10 +211,6 @@ pub struct CalendarsCapabilities {
     #[serde(rename = "maxCalendarsPerEvent")]
     #[serde(default)]
     max_calendars_per_event: Option<usize>,
-
-    /// Remaining/unknown properties.
-    #[serde(flatten)]
-    other: AHashMap<String, JsonValue>,
 }
 
 /// Capabilities for `urn:ietf:params:jmap:contacts`.
@@ -178,10 +223,6 @@ pub struct ContactsCapabilities {
     #[serde(rename = "maxAddressBooksPerCard")]
     #[serde(default)]
     max_address_books_per_card: Option<usize>,
-
-    /// Remaining/unknown properties.
-    #[serde(flatten)]
-    other: AHashMap<String, JsonValue>,
 }
 
 /// Capabilities for `urn:ietf:params:jmap:principals`.
@@ -194,10 +235,6 @@ pub struct PrincipalsCapabilities {
     #[serde(rename = "accountIdForPrincipal")]
     #[serde(default)]
     account_id_for_principal: Option<String>,
-
-    /// Remaining/unknown properties.
-    #[serde(flatten)]
-    other: AHashMap<String, JsonValue>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -284,6 +321,15 @@ impl Session {
             .get(URI::Contacts.as_ref())
             .and_then(|v| match v {
                 Capabilities::Contacts(capabilities) => Some(capabilities),
+                _ => None,
+            })
+    }
+
+    pub fn principals_capabilities(&self) -> Option<&PrincipalsCapabilities> {
+        self.capabilities
+            .get(URI::Principals.as_ref())
+            .and_then(|v| match v {
+                Capabilities::Principals(capabilities) => Some(capabilities),
                 _ => None,
             })
     }
