@@ -284,7 +284,7 @@ impl<T: HttpTransport> Client<T> {
                 .expect("session mutex poisoned")
                 .state()
         {
-            self.session_updated.store(false, Ordering::Relaxed);
+            self.session_updated.store(false, Ordering::Release);
         }
         Ok(response)
     }
@@ -297,17 +297,23 @@ impl<T: HttpTransport> Client<T> {
             .map_err(crate::Error::from)?;
         let session: Session = serde_json::from_slice(&bytes)?;
         *self.session.lock().expect("session mutex poisoned") = Arc::new(session);
-        self.session_updated.store(true, Ordering::Relaxed);
+        self.session_updated.store(true, Ordering::Release);
         Ok(())
     }
 
     pub fn is_session_updated(&self) -> bool {
-        self.session_updated.load(Ordering::Relaxed)
+        self.session_updated.load(Ordering::Acquire)
     }
 
     /// Access the underlying transport.
     pub fn transport(&self) -> &T {
         &self.transport
+    }
+
+    /// Returns the `Authorization` header value used by this client.
+    #[cfg(feature = "websockets")]
+    pub fn authorization(&self) -> &str {
+        &self.authorization
     }
 }
 

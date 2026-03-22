@@ -100,15 +100,17 @@ where
     let raw: HashMap<String, JsonValue> = HashMap::deserialize(deserializer)?;
     let mut result = HashMap::with_capacity(raw.len());
 
-    /// Try to deserialize a capability value as a typed struct,
-    /// falling back to `Other(original_value)` on parse failure.
+    /// Deserialize a capability value as a typed struct, falling back to
+    /// `Other(original_value)` on parse failure. Serializes to a string
+    /// first to avoid cloning the Value — `from_value` consumes on error.
     macro_rules! try_cap {
-        ($value:expr, $variant:ident) => {
-            match serde_json::from_value::<_>($value.clone()) {
+        ($value:expr, $variant:ident) => {{
+            let s = serde_json::to_string(&$value).unwrap();
+            match serde_json::from_str(&s) {
                 Ok(v) => Capabilities::$variant(v),
                 Err(_) => Capabilities::Other($value),
             }
-        };
+        }};
     }
 
     for (key, value) in raw {

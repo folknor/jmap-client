@@ -107,8 +107,12 @@ pub trait SseTransport: Send + Sync + 'static {
         + Unpin;
 
     /// Open an SSE connection to the given URL.
+    ///
+    /// If `last_event_id` is provided, the transport should send it as the
+    /// `Last-Event-ID` HTTP header, allowing the server to replay missed events.
     fn open_sse(
         &self,
         url: &str,
+        last_event_id: Option<&str>,
     ) -> impl Future<Output = Result<Self::ByteStream, TransportError>> + Send;
 }

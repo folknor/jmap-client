@@ -31,7 +31,7 @@ impl<T: HttpTransport + SseTransport> Client<T> {
         mut types: Option<impl IntoIterator<Item = DataType>>,
         close_after_state: bool,
         ping: Option<u32>,
-        _last_event_id: Option<&str>,
+        last_event_id: Option<&str>,
     ) -> crate::Result<impl Stream<Item = crate::Result<PushNotification>> + Unpin> {
         let mut event_source_url = String::with_capacity(self.session().event_source_url().len());
 
@@ -71,7 +71,7 @@ impl<T: HttpTransport + SseTransport> Client<T> {
 
         let mut stream = self
             .transport()
-            .open_sse(&event_source_url)
+            .open_sse(&event_source_url, last_event_id)
             .await
             .map_err(crate::Error::from)?;
 

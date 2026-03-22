@@ -163,12 +163,16 @@ impl HttpTransport for ReqwestTransport {
 impl SseTransport for ReqwestTransport {
     type ByteStream = ReqwestByteStream;
 
-    async fn open_sse(&self, url: &str) -> Result<Self::ByteStream, TransportError> {
-        let response = self
-            .client
-            .get(url)
-            .header(header::ACCEPT, "text/event-stream")
-            .send()
+    async fn open_sse(
+        &self,
+        url: &str,
+        last_event_id: Option<&str>,
+    ) -> Result<Self::ByteStream, TransportError> {
+        let mut request = self.client.get(url).header(header::ACCEPT, "text/event-stream");
+        if let Some(id) = last_event_id {
+            request = request.header("Last-Event-ID", id);
+        }
+        let response = request.send()
             .await
             .map_err(|e| TransportError::with_source("SSE connection failed", e))?;
 
