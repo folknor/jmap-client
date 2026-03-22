@@ -84,7 +84,7 @@ async fn websocket() {
     if let Some(WebSocketMessage::PushNotification(PushObject::StateChange { changed })) =
         stream_rx.recv().await
     {
-        println!("Received changes: {:?}", changed);
+        println!("Received changes: {changed:?}");
     } else {
         unreachable!()
     }

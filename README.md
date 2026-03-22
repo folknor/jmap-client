@@ -33,11 +33,6 @@ _jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in 
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `websockets` | Yes | JMAP over WebSocket |
-| `mail` | Yes | Email, Mailbox, Thread, Identity, EmailSubmission, Sieve, VacationResponse |
-| `calendars` | Yes | Calendar, CalendarEvent, CalendarEventNotification, ParticipantIdentity |
-| `contacts` | Yes | AddressBook, ContactCard |
-| `blob` | Yes | Blob/upload, Blob/get, Blob/lookup (RFC 9404) |
-| `quota` | Yes | Quota/get, Quota/query (RFC 9425) |
 
 ## Usage Example
 

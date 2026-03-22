@@ -216,7 +216,7 @@ impl ServerCertVerifier for DummyVerifier {
 impl Client {
     pub async fn connect_ws(
         &self,
-    ) -> crate::Result<Pin<Box<impl Stream<Item = crate::Result<WebSocketMessage>>>>> {
+    ) -> crate::Result<Pin<Box<impl Stream<Item = crate::Result<WebSocketMessage>> + use<>>>> {
         let session = self.session();
         let capabilities = session.websocket_capabilities().ok_or_else(|| {
             crate::Error::Internal(

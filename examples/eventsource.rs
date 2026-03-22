@@ -13,12 +13,9 @@
  * except according to those terms.
  */
 
-#[cfg(feature = "async")]
 use futures_util::StreamExt;
-#[cfg(feature = "async")]
 use jmap_client::{client::Client, DataType};
 
-#[cfg(feature = "async")]
 async fn event_source() {
     // Connect to the JMAP server using Basic authentication
     let client = Client::new()
@@ -53,10 +50,10 @@ async fn event_source() {
             PushNotification::StateChange(changes) => {
                 println!("-> Change id: {:?}", changes.id());
                 for account_id in changes.changed_accounts() {
-                    println!(" Account {} has changes:", account_id);
+                    println!(" Account {account_id} has changes:");
                     if let Some(account_changes) = changes.changes(account_id) {
                         for (type_state, state_id) in account_changes {
-                            println!("   Type {:?} has a new state {}.", type_state, state_id);
+                            println!("   Type {type_state:?} has a new state {state_id}.");
                         }
                     }
                 }
@@ -72,6 +69,5 @@ async fn event_source() {
 }
 
 fn main() {
-    #[cfg(feature = "async")]
     let _c = event_source();
 }

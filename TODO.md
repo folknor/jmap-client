@@ -1,13 +1,5 @@
 # TODO — jmap-client remaining work
 
-## Dedup
-
-1. **`*/helpers.rs` Request impl methods (~15 modules)** — near-identical `get_*`, `set_*`, `changes_*`, `query_*` methods. Significant variation between modules makes macroization complex but possible.
-
-## Optimization
-
-1. **Feature-gating `#[cfg]`** — features are defined (mail, calendars, contacts, blob, quota) but not yet wired into conditional compilation. The macro-generated request/response plumbing needs per-variant `#[cfg]` support.
-
 ## Remaining specs
 
 ### Sharing (RFC 9670) — see SHARING.md
