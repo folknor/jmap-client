@@ -9,10 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{
-    client::Client,
-    core::{session::URLPart, transport::HttpTransport},
-};
+use crate::{client::Client, core::session::URLPart};
 
 impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
     pub async fn download(&self, blob_id: &str) -> crate::Result<Vec<u8>> {

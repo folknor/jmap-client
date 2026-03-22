@@ -12,6 +12,7 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!("../README.md")]
 
+pub mod account;
 #[cfg(feature = "contacts")]
 pub mod address_book;
 pub mod blob;

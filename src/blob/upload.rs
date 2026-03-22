@@ -13,7 +13,7 @@ use serde::Deserialize;
 
 use crate::{
     client::Client,
-    core::{session::URLPart, transport::HttpTransport},
+    core::session::URLPart,
 };
 
 #[derive(Debug, Deserialize)]

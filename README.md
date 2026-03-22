@@ -89,30 +89,9 @@ let email = client
     .unwrap();
 assert_eq!(email.preview().unwrap(), "test");
 
-// Create a calendar and event.
-let calendar = client.calendar_create("Work").await.unwrap();
-let mut request = client.build();
-request
-    .set_calendar_event()
-    .create()
-    .calendar_ids([calendar.id().unwrap()])
-    .title("Team meeting")
-    .start("2025-06-15T10:00:00")
-    .duration("PT1H")
-    .time_zone(Some("America/New_York"));
-request.send().await.unwrap();
-
-// Query calendar events.
-let events = client
-    .calendar_event_query(
-        calendar_event::query::Filter::in_calendar(calendar.id().unwrap()).into(),
-        [calendar_event::query::Comparator::start()].into(),
-    )
-    .await
-    .unwrap();
-
-// Check quotas.
-let quotas = client.quota_get_all().await.unwrap();
+// Account-scoped operations.
+let account = client.account(client.default_account());
+let quotas = account.client().quota_get_all().await.unwrap();
 for quota in &quotas {
     println!(
         "{}: {} / {} {}",
@@ -122,6 +101,20 @@ for quota in &quotas {
         quota.resource_type().unwrap_or("octets"),
     );
 }
+
+// Typed request batching with result references.
+let mut request = client.build();
+let account_id = request.default_account_id().to_string();
+let mut query = email::EmailQuery::new(&account_id);
+query.filter(email::query::Filter::subject("test").into());
+let q_handle = request.call(query).unwrap();
+
+let mut get = email::EmailGet::new(&account_id);
+get.ids_ref(q_handle.result_reference("/ids"));
+let g_handle = request.call(get).unwrap();
+
+let mut response = request.send().await.unwrap();
+let emails = response.get(&g_handle).unwrap();
 ```
 
 ## Testing
