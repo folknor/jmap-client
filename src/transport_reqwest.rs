@@ -18,7 +18,7 @@ use reqwest::redirect;
 use reqwest::Client as HttpClient;
 
 use crate::core::transport::{HttpTransport, SseTransport, TransportError};
-use futures_util::{Stream, StreamExt};
+use futures_util::Stream;
 
 /// Default HTTP transport implementation using `reqwest`.
 ///
@@ -79,9 +79,6 @@ impl ReqwestTransport {
 
     /// Access the underlying reqwest::Client for streaming operations
     /// (EventSource, WebSocket) that can't use the HttpTransport trait.
-    pub(crate) fn reqwest_client(&self) -> &HttpClient {
-        &self.client
-    }
 
     #[cfg(feature = "websockets")]
         #[allow(dead_code)]

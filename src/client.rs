@@ -308,12 +308,6 @@ impl<T: HttpTransport> Client<T> {
     }
 }
 
-// Reqwest-specific methods (EventSource/WebSocket streaming)
-impl Client<ReqwestTransport> {
-    pub(crate) fn reqwest_client(&self) -> &reqwest::Client {
-        self.transport.reqwest_client()
-    }
-}
 
 impl Credentials {
     pub fn basic(username: &str, password: &str) -> Self {

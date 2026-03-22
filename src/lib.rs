@@ -148,6 +148,7 @@ pub enum PushObject {
     StateChange {
         changed: HashMap<String, HashMap<DataType, String>>,
     },
+    #[cfg(feature = "mail")]
     EmailPush {
         #[serde(rename = "accountId")]
         account_id: String,
@@ -216,11 +217,10 @@ impl std::error::Error for Error {}
 
 impl From<core::transport::TransportError> for Error {
     fn from(e: core::transport::TransportError) -> Self {
-        if let Some(ref body) = e.body {
-            if let Ok(problem) = serde_json::from_slice::<ProblemDetails>(body) {
+        if let Some(ref body) = e.body
+            && let Ok(problem) = serde_json::from_slice::<ProblemDetails>(body) {
                 return Error::Problem(Box::new(problem));
             }
-        }
         Error::Transport(e)
     }
 }

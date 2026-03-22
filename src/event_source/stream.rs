@@ -79,7 +79,7 @@ impl<T: HttpTransport + SseTransport> Client<T> {
 
         Ok(Box::pin(async_stream::stream! {
             loop {
-                while let Some(event_result) = parser.next() {
+                for event_result in parser.by_ref() {
                     match event_result {
                         Ok(event) => match event.event {
                             EventType::State => {

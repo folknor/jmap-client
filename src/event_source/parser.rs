@@ -9,13 +9,6 @@
  * except according to those terms.
  */
 
-use super::Changes;
-use crate::{
-    event_source::PushNotification,
-    PushObject,
-};
-#[cfg(feature = "calendars")]
-use crate::event_source::CalendarAlert;
 
 const MAX_EVENT_SIZE: usize = 1024 * 1024;
 
@@ -68,71 +61,6 @@ impl EventParser {
         self.bytes.is_none()
     }
 
-    pub fn filter_notification(&mut self) -> Option<crate::Result<PushNotification>> {
-        #[allow(clippy::never_loop)]
-        #[allow(clippy::while_let_on_iterator)]
-        while let Some(event) = self.next() {
-            match event {
-                Ok(Event {
-                    event: EventType::State,
-                    data,
-                    id,
-                    ..
-                }) => {
-                    return match serde_json::from_slice::<PushObject>(&data) {
-                        Ok(PushObject::StateChange { changed }) => {
-                            Some(Ok(PushNotification::StateChange(Changes {
-                                id: if !id.is_empty() {
-                                    Some(String::from_utf8(id).unwrap_or_default())
-                                } else {
-                                    None
-                                },
-                                changes: changed,
-                            })))
-                        }
-                        Ok(unexpected) => Some(Err(crate::Error::Transport(crate::core::transport::TransportError::new(format!(
-                            "Unexpected PushObject variant: {unexpected:?}"
-                        ))))),
-                        Err(err) => Some(Err(err.into())),
-                    };
-                }
-                #[cfg(feature = "calendars")]
-                Ok(Event {
-                    event: EventType::CalendarAlert,
-                    data,
-                    ..
-                }) => {
-                    return match serde_json::from_slice::<CalendarAlert>(&data) {
-                        Ok(calendar_alert) => {
-                            Some(Ok(PushNotification::CalendarAlert(calendar_alert)))
-                        }
-                        Err(err) => Some(Err(err.into())),
-                    };
-                }
-                Ok(Event {
-                    event: EventType::Ping,
-                    #[cfg(feature = "debug")]
-                    id,
-                    ..
-                }) => {
-                    #[cfg(feature = "debug")]
-                    return Some(Ok(PushNotification::StateChange(Changes {
-                        id: if !id.is_empty() {
-                            Some(String::from_utf8(id).unwrap_or_default())
-                        } else {
-                            None
-                        },
-                        changes: ahash::HashMap::from_iter([(
-                            "ping".to_string(),
-                            ahash::HashMap::new(),
-                        )]),
-                    })));
-                }
-                Err(err) => return Some(Err(err)),
-            }
-        }
-        None
-    }
 }
 
 impl Iterator for EventParser {

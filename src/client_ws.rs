@@ -56,9 +56,6 @@ struct WebSocketRequest {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct WebSocketResponse {
-    #[serde(rename = "@type")]
-    _type: WebSocketResponseType,
-
     #[serde(rename = "requestId")]
     request_id: Option<String>,
 
@@ -72,10 +69,6 @@ pub struct WebSocketResponse {
     session_state: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-enum WebSocketResponseType {
-    Response,
-}
 
 #[derive(Debug, Serialize)]
 struct WebSocketPushEnable {
@@ -123,9 +116,6 @@ pub struct WebSocketPushObject {
 
 #[derive(Debug, Deserialize)]
 pub struct WebSocketError {
-    #[serde(rename = "@type")]
-    pub type_: WebSocketErrorType,
-
     #[serde(rename = "requestId")]
     pub request_id: Option<String>,
 
@@ -137,18 +127,15 @@ pub struct WebSocketError {
     limit: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[non_exhaustive]
-pub enum WebSocketErrorType {
-    RequestError,
-}
 
 #[derive(Debug, Deserialize)]
-#[serde(untagged)]
+#[serde(tag = "@type")]
 enum WebSocketMessage_ {
     Response(WebSocketResponse),
-    PushNotification(WebSocketPushObject),
-    Error(WebSocketError),
+    StateChange(WebSocketPushObject),
+    #[cfg(feature = "calendars")]
+    CalendarAlert(WebSocketPushObject),
+    RequestError(WebSocketError),
 }
 
 #[derive(Debug)]
@@ -272,10 +259,14 @@ impl Client {
                                         Err(e) => yield Err(crate::Error::Parse(e)),
                                     }
                                 }
-                                WebSocketMessage_::PushNotification(push) => {
+                                WebSocketMessage_::StateChange(push) => {
                                     yield Ok(WebSocketMessage::PushNotification(push.push))
                                 }
-                                WebSocketMessage_::Error(err) => yield Err(ProblemDetails::from(err).into()),
+                                #[cfg(feature = "calendars")]
+                                WebSocketMessage_::CalendarAlert(push) => {
+                                    yield Ok(WebSocketMessage::PushNotification(push.push))
+                                }
+                                WebSocketMessage_::RequestError(err) => yield Err(ProblemDetails::from(err).into()),
                             },
                             Err(err) => yield Err(err.into()),
                         }
