@@ -72,14 +72,28 @@ pub struct ShareNotification<State = Get> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChangedBy {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub email: Option<String>,
+    email: Option<String>,
 
     #[serde(rename = "principalId")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub principal_id: Option<String>,
+    principal_id: Option<String>,
+}
+
+impl ChangedBy {
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    pub fn email(&self) -> Option<&str> {
+        self.email.as_deref()
+    }
+
+    pub fn principal_id(&self) -> Option<&str> {
+        self.principal_id.as_deref()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]

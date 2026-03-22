@@ -969,9 +969,9 @@ mod share_notification_serde {
         assert_eq!(new_rights.get("mayWriteAll"), Some(&false));
 
         let changed_by = notif.changed_by().unwrap();
-        assert_eq!(changed_by.name.as_deref(), Some("Alice"));
-        assert_eq!(changed_by.email.as_deref(), Some("alice@example.com"));
-        assert_eq!(changed_by.principal_id.as_deref(), Some("p-alice"));
+        assert_eq!(changed_by.name(), Some("Alice"));
+        assert_eq!(changed_by.email(), Some("alice@example.com"));
+        assert_eq!(changed_by.principal_id(), Some("p-alice"));
     }
 
     #[test]

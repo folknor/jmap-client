@@ -50,7 +50,7 @@ pub struct Principal<State = Get> {
     timezone: Option<String>,
 
     /// RFC 9670: Map of JMAP capability URI to domain-specific metadata.
-    #[serde(skip_serializing_if = "skip_if_empty_map")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     capabilities: Option<HashMap<String, serde_json::Value>>,
 
     /// RFC 9670: Map of account ID to account info for each JMAP account
@@ -107,6 +107,28 @@ pub struct PrincipalAccount {
 }
 
 impl PrincipalAccount {
+    pub fn new(
+        name: impl Into<String>,
+        is_personal: bool,
+        is_read_only: bool,
+    ) -> Self {
+        PrincipalAccount {
+            name: Some(name.into()),
+            is_personal,
+            is_read_only,
+            account_capabilities: HashMap::new(),
+        }
+    }
+
+    pub fn account_capability(
+        mut self,
+        uri: impl Into<String>,
+        config: serde_json::Value,
+    ) -> Self {
+        self.account_capabilities.insert(uri.into(), config);
+        self
+    }
+
     pub fn name(&self) -> Option<&str> {
         self.name.as_deref()
     }

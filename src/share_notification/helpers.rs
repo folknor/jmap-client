@@ -20,7 +20,7 @@ use crate::{
 
 use super::{
     Property, ShareNotification, ShareNotificationChanges, ShareNotificationGet,
-    ShareNotificationQuery, ShareNotificationSet,
+    ShareNotificationQuery, ShareNotificationQueryChanges, ShareNotificationSet,
 };
 
 impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
@@ -82,6 +82,26 @@ impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
             query.sort(sort);
         }
         let handle = request.call(query)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
+    }
+
+    pub async fn share_notification_query_changes(
+        &self,
+        since_query_state: impl Into<String>,
+        filter: Option<impl Into<Filter<super::query::Filter>>>,
+        sort: Option<impl IntoIterator<Item = Comparator<super::query::Comparator>>>,
+    ) -> crate::Result<crate::core::query_changes::QueryChangesResponse> {
+        let mut request = self.build();
+        let account_id = request.default_account_id().to_string();
+        let mut qc = ShareNotificationQueryChanges::new(&account_id, since_query_state);
+        if let Some(filter) = filter {
+            qc.filter(filter);
+        }
+        if let Some(sort) = sort {
+            qc.sort(sort);
+        }
+        let handle = request.call(qc)?;
         let mut response = request.send().await?;
         response.get(&handle)
     }

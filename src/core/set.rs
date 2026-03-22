@@ -154,7 +154,7 @@ pub enum SetErrorType {
     Other,
 }
 
-impl<O: SetObjectCreatable> SetRequest<O> {
+impl<O: SetObject> SetRequest<O> {
     pub fn new(account_id: impl Into<String>) -> Self {
         let account_id = account_id.into();
         Self {
@@ -184,6 +184,30 @@ impl<O: SetObjectCreatable> SetRequest<O> {
         self
     }
 
+    pub fn destroy<U, V>(&mut self, ids: U) -> &mut Self
+    where
+        U: IntoIterator<Item = V>,
+        V: Into<String>,
+    {
+        self.destroy
+            .get_or_insert_with(Vec::new)
+            .extend(ids.into_iter().map(std::convert::Into::into));
+        self.destroy_ref = None;
+        self
+    }
+
+    pub fn destroy_ref(&mut self, reference: ResultReference) -> &mut Self {
+        self.destroy_ref = reference.into();
+        self.destroy = None;
+        self
+    }
+
+    pub fn arguments(&mut self) -> &mut O::SetArguments {
+        &mut self.arguments
+    }
+}
+
+impl<O: SetObjectCreatable> SetRequest<O> {
     pub fn create(&mut self) -> &mut O {
         let create_id = self.create.as_ref().map_or(0, std::collections::HashMap::len);
         let create_id_str = format!("c{create_id}");
@@ -222,28 +246,6 @@ impl<O: SetObjectCreatable> SetRequest<O> {
         self.update
             .get_or_insert_with(HashMap::new)
             .insert(id.into(), item);
-    }
-
-    pub fn destroy<U, V>(&mut self, ids: U) -> &mut Self
-    where
-        U: IntoIterator<Item = V>,
-        V: Into<String>,
-    {
-        self.destroy
-            .get_or_insert_with(Vec::new)
-            .extend(ids.into_iter().map(std::convert::Into::into));
-        self.destroy_ref = None;
-        self
-    }
-
-    pub fn destroy_ref(&mut self, reference: ResultReference) -> &mut Self {
-        self.destroy_ref = reference.into();
-        self.destroy = None;
-        self
-    }
-
-    pub fn arguments(&mut self) -> &mut O::SetArguments {
-        &mut self.arguments
     }
 }
 

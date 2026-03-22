@@ -9,9 +9,11 @@
  * except according to those terms.
  */
 
-//! ShareNotification is destroy-only — no create or update is permitted.
+//! ShareNotification is destroy-only — no create or update is permitted
+//! (RFC 9670). Only `SetObject` is implemented, not `SetObjectCreatable`,
+//! so `create()` and `update()` are unavailable at compile time.
 
-use crate::{core::set::{SetObject, SetObjectCreatable}, Get, Set};
+use crate::{core::set::SetObject, Get, Set};
 
 use super::ShareNotification;
 
@@ -20,24 +22,6 @@ impl SetObject for ShareNotification<Set> {
 
     fn create_id(&self) -> Option<String> {
         self._create_id.map(|id| format!("c{id}"))
-    }
-}
-
-impl SetObjectCreatable for ShareNotification<Set> {
-    fn new(_create_id: Option<usize>) -> Self {
-        ShareNotification {
-            _create_id,
-            _state: Default::default(),
-            id: None,
-            created: None,
-            changed_by: None,
-            object_type: None,
-            object_account_id: None,
-            object_id: None,
-            old_rights: None,
-            new_rights: None,
-            name: None,
-        }
     }
 }
 

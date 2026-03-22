@@ -23,6 +23,8 @@ use super::{Principal, Type};
 #[non_exhaustive]
 pub enum Filter {
     /// RFC 9670: Match principals owning the specified accounts.
+    /// Placed first because its `accountIds` array value is unambiguous
+    /// in serde's untagged trial order (no other variant uses an array).
     AccountIds {
         #[serde(rename = "accountIds")]
         value: Vec<String>,
