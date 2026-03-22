@@ -75,7 +75,9 @@ impl<T> Field<T> {
 impl<T: Serialize> Serialize for Field<T> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
-            Field::Omitted => unreachable!("Field::Omitted should be skipped via skip_serializing_if"),
+            Field::Omitted => Err(serde::ser::Error::custom(
+                "Field::Omitted must be skipped via #[serde(skip_serializing_if = \"Field::is_omitted\")]"
+            )),
             Field::Null => serializer.serialize_none(),
             Field::Value(v) => v.serialize(serializer),
         }

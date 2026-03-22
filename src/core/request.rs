@@ -39,7 +39,7 @@ impl<M: JmapMethod> CallHandle<M> {
     pub fn result_reference(&self, path: impl Into<String>) -> ResultReference {
         ResultReference {
             result_of: self.call_id.clone(),
-            name: self.method_name.to_string(),
+            name: self.method_name,
             path: path.into(),
         }
     }
@@ -50,7 +50,7 @@ impl<M: JmapMethod> CallHandle<M> {
 pub struct ResultReference {
     #[serde(rename = "resultOf")]
     pub(crate) result_of: String,
-    pub(crate) name: String,
+    pub(crate) name: &'static str,
     pub(crate) path: String,
 }
 
@@ -75,7 +75,7 @@ impl Serialize for RawMethodCall {
 pub struct Request<'x, T: HttpTransport = crate::transport_reqwest::ReqwestTransport> {
     client: &'x Client<T>,
     account_id: String,
-    pub(crate) using: Vec<String>,
+    pub(crate) using: Vec<&'static str>,
     pub(crate) method_calls: Vec<RawMethodCall>,
     pub(crate) created_ids: Option<std::collections::HashMap<String, String>>,
 }
@@ -96,7 +96,7 @@ impl<T: HttpTransport> Serialize for Request<'_, T> {
 impl<'x, T: HttpTransport> Request<'x, T> {
     pub fn new(client: &'x Client<T>) -> Self {
         Request {
-            using: vec!["urn:ietf:params:jmap:core".to_string()],
+            using: vec!["urn:ietf:params:jmap:core"],
             method_calls: Vec::new(),
             created_ids: None,
             account_id: client.default_account_id().to_string(),
@@ -124,8 +124,8 @@ impl<'x, T: HttpTransport> Request<'x, T> {
 
         // Auto-add capability
         let uri = M::Cap::URI;
-        if !self.using.iter().any(|u| u == uri) {
-            self.using.push(uri.to_string());
+        if !self.using.iter().any(|u| *u == uri) {
+            self.using.push(uri);
         }
 
         // Serialize method arguments
@@ -147,8 +147,8 @@ impl<'x, T: HttpTransport> Request<'x, T> {
     /// Add a capability URI to the `using` array.
     pub fn add_capability<C: Capability>(&mut self) {
         let uri = C::URI;
-        if !self.using.iter().any(|u| u == uri) {
-            self.using.push(uri.to_string());
+        if !self.using.iter().any(|u| *u == uri) {
+            self.using.push(uri);
         }
     }
 

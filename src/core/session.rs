@@ -579,8 +579,7 @@ impl<T: URLParser> URLPart<T> {
             match ch {
                 '{' => {
                     if !buf.is_empty() {
-                        parts.push(URLPart::Value(buf.clone()));
-                        buf.clear();
+                        parts.push(URLPart::Value(std::mem::take(&mut buf)));
                     }
                     in_parameter = true;
                 }
@@ -605,7 +604,7 @@ impl<T: URLParser> URLPart<T> {
 
         if !buf.is_empty() {
             if !in_parameter {
-                parts.push(URLPart::Value(buf.clone()));
+                parts.push(URLPart::Value(std::mem::take(&mut buf)));
             } else {
                 return Err(crate::Error::InvalidUrl(url.to_string()));
             }

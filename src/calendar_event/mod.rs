@@ -383,4 +383,4 @@ crate::define_set_method!(CalendarEventSet, CalendarEvent<Set>, "CalendarEvent/s
 crate::define_changes_method!(CalendarEventChanges, "CalendarEvent/changes", crate::core::capability::Calendars, crate::core::changes::ChangesResponse<CalendarEvent<Get>>);
 crate::define_query_method!(CalendarEventQuery, CalendarEvent<Set>, "CalendarEvent/query", crate::core::capability::Calendars);
 crate::define_query_changes_method!(CalendarEventQueryChanges, CalendarEvent<Set>, "CalendarEvent/queryChanges", crate::core::capability::Calendars);
-crate::define_copy_method!(CalendarEventCopy, CalendarEvent<Set>, "CalendarEvent/copy", crate::core::capability::Calendars, crate::core::copy::CopyResponse<CalendarEvent<Set>>);
+crate::define_copy_method!(CalendarEventCopy, CalendarEvent<Set>, "CalendarEvent/copy", crate::core::capability::Calendars, crate::core::copy::CopyResponse<CalendarEvent<Get>>);

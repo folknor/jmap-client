@@ -36,7 +36,7 @@ impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
             create_req.keys(keys);
         }
 
-        let id = create_req.create_id().unwrap();
+        let id = create_req.create_id().ok_or(crate::Error::EmptyResponse)?;
         let handle = request.call(set)?;
         let mut response = request.send().await?;
         response.get(&handle)?.created(&id)

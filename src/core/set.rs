@@ -147,6 +147,8 @@ pub enum SetErrorType {
     InvalidScript,
     #[serde(rename = "scriptIsActive")]
     ScriptIsActive,
+    #[serde(other)]
+    Other,
 }
 
 impl<O: SetObject> SetRequest<O> {
@@ -430,6 +432,7 @@ impl Display for SetErrorType {
             SetErrorType::AlreadyExists => write!(f, "alreadyExists"),
             SetErrorType::InvalidScript => write!(f, "invalidScript"),
             SetErrorType::ScriptIsActive => write!(f, "scriptIsActive"),
+            SetErrorType::Other => write!(f, "other"),
         }
     }
 }

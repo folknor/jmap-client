@@ -120,7 +120,10 @@ impl ClientBuilder {
     }
 
     pub async fn connect(self, url: &str) -> crate::Result<Client> {
-        let authorization = match self.credentials.expect("Missing credentials") {
+        let credentials = self.credentials.ok_or_else(|| {
+            crate::core::transport::TransportError::new("Missing credentials — call .credentials() before .connect()")
+        })?;
+        let authorization = match credentials {
             Credentials::Basic(s) => format!("Basic {s}"),
             Credentials::Bearer(s) => format!("Bearer {s}"),
         };
@@ -134,12 +137,12 @@ impl ClientBuilder {
         );
         headers.insert(
             header::AUTHORIZATION,
-            header::HeaderValue::from_str(&authorization).unwrap(),
+            header::HeaderValue::from_str(&authorization).map_err(|e| crate::core::transport::TransportError::with_source("Invalid authorization header", e))?,
         );
         if let Some(forwarded_for) = self.forwarded_for {
             headers.insert(
                 header::FORWARDED,
-                header::HeaderValue::from_str(&forwarded_for).unwrap(),
+                header::HeaderValue::from_str(&forwarded_for).map_err(|e| crate::core::transport::TransportError::with_source("Invalid forwarded-for header", e))?,
             );
         }
 

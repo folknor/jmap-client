@@ -76,7 +76,7 @@ impl Response {
                 crate::Error::CallNotFound(handle.call_id.clone())
             })?;
 
-        let (_, result, _) = self.raw.remove(pos);
+        let (_, result, _) = self.raw.swap_remove(pos);
 
         match result {
             RawCallResult::Success(value) => {

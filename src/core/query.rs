@@ -187,8 +187,8 @@ impl QueryResponse {
         &self.ids
     }
 
-    pub fn id(&self, pos: usize) -> &str {
-        self.ids[pos].as_str()
+    pub fn id(&self, pos: usize) -> Option<&str> {
+        self.ids.get(pos).map(|s| s.as_str())
     }
 
     pub fn take_ids(&mut self) -> Vec<String> {

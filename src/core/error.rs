@@ -96,6 +96,8 @@ pub enum MethodErrorType {
     UnsupportedFilter,
     #[serde(rename = "tooManyChanges")]
     TooManyChanges,
+    #[serde(other)]
+    Other,
 }
 
 impl ProblemDetails {
@@ -175,6 +177,7 @@ impl Display for MethodError {
             MethodErrorType::UnsupportedSort => write!(f, "Unsupported sort"),
             MethodErrorType::UnsupportedFilter => write!(f, "Unsupported filter"),
             MethodErrorType::TooManyChanges => write!(f, "Too many changes"),
+            MethodErrorType::Other => write!(f, "Other"),
         }
     }
 }

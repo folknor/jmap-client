@@ -153,4 +153,4 @@ crate::define_set_method!(ContactCardSet, ContactCard<Set>, "ContactCard/set", c
 crate::define_changes_method!(ContactCardChanges, "ContactCard/changes", crate::core::capability::Contacts, crate::core::changes::ChangesResponse<ContactCard<Get>>);
 crate::define_query_method!(ContactCardQuery, ContactCard<Set>, "ContactCard/query", crate::core::capability::Contacts);
 crate::define_query_changes_method!(ContactCardQueryChanges, ContactCard<Set>, "ContactCard/queryChanges", crate::core::capability::Contacts);
-crate::define_copy_method!(ContactCardCopy, ContactCard<Set>, "ContactCard/copy", crate::core::capability::Contacts, crate::core::copy::CopyResponse<ContactCard<Set>>);
+crate::define_copy_method!(ContactCardCopy, ContactCard<Set>, "ContactCard/copy", crate::core::capability::Contacts, crate::core::copy::CopyResponse<ContactCard<Get>>);

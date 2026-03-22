@@ -43,7 +43,7 @@ struct WebSocketRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
 
-    using: Vec<String>,
+    using: Vec<&'static str>,
 
     #[serde(rename = "methodCalls")]
     method_calls: serde_json::Value,
@@ -221,7 +221,7 @@ impl Client {
             .headers_mut()
             .insert(SEC_WEBSOCKET_PROTOCOL, "jmap".parse().unwrap());
 
-        let (stream, _) = if self.accept_invalid_certs & capabilities.url().starts_with("wss") {
+        let (stream, _) = if self.accept_invalid_certs && capabilities.url().starts_with("wss") {
             tokio_tungstenite::connect_async_tls_with_config(
                 request,
                 None,
