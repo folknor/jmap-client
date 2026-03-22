@@ -71,7 +71,7 @@ impl Response {
             .iter()
             .position(|(_, _, id)| id == &handle.call_id)
             .ok_or_else(|| {
-                crate::Error::Internal(format!("Call {} not found in response", handle.call_id))
+                crate::Error::CallNotFound(handle.call_id.clone())
             })?;
 
         let (_, result, _) = self.raw.remove(pos);

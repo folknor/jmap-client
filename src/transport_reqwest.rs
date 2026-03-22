@@ -151,7 +151,6 @@ impl HttpTransport for ReqwestTransport {
         let response = self
             .client
             .get(url)
-            .header(header::CONTENT_TYPE, "")  // override JSON content-type
             .send()
             .await
             .map_err(|e| TransportError::with_source("Download failed", e))?;

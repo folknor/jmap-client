@@ -68,12 +68,15 @@ impl Client {
             .header(ACCEPT, "text/event-stream")
             .header(CONTENT_TYPE, "")
             .send()
-            .await?;
+            .await
+            .map_err(|e| crate::Error::Transport(
+                crate::core::transport::TransportError::with_source("EventSource connection failed", e),
+            ))?;
 
         if !response.status().is_success() {
-            return Err(crate::Error::Internal(
+            return Err(crate::Error::Transport(crate::core::transport::TransportError::new(
                 format!("EventSource: HTTP {}", response.status()),
-            ));
+            )));
         }
 
         let mut stream = response.bytes_stream();
@@ -92,7 +95,9 @@ impl Client {
                             continue;
                         }
                         Err(err) => {
-                            yield Err(err.into());
+                            yield Err(crate::Error::Transport(
+                                crate::core::transport::TransportError::with_source("EventSource stream error", err),
+                            ));
                             break;
                         }
                     }

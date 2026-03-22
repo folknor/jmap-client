@@ -228,11 +228,11 @@ impl BlobUploadResponse {
         if let Some(result) = self.created.as_mut().and_then(|r| r.remove(id)) {
             Ok(result)
         } else if let Some(error) = self.not_created.as_ref().and_then(|r| r.get(id)) {
-            Err(Error::Internal(format!(
+            Err(Error::NotParsable(format!(
                 "Blob {id} not created: {error:?}"
             )))
         } else {
-            Err(Error::Internal(format!("Id {id} not found.")))
+            Err(Error::IdNotFound(id.to_string()))
         }
     }
 

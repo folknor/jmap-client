@@ -71,6 +71,18 @@ cast_possible_wrap = "deny"
 dbg_macro = "deny"
 todo = "deny"
 
+[[example]]
+name = "mailboxes"
+required-features = ["mail"]
+
+[[example]]
+name = "messages"
+required-features = ["mail"]
+
+[[example]]
+name = "eventsource"
+required-features = ["mail"]
+
 [lib]
 doctest = false
 

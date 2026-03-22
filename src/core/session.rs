@@ -572,13 +572,13 @@ impl<T: URLParser> URLPart<T> {
                 '}' => {
                     if in_parameter && !buf.is_empty() {
                         parts.push(URLPart::Parameter(T::parse(&buf).ok_or_else(|| {
-                            crate::Error::Internal(format!(
+                            crate::Error::InvalidUrl(format!(
                                 "Invalid parameter '{buf}' in URL: {url}"
                             ))
                         })?));
                         buf.clear();
                     } else {
-                        return Err(crate::Error::Internal(format!("Invalid URL: {url}")));
+                        return Err(crate::Error::InvalidUrl(url.to_string()));
                     }
                     in_parameter = false;
                 }
@@ -592,7 +592,7 @@ impl<T: URLParser> URLPart<T> {
             if !in_parameter {
                 parts.push(URLPart::Value(buf.clone()));
             } else {
-                return Err(crate::Error::Internal(format!("Invalid URL: {url}")));
+                return Err(crate::Error::InvalidUrl(url.to_string()));
             }
         }
 

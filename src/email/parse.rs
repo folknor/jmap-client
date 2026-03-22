@@ -140,11 +140,9 @@ impl EmailParseResponse {
             .map(|np| np.iter().any(|id| id == blob_id))
             .unwrap_or(false)
         {
-            Err(Error::Internal(format!(
-                "blobId {blob_id} is not parsable."
-            )))
+            Err(Error::NotParsable(blob_id.to_string()))
         } else {
-            Err(Error::Internal(format!("blobId {blob_id} not found.")))
+            Err(Error::IdNotFound(blob_id.to_string()))
         }
     }
 

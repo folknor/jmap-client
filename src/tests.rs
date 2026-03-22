@@ -6,6 +6,7 @@ use serde_json::json;
 // 1. CalendarEvent/ContactCard PatchObject null semantics
 // ---------------------------------------------------------------------------
 
+#[cfg(all(feature = "calendars", feature = "contacts"))]
 mod patch_object_null_semantics {
     use super::*;
     use crate::calendar_event::CalendarEvent;
@@ -72,6 +73,7 @@ mod patch_object_null_semantics {
 // 2. CalendarEvent nullable getter semantics
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "calendars")]
 mod calendar_event_nullable_getters {
     use crate::calendar_event::CalendarEvent;
     use crate::core::field::Field;
@@ -171,6 +173,7 @@ mod calendar_event_nullable_getters {
 // 3. CalendarEvent/ContactCard round-trip with extension properties
 // ---------------------------------------------------------------------------
 
+#[cfg(all(feature = "calendars", feature = "contacts"))]
 mod extension_property_round_trip {
     use super::*;
     use crate::calendar_event::CalendarEvent;
@@ -244,6 +247,7 @@ mod extension_property_round_trip {
 // 4. Property enum round-trip
 // ---------------------------------------------------------------------------
 
+#[cfg(all(feature = "calendars", feature = "contacts"))]
 mod property_enum_round_trip {
     use super::*;
     use crate::calendar_event::Property as CEProperty;
@@ -388,6 +392,7 @@ mod property_enum_round_trip {
 // 5. Query filter serialization
 // ---------------------------------------------------------------------------
 
+#[cfg(all(feature = "calendars", feature = "contacts", feature = "quota"))]
 mod query_filter_serialization {
     use super::*;
     use crate::calendar_event::query::Filter as CEFilter;
@@ -482,6 +487,7 @@ mod query_filter_serialization {
 // 6. Calendar Option<Option<T>> serialization
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "calendars")]
 mod calendar_option_option_serialization {
     use super::*;
     use crate::calendar::Calendar;
@@ -539,6 +545,7 @@ mod calendar_option_option_serialization {
 // 7. Blob DataSource serialization
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "blob")]
 mod blob_data_source_serialization {
     use super::*;
     use crate::blob::manage::{
@@ -685,33 +692,41 @@ mod session_capabilities_deserialization {
         assert_eq!(core.max_objects_in_get(), 500);
         assert_eq!(core.collation_algorithms(), &["i;ascii-casemap"]);
 
-        // mail
-        let mail = session.mail_capabilities().expect("mail missing");
-        assert_eq!(mail.max_mailbox_depth(), 10);
+        #[cfg(feature = "mail")]
+        {
+            let mail = session.mail_capabilities().expect("mail missing");
+            assert_eq!(mail.max_mailbox_depth(), 10);
+        }
 
-        // quota (empty object)
+        #[cfg(feature = "quota")]
         assert!(session.quota_capabilities().is_some());
 
-        // blob
-        let blob = session.blob_capabilities().expect("blob missing");
-        assert_eq!(blob.max_size_blob_set(), Some(100_000_000));
-        assert_eq!(
-            blob.supported_digest_algorithms(),
-            &["sha", "sha-256"]
-        );
+        #[cfg(feature = "blob")]
+        {
+            let blob = session.blob_capabilities().expect("blob missing");
+            assert_eq!(blob.max_size_blob_set(), Some(100_000_000));
+            assert_eq!(
+                blob.supported_digest_algorithms(),
+                &["sha", "sha-256"]
+            );
+        }
 
-        // calendars
-        let cals = session
-            .calendars_capabilities()
-            .expect("calendars missing");
-        assert!(cals.may_create_calendar());
-        assert_eq!(cals.max_calendars_per_event(), None);
+        #[cfg(feature = "calendars")]
+        {
+            let cals = session
+                .calendars_capabilities()
+                .expect("calendars missing");
+            assert!(cals.may_create_calendar());
+            assert_eq!(cals.max_calendars_per_event(), None);
+        }
 
-        // contacts
-        let contacts = session
-            .contacts_capabilities()
-            .expect("contacts missing");
-        assert!(contacts.may_create_address_book());
+        #[cfg(feature = "contacts")]
+        {
+            let contacts = session
+                .contacts_capabilities()
+                .expect("contacts missing");
+            assert!(contacts.may_create_address_book());
+        }
 
         // principals
         let principals = session
@@ -760,6 +775,7 @@ mod session_capabilities_deserialization {
 // ---------------------------------------------------------------------------
 // 9. AlertTrigger deserialization
 // ---------------------------------------------------------------------------
+#[cfg(feature = "calendars")]
 
 mod alert_trigger_deserialization {
     use super::*;
@@ -839,6 +855,7 @@ mod alert_trigger_deserialization {
 // 10. Blob/get request serialization
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "blob")]
 mod blob_get_request_serialization {
     use super::*;
     use crate::blob::manage::BlobGetRequest;

@@ -166,7 +166,7 @@ impl<'x> Request<'x> {
         let (method_name, data, _call_id) = response
             .unwrap_method_responses()
             .pop()
-            .ok_or_else(|| crate::Error::Internal("Server returned no results".to_string()))?;
+            .ok_or_else(|| crate::Error::EmptyResponse)?;
 
         if method_name == "error" {
             let err: super::error::MethodError = serde_json::from_value(data)?;

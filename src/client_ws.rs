@@ -222,9 +222,7 @@ impl Client {
     ) -> crate::Result<Pin<Box<impl Stream<Item = crate::Result<WebSocketMessage>> + use<>>>> {
         let session = self.session();
         let capabilities = session.websocket_capabilities().ok_or_else(|| {
-            crate::Error::Internal(
-                "JMAP server does not advertise any websocket capabilities.".to_string(),
-            )
+            crate::Error::WebSocketNotConnected
         })?;
 
         let mut request = capabilities.url().into_client_request()?;
@@ -293,7 +291,7 @@ impl Client {
         let mut _ws = self.ws.lock().await;
         let ws = _ws
             .as_mut()
-            .ok_or_else(|| crate::Error::Internal("Websocket stream not set.".to_string()))?;
+            .ok_or_else(|| crate::Error::WebSocketNotConnected)?;
 
         // Assign request id
         let request_id = ws.req_id.to_string();
@@ -326,7 +324,7 @@ impl Client {
             .lock()
             .await
             .as_mut()
-            .ok_or_else(|| crate::Error::Internal("Websocket stream not set.".to_string()))?
+            .ok_or_else(|| crate::Error::WebSocketNotConnected)?
             .tx
             .send(Message::text(
                 serde_json::to_string(&WebSocketPushEnable {
@@ -345,7 +343,7 @@ impl Client {
             .lock()
             .await
             .as_mut()
-            .ok_or_else(|| crate::Error::Internal("Websocket stream not set.".to_string()))?
+            .ok_or_else(|| crate::Error::WebSocketNotConnected)?
             .tx
             .send(Message::text(
                 serde_json::to_string(&WebSocketPushDisable {
@@ -362,7 +360,7 @@ impl Client {
             .lock()
             .await
             .as_mut()
-            .ok_or_else(|| crate::Error::Internal("Websocket stream not set.".to_string()))?
+            .ok_or_else(|| crate::Error::WebSocketNotConnected)?
             .tx
             .send(Message::Ping(vec![].into()))
             .await

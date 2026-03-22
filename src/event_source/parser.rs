@@ -87,9 +87,9 @@ impl EventParser {
                                 changes: changed,
                             })))
                         }
-                        Ok(unexpected) => Some(Err(crate::Error::Internal(format!(
+                        Ok(unexpected) => Some(Err(crate::Error::Transport(crate::core::transport::TransportError::new(format!(
                             "Unexpected PushObject variant: {unexpected:?}"
-                        )))),
+                        ))))),
                         Err(err) => Some(Err(err.into())),
                     };
                 }
@@ -170,9 +170,9 @@ impl Iterator for EventParser {
                     }
                     _ => {
                         if self.field.len() >= MAX_EVENT_SIZE {
-                            return Some(Err(crate::Error::Internal(
-                                "EventSource response is too long.".to_string(),
-                            )));
+                            return Some(Err(crate::Error::Transport(crate::core::transport::TransportError::new(
+                                "EventSource response is too long.",
+                            ))));
                         }
 
                         self.field.push(*byte);
@@ -210,9 +210,9 @@ impl Iterator for EventParser {
                     }
                     _ => {
                         if (self.field.len() + self.value.len()) >= MAX_EVENT_SIZE {
-                            return Some(Err(crate::Error::Internal(
-                                "EventSource response is too long.".to_string(),
-                            )));
+                            return Some(Err(crate::Error::Transport(crate::core::transport::TransportError::new(
+                                "EventSource response is too long.",
+                            ))));
                         }
 
                         self.value.push(*byte);

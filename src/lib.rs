@@ -150,33 +150,44 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
+    /// Transport-level failure (network, TLS, timeout).
     Transport(core::transport::TransportError),
+    /// JSON deserialization failure.
     Parse(serde_json::Error),
-    Internal(String),
+    /// Server returned an RFC 7807 problem details response.
     Problem(Box<ProblemDetails>),
+    /// A JMAP method call returned an error response.
     Method(MethodError),
+    /// A JMAP set operation returned per-object errors.
     Set(SetError<String>),
+    /// Requested call ID not found in the response.
+    CallNotFound(String),
+    /// Requested object ID not found in set/copy/parse response.
+    IdNotFound(String),
+    /// Server returned an empty method response array.
+    EmptyResponse,
+    /// Not parsable as the expected format.
+    NotParsable(String),
+    /// URL template parsing failure.
+    InvalidUrl(String),
     #[cfg(feature = "websockets")]
+    /// WebSocket transport error.
     WebSocket(tokio_tungstenite::tungstenite::error::Error),
+    #[cfg(feature = "websockets")]
+    /// WebSocket connection not established.
+    WebSocketNotConnected,
 }
 
 impl std::error::Error for Error {}
 
 impl From<core::transport::TransportError> for Error {
     fn from(e: core::transport::TransportError) -> Self {
-        // Try to parse ProblemDetails from the response body
         if let Some(ref body) = e.body {
             if let Ok(problem) = serde_json::from_slice::<ProblemDetails>(body) {
                 return Error::Problem(Box::new(problem));
             }
         }
         Error::Transport(e)
-    }
-}
-
-impl From<reqwest::Error> for Error {
-    fn from(e: reqwest::Error) -> Self {
-        Error::Transport(core::transport::TransportError::with_source("HTTP request failed", e))
     }
 }
 
@@ -204,12 +215,6 @@ impl From<SetError<String>> for Error {
     }
 }
 
-impl From<&str> for Error {
-    fn from(s: &str) -> Self {
-        Error::Internal(s.to_string())
-    }
-}
-
 #[cfg(feature = "websockets")]
 impl From<tokio_tungstenite::tungstenite::error::Error> for Error {
     fn from(e: tokio_tungstenite::tungstenite::error::Error) -> Self {
@@ -222,12 +227,18 @@ impl Display for Error {
         match self {
             Error::Transport(e) => write!(f, "Transport error: {e}"),
             Error::Parse(e) => write!(f, "Parse error: {e}"),
-            Error::Internal(e) => write!(f, "Internal error: {e}"),
-            Error::Problem(e) => write!(f, "Request failed: {e}"),
+            Error::Problem(e) => write!(f, "Problem: {e}"),
             Error::Method(e) => write!(f, "Method error: {e}"),
             Error::Set(e) => write!(f, "Set error: {e}"),
+            Error::CallNotFound(id) => write!(f, "Call {id} not found in response"),
+            Error::IdNotFound(id) => write!(f, "Id {id} not found"),
+            Error::EmptyResponse => write!(f, "Server returned no results"),
+            Error::NotParsable(id) => write!(f, "{id} is not parsable"),
+            Error::InvalidUrl(msg) => write!(f, "Invalid URL: {msg}"),
             #[cfg(feature = "websockets")]
             Error::WebSocket(e) => write!(f, "WebSocket error: {e}"),
+            #[cfg(feature = "websockets")]
+            Error::WebSocketNotConnected => write!(f, "WebSocket connection not established"),
         }
     }
 }
