@@ -79,9 +79,9 @@ pub struct EmailImportResponse {
 }
 
 impl EmailImportRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         EmailImportRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             if_in_state: None,
             emails: AHashMap::new(),
         }

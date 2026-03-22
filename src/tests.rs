@@ -862,7 +862,7 @@ mod blob_get_request_serialization {
 
     #[test]
     fn blob_get_request_basic_serialization() {
-        let params = RequestParams::new("acct-1", Method::GetBlob, 0);
+        let params = RequestParams { account_id: "acct-1", method: Method::GetBlob, call_id: 0 };
         let mut req = BlobGetRequest::new(params);
         req.ids(["blob-1", "blob-2"]);
         req.properties(["data:asText", "size"]);
@@ -890,7 +890,7 @@ mod blob_get_request_serialization {
 
     #[test]
     fn blob_get_request_with_offset_and_length() {
-        let params = RequestParams::new("acct-1", Method::GetBlob, 0);
+        let params = RequestParams { account_id: "acct-1", method: Method::GetBlob, call_id: 0 };
         let mut req = BlobGetRequest::new(params);
         req.ids(["blob-1"]);
         req.offset(100);
@@ -903,7 +903,7 @@ mod blob_get_request_serialization {
 
     #[test]
     fn blob_get_request_without_optional_fields() {
-        let params = RequestParams::new("acct-1", Method::GetBlob, 0);
+        let params = RequestParams { account_id: "acct-1", method: Method::GetBlob, call_id: 0 };
         let mut req = BlobGetRequest::new(params);
         req.ids(["blob-1"]);
 

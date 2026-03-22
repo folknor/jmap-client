@@ -52,9 +52,9 @@ pub struct SearchSnippetGetResponse {
 }
 
 impl SearchSnippetGetRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         SearchSnippetGetRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             filter: None,
             email_ids: None,
             email_ids_ref: None,

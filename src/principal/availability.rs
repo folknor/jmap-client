@@ -65,13 +65,13 @@ pub struct AvailabilityEntry {
 
 impl PrincipalGetAvailabilityRequest {
     pub fn new(
-        params: RequestParams,
+        params: RequestParams<'_>,
         id: impl Into<String>,
         utc_start: impl Into<String>,
         utc_end: impl Into<String>,
     ) -> Self {
         PrincipalGetAvailabilityRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             id: id.into(),
             utc_start: utc_start.into(),
             utc_end: utc_end.into(),

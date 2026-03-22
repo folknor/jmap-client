@@ -62,10 +62,10 @@ pub struct GetResponse<T> {
 }
 
 impl<O: GetObject> GetRequest<O> {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         GetRequest {
             account_id: if O::requires_account_id() {
-                params.account_id.into()
+                params.account_id.to_string().into()
             } else {
                 None
             },

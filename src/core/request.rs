@@ -145,13 +145,13 @@ pub enum Arguments {
 macro_rules! impl_arguments_constructor {
     // Simple: params only
     ($method_name:ident, $variant:ident, $inner:ty) => {
-        pub fn $method_name(params: RequestParams) -> Self {
+        pub fn $method_name(params: RequestParams<'_>) -> Self {
             Arguments::$variant(Box::new(<$inner>::new(params)))
         }
     };
     // With extra String arg
     ($method_name:ident, $variant:ident, $inner:ty, $arg_name:ident : String) => {
-        pub fn $method_name(params: RequestParams, $arg_name: String) -> Self {
+        pub fn $method_name(params: RequestParams<'_>, $arg_name: String) -> Self {
             Arguments::$variant(Box::new(<$inner>::new(params, $arg_name)))
         }
     };
@@ -223,7 +223,7 @@ impl Arguments {
     impl_arguments_constructor!(sieve_script_set, SieveScriptSet, SetRequest<SieveScript<Set>>);
 
     // Sieve script validate (special: uses impl Into<String>)
-    pub fn sieve_script_validate(params: RequestParams, blob_id: impl Into<String>) -> Self {
+    pub fn sieve_script_validate(params: RequestParams<'_>, blob_id: impl Into<String>) -> Self {
         Arguments::SieveScriptValidate(Box::new(SieveScriptValidateRequest::new(params, blob_id)))
     }
 
@@ -235,7 +235,7 @@ impl Arguments {
 
     // Principal get availability (special: 4 args with impl Into<String>)
     pub fn principal_get_availability(
-        params: RequestParams,
+        params: RequestParams<'_>,
         id: impl Into<String>,
         utc_start: impl Into<String>,
         utc_end: impl Into<String>,
@@ -425,9 +425,9 @@ impl<'x> Request<'x> {
         }
     }
 
-    pub fn params(&self, method: Method) -> RequestParams {
+    pub fn params(&self, method: Method) -> RequestParams<'_> {
         RequestParams {
-            account_id: self.account_id.clone(),
+            account_id: &self.account_id,
             method,
             call_id: self.method_calls.len(),
         }

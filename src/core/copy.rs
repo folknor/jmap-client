@@ -68,11 +68,11 @@ pub struct CopyResponse<O: SetObject> {
 }
 
 impl<T: SetObject> CopyRequest<T> {
-    pub fn new(params: RequestParams, from_account_id: String) -> Self {
+    pub fn new(params: RequestParams<'_>, from_account_id: String) -> Self {
         CopyRequest {
             from_account_id,
             if_from_in_state: None,
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             if_in_state: None,
             create: AHashMap::new(),
             on_success_destroy_original: false,

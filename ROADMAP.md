@@ -76,16 +76,16 @@ Make the HTTP client generic instead of hardcoding reqwest. Lower priority but w
 | Blob | 9404 | ✅ Implemented |
 | Calendars | draft-26 | ✅ Implemented |
 | Contacts | 9610 | ✅ Implemented |
-| Principals | 9670 | ✅ Partially (get/set/query done, ShareNotification missing) |
-| Quotas | 9425 | ❌ Not implemented | Stalwart: ✅ supported |
-| Sharing | 9670 | ❌ ShareNotification missing | Stalwart: ✅ principals supported |
-| MDN | 9007 | ❌ Not implemented | Stalwart: ❌ not supported |
-| S/MIME | 9219 | ❌ Not implemented | Stalwart: ❌ not supported |
-| VAPID Push | 9749 | ❌ Not implemented | Stalwart: ❌ not supported |
+| Quotas | 9425 | ✅ Implemented |
+| Principals | 9670 | ✅ Partially (get/set/query/getAvailability done, ShareNotification missing) |
+| Sharing | 9670 | ❌ ShareNotification missing |
+| MDN | 9007 | ❌ Not implemented |
+| S/MIME | 9219 | ❌ Not implemented |
 
 ## Design principles
 
-- **Use `calcard` for JSCalendar/JSContact types** — don't build large typed structs
+- **JSON map backing for JSCalendar/JSContact types** — CalendarEvent and ContactCard use `serde_json::Map` for round-trip fidelity with extension properties
 - **Follow existing patterns** — study how Email is structured (mod.rs, get.rs, set.rs, query.rs)
 - **Implement from the RFCs** — do not copy from Stalwart's AGPL server code
 - **Maintain Apache-2.0 / MIT dual license**
+- **Async-only** — no blocking support

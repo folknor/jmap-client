@@ -60,10 +60,10 @@ pub struct ChangesResponse<O: ChangesObject> {
 }
 
 impl ChangesRequest {
-    pub fn new(params: RequestParams, since_state: String) -> Self {
+    pub fn new(params: RequestParams<'_>, since_state: String) -> Self {
         ChangesRequest {
             method: (params.method, params.call_id),
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             since_state,
             max_changes: None,
         }

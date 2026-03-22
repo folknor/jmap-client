@@ -121,9 +121,9 @@ pub struct QueryResponse {
 }
 
 impl<O: QueryObject> QueryRequest<O> {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         QueryRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             method: (params.method, params.call_id),
             filter: None,
             sort: None,

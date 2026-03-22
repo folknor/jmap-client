@@ -64,9 +64,9 @@ pub struct EmailParseResponse {
 }
 
 impl EmailParseRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         EmailParseRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             blob_ids: Vec::new(),
             properties: None,
             body_properties: None,

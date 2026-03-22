@@ -26,20 +26,10 @@ pub mod response;
 pub mod session;
 pub mod set;
 
-pub struct RequestParams {
-    pub account_id: String,
+pub struct RequestParams<'a> {
+    pub account_id: &'a str,
     pub method: Method,
     pub call_id: usize,
-}
-
-impl RequestParams {
-    pub fn new(account_id: impl Into<String>, method: Method, call_id: usize) -> Self {
-        Self {
-            account_id: account_id.into(),
-            method,
-            call_id,
-        }
-    }
 }
 
 pub trait Object: Sized {

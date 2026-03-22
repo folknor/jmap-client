@@ -44,9 +44,9 @@ pub struct ContactCardParseResponse {
 }
 
 impl ContactCardParseRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         ContactCardParseRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             blob_ids: Vec::new(),
             properties: None,
         }

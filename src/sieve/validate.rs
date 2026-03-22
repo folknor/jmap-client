@@ -21,9 +21,9 @@ pub struct SieveScriptValidateResponse {
 }
 
 impl SieveScriptValidateRequest {
-    pub fn new(params: RequestParams, blob_id: impl Into<String>) -> Self {
+    pub fn new(params: RequestParams<'_>, blob_id: impl Into<String>) -> Self {
         SieveScriptValidateRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             blob_id: blob_id.into(),
         }
     }

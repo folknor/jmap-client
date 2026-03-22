@@ -70,9 +70,9 @@ pub struct AddedItem {
 }
 
 impl<O: QueryObject> QueryChangesRequest<O> {
-    pub fn new(params: RequestParams, since_query_state: String) -> Self {
+    pub fn new(params: RequestParams<'_>, since_query_state: String) -> Self {
         QueryChangesRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             filter: None,
             sort: None,
             since_query_state,

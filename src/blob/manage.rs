@@ -112,9 +112,9 @@ pub struct BlobUploadCreated {
 }
 
 impl BlobUploadRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         BlobUploadRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             create: AHashMap::new(),
         }
     }
@@ -312,9 +312,9 @@ impl BlobGetResult {
 }
 
 impl BlobGetRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         BlobGetRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             ids: Vec::new(),
             properties: None,
             offset: None,
@@ -422,9 +422,9 @@ pub struct BlobLookupResult {
 }
 
 impl BlobLookupRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         BlobLookupRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             type_names: Vec::new(),
             ids: Vec::new(),
         }

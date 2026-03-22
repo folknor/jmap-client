@@ -40,10 +40,10 @@ pub struct CopyBlobResponse {
 }
 
 impl CopyBlobRequest {
-    pub fn new(params: RequestParams, from_account_id: impl Into<String>) -> Self {
+    pub fn new(params: RequestParams<'_>, from_account_id: impl Into<String>) -> Self {
         CopyBlobRequest {
             from_account_id: from_account_id.into(),
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             blob_ids: vec![],
         }
     }

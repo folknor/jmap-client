@@ -44,9 +44,9 @@ pub struct CalendarEventParseResponse {
 }
 
 impl CalendarEventParseRequest {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         CalendarEventParseRequest {
-            account_id: params.account_id,
+            account_id: params.account_id.to_string(),
             blob_ids: Vec::new(),
             properties: None,
         }

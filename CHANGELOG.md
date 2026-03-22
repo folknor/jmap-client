@@ -46,9 +46,15 @@ jmap-client 0.5.0
 - `Property::Serialize` is zero-allocation (direct `&str` match instead of `to_string()`).
 - Macros deduplicate ~1,500 lines of boilerplate in request.rs and response.rs.
 
+### Removed
+- **Blocking support removed** — the crate is now async-only. The `blocking` feature, `maybe-async` dependency, and all 185 `#[maybe_async::maybe_async]` annotations are gone. Fixes the long-standing `--all-features` compilation failure.
+- **`async` feature removed** — async is no longer optional, `futures-util` and `async-stream` are unconditional dependencies.
+- **`ring`/`aws_lc_rs` feature selectors removed** — `rustls` is an implementation detail of the `websockets` feature, not a user-facing TLS backend choice.
+
 ### Dependencies
 - `reqwest` 0.12 -> 0.13 (feature `rustls-tls-webpki-roots` renamed to `rustls`).
 - `tokio-tungstenite` 0.28 -> 0.29.
+- `maybe-async` removed.
 
 ### Testing
 - 57 tests (up from 4) covering serialization, deserialization, nullable semantics, property round-trips, query filters, blob wire format, session capabilities, and alert triggers.

@@ -21,7 +21,7 @@ _jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in 
 
 ## Features
 
-- Async and blocking support (`blocking` cargo feature).
+- Async-only (powered by `reqwest` + `tokio`).
 - WebSocket async streams (`websockets` cargo feature).
 - EventSource async streams.
 - Typed builders and accessors for all JMAP object types.
@@ -32,16 +32,12 @@ _jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in 
 
 | Feature | Default | Description |
 |---------|---------|-------------|
-| `async` | Yes | Async client with `reqwest` |
-| `blocking` | No | Synchronous client |
 | `websockets` | Yes | JMAP over WebSocket |
 | `mail` | Yes | Email, Mailbox, Thread, Identity, EmailSubmission, Sieve, VacationResponse |
 | `calendars` | Yes | Calendar, CalendarEvent, CalendarEventNotification, ParticipantIdentity |
 | `contacts` | Yes | AddressBook, ContactCard |
 | `blob` | Yes | Blob/upload, Blob/get, Blob/lookup (RFC 9404) |
 | `quota` | Yes | Quota/get, Quota/query (RFC 9425) |
-| `ring` | Yes | Use `ring` as TLS backend |
-| `aws_lc_rs` | No | Use `aws-lc-rs` as TLS backend |
 
 ## Usage Example
 

@@ -719,7 +719,8 @@ impl<'de> Deserialize<'de> for BodyProperty {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct MailCapabilities {
     #[serde(rename = "maxMailboxesPerEmail")]
     max_mailboxes_per_email: Option<usize>,
@@ -740,7 +741,8 @@ pub struct MailCapabilities {
     may_create_top_level_mailbox: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct SubmissionCapabilities {
     #[serde(rename = "maxDelayedSend")]
     max_delayed_send: usize,

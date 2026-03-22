@@ -148,10 +148,10 @@ pub enum SetErrorType {
 }
 
 impl<O: SetObject> SetRequest<O> {
-    pub fn new(params: RequestParams) -> Self {
+    pub fn new(params: RequestParams<'_>) -> Self {
         Self {
             account_id: if O::requires_account_id() {
-                params.account_id.into()
+                params.account_id.to_string().into()
             } else {
                 None
             },
