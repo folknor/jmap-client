@@ -180,87 +180,87 @@ pub struct TaggedMethodResponse {
 
 #[derive(Debug)]
 pub enum MethodResponse {
-    CopyBlob(CopyBlobResponse),
-    UploadBlob(BlobUploadResponse),
-    GetBlob(BlobGetResponse),
-    LookupBlob(BlobLookupResponse),
-    GetPushSubscription(PushSubscriptionGetResponse),
-    SetPushSubscription(PushSubscriptionSetResponse),
-    GetMailbox(MailboxGetResponse),
-    ChangesMailbox(MailboxChangesResponse),
-    QueryMailbox(QueryResponse),
-    QueryChangesMailbox(QueryChangesResponse),
-    SetMailbox(MailboxSetResponse),
-    GetThread(ThreadGetResponse),
-    ChangesThread(ThreadChangesResponse),
-    GetEmail(EmailGetResponse),
-    ChangesEmail(EmailChangesResponse),
-    QueryEmail(QueryResponse),
-    QueryChangesEmail(QueryChangesResponse),
-    SetEmail(EmailSetResponse),
-    CopyEmail(EmailCopyResponse),
-    ImportEmail(EmailImportResponse),
-    ParseEmail(EmailParseResponse),
-    GetSearchSnippet(SearchSnippetGetResponse),
-    GetIdentity(IdentityGetResponse),
-    ChangesIdentity(IdentityChangesResponse),
-    SetIdentity(IdentitySetResponse),
-    GetEmailSubmission(EmailSubmissionGetResponse),
-    ChangesEmailSubmission(EmailSubmissionChangesResponse),
-    QueryEmailSubmission(QueryResponse),
-    QueryChangesEmailSubmission(QueryChangesResponse),
-    SetEmailSubmission(EmailSubmissionSetResponse),
-    GetVacationResponse(VacationResponseGetResponse),
-    SetVacationResponse(VacationResponseSetResponse),
-    GetSieveScript(SieveScriptGetResponse),
-    QuerySieveScript(QueryResponse),
-    SetSieveScript(SieveScriptSetResponse),
-    ValidateSieveScript(SieveScriptValidateResponse),
+    CopyBlob(Box<CopyBlobResponse>),
+    UploadBlob(Box<BlobUploadResponse>),
+    GetBlob(Box<BlobGetResponse>),
+    LookupBlob(Box<BlobLookupResponse>),
+    GetPushSubscription(Box<PushSubscriptionGetResponse>),
+    SetPushSubscription(Box<PushSubscriptionSetResponse>),
+    GetMailbox(Box<MailboxGetResponse>),
+    ChangesMailbox(Box<MailboxChangesResponse>),
+    QueryMailbox(Box<QueryResponse>),
+    QueryChangesMailbox(Box<QueryChangesResponse>),
+    SetMailbox(Box<MailboxSetResponse>),
+    GetThread(Box<ThreadGetResponse>),
+    ChangesThread(Box<ThreadChangesResponse>),
+    GetEmail(Box<EmailGetResponse>),
+    ChangesEmail(Box<EmailChangesResponse>),
+    QueryEmail(Box<QueryResponse>),
+    QueryChangesEmail(Box<QueryChangesResponse>),
+    SetEmail(Box<EmailSetResponse>),
+    CopyEmail(Box<EmailCopyResponse>),
+    ImportEmail(Box<EmailImportResponse>),
+    ParseEmail(Box<EmailParseResponse>),
+    GetSearchSnippet(Box<SearchSnippetGetResponse>),
+    GetIdentity(Box<IdentityGetResponse>),
+    ChangesIdentity(Box<IdentityChangesResponse>),
+    SetIdentity(Box<IdentitySetResponse>),
+    GetEmailSubmission(Box<EmailSubmissionGetResponse>),
+    ChangesEmailSubmission(Box<EmailSubmissionChangesResponse>),
+    QueryEmailSubmission(Box<QueryResponse>),
+    QueryChangesEmailSubmission(Box<QueryChangesResponse>),
+    SetEmailSubmission(Box<EmailSubmissionSetResponse>),
+    GetVacationResponse(Box<VacationResponseGetResponse>),
+    SetVacationResponse(Box<VacationResponseSetResponse>),
+    GetSieveScript(Box<SieveScriptGetResponse>),
+    QuerySieveScript(Box<QueryResponse>),
+    SetSieveScript(Box<SieveScriptSetResponse>),
+    ValidateSieveScript(Box<SieveScriptValidateResponse>),
 
-    GetPrincipal(PrincipalGetResponse),
-    ChangesPrincipal(PrincipalChangesResponse),
-    QueryPrincipal(QueryResponse),
-    QueryChangesPrincipal(QueryChangesResponse),
-    SetPrincipal(PrincipalSetResponse),
-    GetAvailabilityPrincipal(PrincipalGetAvailabilityResponse),
+    GetPrincipal(Box<PrincipalGetResponse>),
+    ChangesPrincipal(Box<PrincipalChangesResponse>),
+    QueryPrincipal(Box<QueryResponse>),
+    QueryChangesPrincipal(Box<QueryChangesResponse>),
+    SetPrincipal(Box<PrincipalSetResponse>),
+    GetAvailabilityPrincipal(Box<PrincipalGetAvailabilityResponse>),
 
-    GetQuota(QuotaGetResponse),
-    ChangesQuota(QuotaChangesResponse),
-    QueryQuota(QueryResponse),
-    QueryChangesQuota(QueryChangesResponse),
+    GetQuota(Box<QuotaGetResponse>),
+    ChangesQuota(Box<QuotaChangesResponse>),
+    QueryQuota(Box<QueryResponse>),
+    QueryChangesQuota(Box<QueryChangesResponse>),
 
-    GetCalendar(CalendarGetResponse),
-    ChangesCalendar(CalendarChangesResponse),
-    SetCalendar(CalendarSetResponse),
-    GetCalendarEvent(CalendarEventGetResponse),
-    ChangesCalendarEvent(CalendarEventChangesResponse),
-    QueryCalendarEvent(QueryResponse),
-    QueryChangesCalendarEvent(QueryChangesResponse),
-    SetCalendarEvent(CalendarEventSetResponse),
-    ParseCalendarEvent(CalendarEventParseResponse),
-    CopyCalendarEvent(CalendarEventCopyResponse),
-    GetCalendarEventNotification(CalendarEventNotificationGetResponse),
-    ChangesCalendarEventNotification(CalendarEventNotificationChangesResponse),
-    QueryCalendarEventNotification(QueryResponse),
-    QueryChangesCalendarEventNotification(QueryChangesResponse),
-    SetCalendarEventNotification(CalendarEventNotificationSetResponse),
-    GetParticipantIdentity(ParticipantIdentityGetResponse),
-    ChangesParticipantIdentity(ParticipantIdentityChangesResponse),
-    SetParticipantIdentity(ParticipantIdentitySetResponse),
+    GetCalendar(Box<CalendarGetResponse>),
+    ChangesCalendar(Box<CalendarChangesResponse>),
+    SetCalendar(Box<CalendarSetResponse>),
+    GetCalendarEvent(Box<CalendarEventGetResponse>),
+    ChangesCalendarEvent(Box<CalendarEventChangesResponse>),
+    QueryCalendarEvent(Box<QueryResponse>),
+    QueryChangesCalendarEvent(Box<QueryChangesResponse>),
+    SetCalendarEvent(Box<CalendarEventSetResponse>),
+    ParseCalendarEvent(Box<CalendarEventParseResponse>),
+    CopyCalendarEvent(Box<CalendarEventCopyResponse>),
+    GetCalendarEventNotification(Box<CalendarEventNotificationGetResponse>),
+    ChangesCalendarEventNotification(Box<CalendarEventNotificationChangesResponse>),
+    QueryCalendarEventNotification(Box<QueryResponse>),
+    QueryChangesCalendarEventNotification(Box<QueryChangesResponse>),
+    SetCalendarEventNotification(Box<CalendarEventNotificationSetResponse>),
+    GetParticipantIdentity(Box<ParticipantIdentityGetResponse>),
+    ChangesParticipantIdentity(Box<ParticipantIdentityChangesResponse>),
+    SetParticipantIdentity(Box<ParticipantIdentitySetResponse>),
 
-    GetAddressBook(AddressBookGetResponse),
-    ChangesAddressBook(AddressBookChangesResponse),
-    SetAddressBook(AddressBookSetResponse),
-    GetContactCard(ContactCardGetResponse),
-    ChangesContactCard(ContactCardChangesResponse),
-    QueryContactCard(QueryResponse),
-    QueryChangesContactCard(QueryChangesResponse),
-    SetContactCard(ContactCardSetResponse),
-    ParseContactCard(ContactCardParseResponse),
-    CopyContactCard(ContactCardCopyResponse),
+    GetAddressBook(Box<AddressBookGetResponse>),
+    ChangesAddressBook(Box<AddressBookChangesResponse>),
+    SetAddressBook(Box<AddressBookSetResponse>),
+    GetContactCard(Box<ContactCardGetResponse>),
+    ChangesContactCard(Box<ContactCardChangesResponse>),
+    QueryContactCard(Box<QueryResponse>),
+    QueryChangesContactCard(Box<QueryChangesResponse>),
+    SetContactCard(Box<ContactCardSetResponse>),
+    ParseContactCard(Box<ContactCardParseResponse>),
+    CopyContactCard(Box<ContactCardCopyResponse>),
 
-    Echo(serde_json::Value),
-    Error(MethodError),
+    Echo(Box<serde_json::Value>),
+    Error(Box<MethodError>),
 }
 
 impl TaggedMethodResponse {
@@ -467,328 +467,328 @@ impl TaggedMethodResponse {
 
     pub fn unwrap_upload_blob(self) -> crate::Result<BlobUploadResponse> {
         match self.response {
-            MethodResponse::UploadBlob(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::UploadBlob(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_blob(self) -> crate::Result<BlobGetResponse> {
         match self.response {
-            MethodResponse::GetBlob(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetBlob(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_lookup_blob(self) -> crate::Result<BlobLookupResponse> {
         match self.response {
-            MethodResponse::LookupBlob(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::LookupBlob(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_copy_blob(self) -> crate::Result<CopyBlobResponse> {
         match self.response {
-            MethodResponse::CopyBlob(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::CopyBlob(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_push_subscription(self) -> crate::Result<PushSubscriptionGetResponse> {
         match self.response {
-            MethodResponse::GetPushSubscription(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetPushSubscription(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_push_subscription(self) -> crate::Result<PushSubscriptionSetResponse> {
         match self.response {
-            MethodResponse::SetPushSubscription(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetPushSubscription(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_mailbox(self) -> crate::Result<MailboxGetResponse> {
         match self.response {
-            MethodResponse::GetMailbox(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetMailbox(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_mailbox(self) -> crate::Result<MailboxChangesResponse> {
         match self.response {
-            MethodResponse::ChangesMailbox(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesMailbox(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_mailbox(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryMailbox(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryMailbox(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_mailbox(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesMailbox(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesMailbox(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_mailbox(self) -> crate::Result<MailboxSetResponse> {
         match self.response {
-            MethodResponse::SetMailbox(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetMailbox(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_thread(self) -> crate::Result<ThreadGetResponse> {
         match self.response {
-            MethodResponse::GetThread(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetThread(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_thread(self) -> crate::Result<ThreadChangesResponse> {
         match self.response {
-            MethodResponse::ChangesThread(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesThread(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_email(self) -> crate::Result<EmailGetResponse> {
         match self.response {
-            MethodResponse::GetEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_email(self) -> crate::Result<EmailChangesResponse> {
         match self.response {
-            MethodResponse::ChangesEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_email(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_email(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_email(self) -> crate::Result<EmailSetResponse> {
         match self.response {
-            MethodResponse::SetEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_copy_email(self) -> crate::Result<EmailCopyResponse> {
         match self.response {
-            MethodResponse::CopyEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::CopyEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_import_email(self) -> crate::Result<EmailImportResponse> {
         match self.response {
-            MethodResponse::ImportEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ImportEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_parse_email(self) -> crate::Result<EmailParseResponse> {
         match self.response {
-            MethodResponse::ParseEmail(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ParseEmail(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_search_snippet(self) -> crate::Result<SearchSnippetGetResponse> {
         match self.response {
-            MethodResponse::GetSearchSnippet(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetSearchSnippet(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_identity(self) -> crate::Result<IdentityGetResponse> {
         match self.response {
-            MethodResponse::GetIdentity(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetIdentity(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_identity(self) -> crate::Result<IdentityChangesResponse> {
         match self.response {
-            MethodResponse::ChangesIdentity(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesIdentity(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_identity(self) -> crate::Result<IdentitySetResponse> {
         match self.response {
-            MethodResponse::SetIdentity(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetIdentity(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_email_submission(self) -> crate::Result<EmailSubmissionGetResponse> {
         match self.response {
-            MethodResponse::GetEmailSubmission(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetEmailSubmission(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_email_submission(self) -> crate::Result<EmailSubmissionChangesResponse> {
         match self.response {
-            MethodResponse::ChangesEmailSubmission(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesEmailSubmission(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_email_submission(self) -> crate::Result<EmailSubmissionSetResponse> {
         match self.response {
-            MethodResponse::SetEmailSubmission(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetEmailSubmission(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_email_submission(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryEmailSubmission(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryEmailSubmission(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_email_submission(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesEmailSubmission(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesEmailSubmission(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_vacation_response(self) -> crate::Result<VacationResponseGetResponse> {
         match self.response {
-            MethodResponse::GetVacationResponse(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetVacationResponse(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_vacation_response(self) -> crate::Result<VacationResponseSetResponse> {
         match self.response {
-            MethodResponse::SetVacationResponse(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetVacationResponse(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_sieve_script(self) -> crate::Result<SieveScriptGetResponse> {
         match self.response {
-            MethodResponse::GetSieveScript(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetSieveScript(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_validate_sieve_script(self) -> crate::Result<SieveScriptValidateResponse> {
         match self.response {
-            MethodResponse::ValidateSieveScript(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ValidateSieveScript(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_sieve_script(self) -> crate::Result<SieveScriptSetResponse> {
         match self.response {
-            MethodResponse::SetSieveScript(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetSieveScript(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_sieve_script(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QuerySieveScript(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QuerySieveScript(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_principal(self) -> crate::Result<PrincipalGetResponse> {
         match self.response {
-            MethodResponse::GetPrincipal(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetPrincipal(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_principal(self) -> crate::Result<PrincipalChangesResponse> {
         match self.response {
-            MethodResponse::ChangesPrincipal(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesPrincipal(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_principal(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryPrincipal(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryPrincipal(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_principal(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesPrincipal(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesPrincipal(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_principal(self) -> crate::Result<PrincipalSetResponse> {
         match self.response {
-            MethodResponse::SetPrincipal(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetPrincipal(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -797,120 +797,120 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<PrincipalGetAvailabilityResponse> {
         match self.response {
-            MethodResponse::GetAvailabilityPrincipal(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetAvailabilityPrincipal(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_quota(self) -> crate::Result<QuotaGetResponse> {
         match self.response {
-            MethodResponse::GetQuota(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetQuota(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_quota(self) -> crate::Result<QuotaChangesResponse> {
         match self.response {
-            MethodResponse::ChangesQuota(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesQuota(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_quota(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryQuota(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryQuota(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_quota(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesQuota(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesQuota(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_calendar(self) -> crate::Result<CalendarGetResponse> {
         match self.response {
-            MethodResponse::GetCalendar(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetCalendar(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_calendar(self) -> crate::Result<CalendarChangesResponse> {
         match self.response {
-            MethodResponse::ChangesCalendar(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesCalendar(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_calendar(self) -> crate::Result<CalendarSetResponse> {
         match self.response {
-            MethodResponse::SetCalendar(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetCalendar(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_calendar_event(self) -> crate::Result<CalendarEventGetResponse> {
         match self.response {
-            MethodResponse::GetCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_calendar_event(self) -> crate::Result<CalendarEventChangesResponse> {
         match self.response {
-            MethodResponse::ChangesCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_calendar_event(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_calendar_event(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_calendar_event(self) -> crate::Result<CalendarEventSetResponse> {
         match self.response {
-            MethodResponse::SetCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_parse_calendar_event(self) -> crate::Result<CalendarEventParseResponse> {
         match self.response {
-            MethodResponse::ParseCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ParseCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_copy_calendar_event(self) -> crate::Result<CalendarEventCopyResponse> {
         match self.response {
-            MethodResponse::CopyCalendarEvent(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::CopyCalendarEvent(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -919,8 +919,8 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<CalendarEventNotificationGetResponse> {
         match self.response {
-            MethodResponse::GetCalendarEventNotification(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetCalendarEventNotification(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -929,16 +929,16 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<CalendarEventNotificationChangesResponse> {
         match self.response {
-            MethodResponse::ChangesCalendarEventNotification(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesCalendarEventNotification(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_calendar_event_notification(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryCalendarEventNotification(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryCalendarEventNotification(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -947,8 +947,8 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesCalendarEventNotification(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesCalendarEventNotification(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -957,8 +957,8 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<CalendarEventNotificationSetResponse> {
         match self.response {
-            MethodResponse::SetCalendarEventNotification(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetCalendarEventNotification(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -967,8 +967,8 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<ParticipantIdentityGetResponse> {
         match self.response {
-            MethodResponse::GetParticipantIdentity(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetParticipantIdentity(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -977,8 +977,8 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<ParticipantIdentityChangesResponse> {
         match self.response {
-            MethodResponse::ChangesParticipantIdentity(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesParticipantIdentity(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -987,96 +987,96 @@ impl TaggedMethodResponse {
         self,
     ) -> crate::Result<ParticipantIdentitySetResponse> {
         match self.response {
-            MethodResponse::SetParticipantIdentity(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetParticipantIdentity(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_address_book(self) -> crate::Result<AddressBookGetResponse> {
         match self.response {
-            MethodResponse::GetAddressBook(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetAddressBook(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_address_book(self) -> crate::Result<AddressBookChangesResponse> {
         match self.response {
-            MethodResponse::ChangesAddressBook(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesAddressBook(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_address_book(self) -> crate::Result<AddressBookSetResponse> {
         match self.response {
-            MethodResponse::SetAddressBook(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetAddressBook(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_get_contact_card(self) -> crate::Result<ContactCardGetResponse> {
         match self.response {
-            MethodResponse::GetContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::GetContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_changes_contact_card(self) -> crate::Result<ContactCardChangesResponse> {
         match self.response {
-            MethodResponse::ChangesContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ChangesContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_contact_card(self) -> crate::Result<QueryResponse> {
         match self.response {
-            MethodResponse::QueryContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_query_changes_contact_card(self) -> crate::Result<QueryChangesResponse> {
         match self.response {
-            MethodResponse::QueryChangesContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::QueryChangesContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_set_contact_card(self) -> crate::Result<ContactCardSetResponse> {
         match self.response {
-            MethodResponse::SetContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::SetContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_parse_contact_card(self) -> crate::Result<ContactCardParseResponse> {
         match self.response {
-            MethodResponse::ParseContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::ParseContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_copy_contact_card(self) -> crate::Result<ContactCardCopyResponse> {
         match self.response {
-            MethodResponse::CopyContactCard(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::CopyContactCard(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
 
     pub fn unwrap_echo(self) -> crate::Result<serde_json::Value> {
         match self.response {
-            MethodResponse::Echo(response) => Ok(response),
-            MethodResponse::Error(err) => Err(err.into()),
+            MethodResponse::Echo(response) => Ok(*response),
+            MethodResponse::Error(err) => Err((*err).into()),
             _ => Err("Response type mismatch".into()),
         }
     }
@@ -1112,330 +1112,330 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
             .next_element::<Method>()?
             .ok_or_else(|| serde::de::Error::custom("Expected a method name"))?
         {
-            Method::Echo => MethodResponse::Echo(
+            Method::Echo => MethodResponse::Echo(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::UploadBlob => MethodResponse::UploadBlob(
+            )),
+            Method::UploadBlob => MethodResponse::UploadBlob(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetBlob => MethodResponse::GetBlob(
+            )),
+            Method::GetBlob => MethodResponse::GetBlob(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::LookupBlob => MethodResponse::LookupBlob(
+            )),
+            Method::LookupBlob => MethodResponse::LookupBlob(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::CopyBlob => MethodResponse::CopyBlob(
+            )),
+            Method::CopyBlob => MethodResponse::CopyBlob(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetPushSubscription => MethodResponse::GetPushSubscription(
+            )),
+            Method::GetPushSubscription => MethodResponse::GetPushSubscription(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetPushSubscription => MethodResponse::SetPushSubscription(
+            )),
+            Method::SetPushSubscription => MethodResponse::SetPushSubscription(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetMailbox => MethodResponse::GetMailbox(
+            )),
+            Method::GetMailbox => MethodResponse::GetMailbox(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesMailbox => MethodResponse::ChangesMailbox(
+            )),
+            Method::ChangesMailbox => MethodResponse::ChangesMailbox(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryMailbox => MethodResponse::QueryMailbox(
+            )),
+            Method::QueryMailbox => MethodResponse::QueryMailbox(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesMailbox => MethodResponse::QueryChangesMailbox(
+            )),
+            Method::QueryChangesMailbox => MethodResponse::QueryChangesMailbox(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetMailbox => MethodResponse::SetMailbox(
+            )),
+            Method::SetMailbox => MethodResponse::SetMailbox(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetThread => MethodResponse::GetThread(
+            )),
+            Method::GetThread => MethodResponse::GetThread(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesThread => MethodResponse::ChangesThread(
+            )),
+            Method::ChangesThread => MethodResponse::ChangesThread(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetEmail => MethodResponse::GetEmail(
+            )),
+            Method::GetEmail => MethodResponse::GetEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesEmail => MethodResponse::ChangesEmail(
+            )),
+            Method::ChangesEmail => MethodResponse::ChangesEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryEmail => MethodResponse::QueryEmail(
+            )),
+            Method::QueryEmail => MethodResponse::QueryEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesEmail => MethodResponse::QueryChangesEmail(
+            )),
+            Method::QueryChangesEmail => MethodResponse::QueryChangesEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetEmail => MethodResponse::SetEmail(
+            )),
+            Method::SetEmail => MethodResponse::SetEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::CopyEmail => MethodResponse::CopyEmail(
+            )),
+            Method::CopyEmail => MethodResponse::CopyEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ImportEmail => MethodResponse::ImportEmail(
+            )),
+            Method::ImportEmail => MethodResponse::ImportEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ParseEmail => MethodResponse::ParseEmail(
+            )),
+            Method::ParseEmail => MethodResponse::ParseEmail(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetSearchSnippet => MethodResponse::GetSearchSnippet(
+            )),
+            Method::GetSearchSnippet => MethodResponse::GetSearchSnippet(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetIdentity => MethodResponse::GetIdentity(
+            )),
+            Method::GetIdentity => MethodResponse::GetIdentity(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesIdentity => MethodResponse::ChangesIdentity(
+            )),
+            Method::ChangesIdentity => MethodResponse::ChangesIdentity(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetIdentity => MethodResponse::SetIdentity(
+            )),
+            Method::SetIdentity => MethodResponse::SetIdentity(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetEmailSubmission => MethodResponse::GetEmailSubmission(
+            )),
+            Method::GetEmailSubmission => MethodResponse::GetEmailSubmission(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesEmailSubmission => MethodResponse::ChangesEmailSubmission(
+            )),
+            Method::ChangesEmailSubmission => MethodResponse::ChangesEmailSubmission(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryEmailSubmission => MethodResponse::QueryEmailSubmission(
+            )),
+            Method::QueryEmailSubmission => MethodResponse::QueryEmailSubmission(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesEmailSubmission => MethodResponse::QueryChangesEmailSubmission(
+            )),
+            Method::QueryChangesEmailSubmission => MethodResponse::QueryChangesEmailSubmission(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetEmailSubmission => MethodResponse::SetEmailSubmission(
+            )),
+            Method::SetEmailSubmission => MethodResponse::SetEmailSubmission(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetVacationResponse => MethodResponse::GetVacationResponse(
+            )),
+            Method::GetVacationResponse => MethodResponse::GetVacationResponse(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetVacationResponse => MethodResponse::SetVacationResponse(
+            )),
+            Method::SetVacationResponse => MethodResponse::SetVacationResponse(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetSieveScript => MethodResponse::GetSieveScript(
+            )),
+            Method::GetSieveScript => MethodResponse::GetSieveScript(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetSieveScript => MethodResponse::SetSieveScript(
+            )),
+            Method::SetSieveScript => MethodResponse::SetSieveScript(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QuerySieveScript => MethodResponse::QuerySieveScript(
+            )),
+            Method::QuerySieveScript => MethodResponse::QuerySieveScript(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ValidateSieveScript => MethodResponse::ValidateSieveScript(
+            )),
+            Method::ValidateSieveScript => MethodResponse::ValidateSieveScript(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetPrincipal => MethodResponse::GetPrincipal(
+            )),
+            Method::GetPrincipal => MethodResponse::GetPrincipal(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesPrincipal => MethodResponse::ChangesPrincipal(
+            )),
+            Method::ChangesPrincipal => MethodResponse::ChangesPrincipal(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryPrincipal => MethodResponse::QueryPrincipal(
+            )),
+            Method::QueryPrincipal => MethodResponse::QueryPrincipal(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesPrincipal => MethodResponse::QueryChangesPrincipal(
+            )),
+            Method::QueryChangesPrincipal => MethodResponse::QueryChangesPrincipal(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetPrincipal => MethodResponse::SetPrincipal(
+            )),
+            Method::SetPrincipal => MethodResponse::SetPrincipal(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetAvailabilityPrincipal => MethodResponse::GetAvailabilityPrincipal(
+            )),
+            Method::GetAvailabilityPrincipal => MethodResponse::GetAvailabilityPrincipal(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetQuota => MethodResponse::GetQuota(
+            )),
+            Method::GetQuota => MethodResponse::GetQuota(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesQuota => MethodResponse::ChangesQuota(
+            )),
+            Method::ChangesQuota => MethodResponse::ChangesQuota(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryQuota => MethodResponse::QueryQuota(
+            )),
+            Method::QueryQuota => MethodResponse::QueryQuota(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesQuota => MethodResponse::QueryChangesQuota(
+            )),
+            Method::QueryChangesQuota => MethodResponse::QueryChangesQuota(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetCalendar => MethodResponse::GetCalendar(
+            )),
+            Method::GetCalendar => MethodResponse::GetCalendar(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesCalendar => MethodResponse::ChangesCalendar(
+            )),
+            Method::ChangesCalendar => MethodResponse::ChangesCalendar(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetCalendar => MethodResponse::SetCalendar(
+            )),
+            Method::SetCalendar => MethodResponse::SetCalendar(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetCalendarEvent => MethodResponse::GetCalendarEvent(
+            )),
+            Method::GetCalendarEvent => MethodResponse::GetCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesCalendarEvent => MethodResponse::ChangesCalendarEvent(
+            )),
+            Method::ChangesCalendarEvent => MethodResponse::ChangesCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryCalendarEvent => MethodResponse::QueryCalendarEvent(
+            )),
+            Method::QueryCalendarEvent => MethodResponse::QueryCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesCalendarEvent => MethodResponse::QueryChangesCalendarEvent(
+            )),
+            Method::QueryChangesCalendarEvent => MethodResponse::QueryChangesCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetCalendarEvent => MethodResponse::SetCalendarEvent(
+            )),
+            Method::SetCalendarEvent => MethodResponse::SetCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ParseCalendarEvent => MethodResponse::ParseCalendarEvent(
+            )),
+            Method::ParseCalendarEvent => MethodResponse::ParseCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::CopyCalendarEvent => MethodResponse::CopyCalendarEvent(
+            )),
+            Method::CopyCalendarEvent => MethodResponse::CopyCalendarEvent(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
+            )),
             Method::GetCalendarEventNotification => {
-                MethodResponse::GetCalendarEventNotification(
+                MethodResponse::GetCalendarEventNotification(Box::new(
                     seq.next_element()?
                         .ok_or_else(|| {
                             serde::de::Error::custom("Expected a method response")
                         })?,
-                )
+                ))
             }
             Method::ChangesCalendarEventNotification => {
-                MethodResponse::ChangesCalendarEventNotification(
+                MethodResponse::ChangesCalendarEventNotification(Box::new(
                     seq.next_element()?
                         .ok_or_else(|| {
                             serde::de::Error::custom("Expected a method response")
                         })?,
-                )
+                ))
             }
             Method::QueryCalendarEventNotification => {
-                MethodResponse::QueryCalendarEventNotification(
+                MethodResponse::QueryCalendarEventNotification(Box::new(
                     seq.next_element()?
                         .ok_or_else(|| {
                             serde::de::Error::custom("Expected a method response")
                         })?,
-                )
+                ))
             }
             Method::QueryChangesCalendarEventNotification => {
-                MethodResponse::QueryChangesCalendarEventNotification(
+                MethodResponse::QueryChangesCalendarEventNotification(Box::new(
                     seq.next_element()?
                         .ok_or_else(|| {
                             serde::de::Error::custom("Expected a method response")
                         })?,
-                )
+                ))
             }
             Method::SetCalendarEventNotification => {
-                MethodResponse::SetCalendarEventNotification(
+                MethodResponse::SetCalendarEventNotification(Box::new(
                     seq.next_element()?
                         .ok_or_else(|| {
                             serde::de::Error::custom("Expected a method response")
                         })?,
-                )
+                ))
             }
-            Method::GetParticipantIdentity => MethodResponse::GetParticipantIdentity(
+            Method::GetParticipantIdentity => MethodResponse::GetParticipantIdentity(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesParticipantIdentity => MethodResponse::ChangesParticipantIdentity(
+            )),
+            Method::ChangesParticipantIdentity => MethodResponse::ChangesParticipantIdentity(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetParticipantIdentity => MethodResponse::SetParticipantIdentity(
+            )),
+            Method::SetParticipantIdentity => MethodResponse::SetParticipantIdentity(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetAddressBook => MethodResponse::GetAddressBook(
+            )),
+            Method::GetAddressBook => MethodResponse::GetAddressBook(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesAddressBook => MethodResponse::ChangesAddressBook(
+            )),
+            Method::ChangesAddressBook => MethodResponse::ChangesAddressBook(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetAddressBook => MethodResponse::SetAddressBook(
+            )),
+            Method::SetAddressBook => MethodResponse::SetAddressBook(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::GetContactCard => MethodResponse::GetContactCard(
+            )),
+            Method::GetContactCard => MethodResponse::GetContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ChangesContactCard => MethodResponse::ChangesContactCard(
+            )),
+            Method::ChangesContactCard => MethodResponse::ChangesContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryContactCard => MethodResponse::QueryContactCard(
+            )),
+            Method::QueryContactCard => MethodResponse::QueryContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::QueryChangesContactCard => MethodResponse::QueryChangesContactCard(
+            )),
+            Method::QueryChangesContactCard => MethodResponse::QueryChangesContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::SetContactCard => MethodResponse::SetContactCard(
+            )),
+            Method::SetContactCard => MethodResponse::SetContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::ParseContactCard => MethodResponse::ParseContactCard(
+            )),
+            Method::ParseContactCard => MethodResponse::ParseContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::CopyContactCard => MethodResponse::CopyContactCard(
+            )),
+            Method::CopyContactCard => MethodResponse::CopyContactCard(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
-            Method::Error => MethodResponse::Error(
+            )),
+            Method::Error => MethodResponse::Error(Box::new(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
-            ),
+            )),
         };
 
         let id = seq

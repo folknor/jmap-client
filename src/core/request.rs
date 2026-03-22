@@ -78,216 +78,216 @@ pub struct ResultReference {
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Arguments {
-    Changes(ChangesRequest),
-    PushGet(GetRequest<PushSubscription<Set>>),
-    PushSet(SetRequest<PushSubscription<Set>>),
-    BlobCopy(CopyBlobRequest),
-    BlobUpload(BlobUploadRequest),
-    BlobGet(BlobGetRequest),
-    BlobLookup(BlobLookupRequest),
-    MailboxGet(GetRequest<Mailbox<Set>>),
-    MailboxQuery(QueryRequest<Mailbox<Set>>),
-    MailboxQueryChanges(QueryChangesRequest<Mailbox<Set>>),
-    MailboxSet(SetRequest<Mailbox<Set>>),
-    ThreadGet(GetRequest<Thread>),
-    EmailGet(GetRequest<Email<Set>>),
-    EmailQuery(QueryRequest<Email<Set>>),
-    EmailQueryChanges(QueryChangesRequest<Email<Set>>),
-    EmailSet(SetRequest<Email<Set>>),
-    EmailCopy(CopyRequest<Email<Set>>),
-    EmailImport(EmailImportRequest),
-    EmailParse(EmailParseRequest),
-    SearchSnippetGet(SearchSnippetGetRequest),
-    IdentityGet(GetRequest<Identity<Set>>),
-    IdentitySet(SetRequest<Identity<Set>>),
-    EmailSubmissionGet(GetRequest<EmailSubmission<Set>>),
-    EmailSubmissionQuery(QueryRequest<EmailSubmission<Set>>),
-    EmailSubmissionQueryChanges(QueryChangesRequest<EmailSubmission<Set>>),
-    EmailSubmissionSet(SetRequest<EmailSubmission<Set>>),
-    VacationResponseGet(GetRequest<VacationResponse<Set>>),
-    VacationResponseSet(SetRequest<VacationResponse<Set>>),
-    SieveScriptGet(GetRequest<SieveScript<Set>>),
-    SieveScriptQuery(QueryRequest<SieveScript<Set>>),
-    SieveScriptValidate(SieveScriptValidateRequest),
-    SieveScriptSet(SetRequest<SieveScript<Set>>),
-    PrincipalGet(GetRequest<Principal<Set>>),
-    PrincipalQuery(QueryRequest<Principal<Set>>),
-    PrincipalQueryChanges(QueryChangesRequest<Principal<Set>>),
-    PrincipalSet(SetRequest<Principal<Set>>),
-    PrincipalGetAvailability(PrincipalGetAvailabilityRequest),
-    QuotaGet(GetRequest<Quota<Set>>),
-    QuotaQuery(QueryRequest<Quota<Set>>),
-    QuotaQueryChanges(QueryChangesRequest<Quota<Set>>),
-    CalendarGet(GetRequest<Calendar<Set>>),
-    CalendarSet(SetRequest<Calendar<Set>>),
-    CalendarEventGet(GetRequest<CalendarEvent<Set>>),
-    CalendarEventQuery(QueryRequest<CalendarEvent<Set>>),
-    CalendarEventQueryChanges(QueryChangesRequest<CalendarEvent<Set>>),
-    CalendarEventSet(SetRequest<CalendarEvent<Set>>),
-    CalendarEventParse(CalendarEventParseRequest),
-    CalendarEventCopy(CopyRequest<CalendarEvent<Set>>),
-    CalendarEventNotificationGet(GetRequest<CalendarEventNotification<Set>>),
-    CalendarEventNotificationQuery(QueryRequest<CalendarEventNotification<Set>>),
-    CalendarEventNotificationQueryChanges(QueryChangesRequest<CalendarEventNotification<Set>>),
-    CalendarEventNotificationSet(SetRequest<CalendarEventNotification<Set>>),
-    ParticipantIdentityGet(GetRequest<ParticipantIdentity<Set>>),
-    ParticipantIdentitySet(SetRequest<ParticipantIdentity<Set>>),
-    AddressBookGet(GetRequest<AddressBook<Set>>),
-    AddressBookSet(SetRequest<AddressBook<Set>>),
-    ContactCardGet(GetRequest<ContactCard<Set>>),
-    ContactCardQuery(QueryRequest<ContactCard<Set>>),
-    ContactCardQueryChanges(QueryChangesRequest<ContactCard<Set>>),
-    ContactCardSet(SetRequest<ContactCard<Set>>),
-    ContactCardParse(ContactCardParseRequest),
-    ContactCardCopy(CopyRequest<ContactCard<Set>>),
+    Changes(Box<ChangesRequest>),
+    PushGet(Box<GetRequest<PushSubscription<Set>>>),
+    PushSet(Box<SetRequest<PushSubscription<Set>>>),
+    BlobCopy(Box<CopyBlobRequest>),
+    BlobUpload(Box<BlobUploadRequest>),
+    BlobGet(Box<BlobGetRequest>),
+    BlobLookup(Box<BlobLookupRequest>),
+    MailboxGet(Box<GetRequest<Mailbox<Set>>>),
+    MailboxQuery(Box<QueryRequest<Mailbox<Set>>>),
+    MailboxQueryChanges(Box<QueryChangesRequest<Mailbox<Set>>>),
+    MailboxSet(Box<SetRequest<Mailbox<Set>>>),
+    ThreadGet(Box<GetRequest<Thread>>),
+    EmailGet(Box<GetRequest<Email<Set>>>),
+    EmailQuery(Box<QueryRequest<Email<Set>>>),
+    EmailQueryChanges(Box<QueryChangesRequest<Email<Set>>>),
+    EmailSet(Box<SetRequest<Email<Set>>>),
+    EmailCopy(Box<CopyRequest<Email<Set>>>),
+    EmailImport(Box<EmailImportRequest>),
+    EmailParse(Box<EmailParseRequest>),
+    SearchSnippetGet(Box<SearchSnippetGetRequest>),
+    IdentityGet(Box<GetRequest<Identity<Set>>>),
+    IdentitySet(Box<SetRequest<Identity<Set>>>),
+    EmailSubmissionGet(Box<GetRequest<EmailSubmission<Set>>>),
+    EmailSubmissionQuery(Box<QueryRequest<EmailSubmission<Set>>>),
+    EmailSubmissionQueryChanges(Box<QueryChangesRequest<EmailSubmission<Set>>>),
+    EmailSubmissionSet(Box<SetRequest<EmailSubmission<Set>>>),
+    VacationResponseGet(Box<GetRequest<VacationResponse<Set>>>),
+    VacationResponseSet(Box<SetRequest<VacationResponse<Set>>>),
+    SieveScriptGet(Box<GetRequest<SieveScript<Set>>>),
+    SieveScriptQuery(Box<QueryRequest<SieveScript<Set>>>),
+    SieveScriptValidate(Box<SieveScriptValidateRequest>),
+    SieveScriptSet(Box<SetRequest<SieveScript<Set>>>),
+    PrincipalGet(Box<GetRequest<Principal<Set>>>),
+    PrincipalQuery(Box<QueryRequest<Principal<Set>>>),
+    PrincipalQueryChanges(Box<QueryChangesRequest<Principal<Set>>>),
+    PrincipalSet(Box<SetRequest<Principal<Set>>>),
+    PrincipalGetAvailability(Box<PrincipalGetAvailabilityRequest>),
+    QuotaGet(Box<GetRequest<Quota<Set>>>),
+    QuotaQuery(Box<QueryRequest<Quota<Set>>>),
+    QuotaQueryChanges(Box<QueryChangesRequest<Quota<Set>>>),
+    CalendarGet(Box<GetRequest<Calendar<Set>>>),
+    CalendarSet(Box<SetRequest<Calendar<Set>>>),
+    CalendarEventGet(Box<GetRequest<CalendarEvent<Set>>>),
+    CalendarEventQuery(Box<QueryRequest<CalendarEvent<Set>>>),
+    CalendarEventQueryChanges(Box<QueryChangesRequest<CalendarEvent<Set>>>),
+    CalendarEventSet(Box<SetRequest<CalendarEvent<Set>>>),
+    CalendarEventParse(Box<CalendarEventParseRequest>),
+    CalendarEventCopy(Box<CopyRequest<CalendarEvent<Set>>>),
+    CalendarEventNotificationGet(Box<GetRequest<CalendarEventNotification<Set>>>),
+    CalendarEventNotificationQuery(Box<QueryRequest<CalendarEventNotification<Set>>>),
+    CalendarEventNotificationQueryChanges(Box<QueryChangesRequest<CalendarEventNotification<Set>>>),
+    CalendarEventNotificationSet(Box<SetRequest<CalendarEventNotification<Set>>>),
+    ParticipantIdentityGet(Box<GetRequest<ParticipantIdentity<Set>>>),
+    ParticipantIdentitySet(Box<SetRequest<ParticipantIdentity<Set>>>),
+    AddressBookGet(Box<GetRequest<AddressBook<Set>>>),
+    AddressBookSet(Box<SetRequest<AddressBook<Set>>>),
+    ContactCardGet(Box<GetRequest<ContactCard<Set>>>),
+    ContactCardQuery(Box<QueryRequest<ContactCard<Set>>>),
+    ContactCardQueryChanges(Box<QueryChangesRequest<ContactCard<Set>>>),
+    ContactCardSet(Box<SetRequest<ContactCard<Set>>>),
+    ContactCardParse(Box<ContactCardParseRequest>),
+    ContactCardCopy(Box<CopyRequest<ContactCard<Set>>>),
 }
 
 impl Arguments {
     pub fn changes(params: RequestParams, since_state: String) -> Self {
-        Arguments::Changes(ChangesRequest::new(params, since_state))
+        Arguments::Changes(Box::new(ChangesRequest::new(params, since_state)))
     }
 
     pub fn push_get(params: RequestParams) -> Self {
-        Arguments::PushGet(GetRequest::new(params))
+        Arguments::PushGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn push_set(params: RequestParams) -> Self {
-        Arguments::PushSet(SetRequest::new(params))
+        Arguments::PushSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn blob_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::BlobCopy(CopyBlobRequest::new(params, from_account_id))
+        Arguments::BlobCopy(Box::new(CopyBlobRequest::new(params, from_account_id)))
     }
 
     pub fn blob_upload(params: RequestParams) -> Self {
-        Arguments::BlobUpload(BlobUploadRequest::new(params))
+        Arguments::BlobUpload(Box::new(BlobUploadRequest::new(params)))
     }
 
     pub fn blob_get(params: RequestParams) -> Self {
-        Arguments::BlobGet(BlobGetRequest::new(params))
+        Arguments::BlobGet(Box::new(BlobGetRequest::new(params)))
     }
 
     pub fn blob_lookup(params: RequestParams) -> Self {
-        Arguments::BlobLookup(BlobLookupRequest::new(params))
+        Arguments::BlobLookup(Box::new(BlobLookupRequest::new(params)))
     }
 
     pub fn mailbox_get(params: RequestParams) -> Self {
-        Arguments::MailboxGet(GetRequest::new(params))
+        Arguments::MailboxGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn mailbox_query(params: RequestParams) -> Self {
-        Arguments::MailboxQuery(QueryRequest::new(params))
+        Arguments::MailboxQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn mailbox_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::MailboxQueryChanges(QueryChangesRequest::new(params, since_query_state))
+        Arguments::MailboxQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
     }
 
     pub fn mailbox_set(params: RequestParams) -> Self {
-        Arguments::MailboxSet(SetRequest::new(params))
+        Arguments::MailboxSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn thread_get(params: RequestParams) -> Self {
-        Arguments::ThreadGet(GetRequest::new(params))
+        Arguments::ThreadGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn email_get(params: RequestParams) -> Self {
-        Arguments::EmailGet(GetRequest::new(params))
+        Arguments::EmailGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn email_query(params: RequestParams) -> Self {
-        Arguments::EmailQuery(QueryRequest::new(params))
+        Arguments::EmailQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn email_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::EmailQueryChanges(QueryChangesRequest::new(params, since_query_state))
+        Arguments::EmailQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
     }
 
     pub fn email_set(params: RequestParams) -> Self {
-        Arguments::EmailSet(SetRequest::new(params))
+        Arguments::EmailSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn email_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::EmailCopy(CopyRequest::new(params, from_account_id))
+        Arguments::EmailCopy(Box::new(CopyRequest::new(params, from_account_id)))
     }
 
     pub fn email_import(params: RequestParams) -> Self {
-        Arguments::EmailImport(EmailImportRequest::new(params))
+        Arguments::EmailImport(Box::new(EmailImportRequest::new(params)))
     }
 
     pub fn email_parse(params: RequestParams) -> Self {
-        Arguments::EmailParse(EmailParseRequest::new(params))
+        Arguments::EmailParse(Box::new(EmailParseRequest::new(params)))
     }
 
     pub fn search_snippet_get(params: RequestParams) -> Self {
-        Arguments::SearchSnippetGet(SearchSnippetGetRequest::new(params))
+        Arguments::SearchSnippetGet(Box::new(SearchSnippetGetRequest::new(params)))
     }
 
     pub fn identity_get(params: RequestParams) -> Self {
-        Arguments::IdentityGet(GetRequest::new(params))
+        Arguments::IdentityGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn identity_set(params: RequestParams) -> Self {
-        Arguments::IdentitySet(SetRequest::new(params))
+        Arguments::IdentitySet(Box::new(SetRequest::new(params)))
     }
 
     pub fn email_submission_get(params: RequestParams) -> Self {
-        Arguments::EmailSubmissionGet(GetRequest::new(params))
+        Arguments::EmailSubmissionGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn email_submission_query(params: RequestParams) -> Self {
-        Arguments::EmailSubmissionQuery(QueryRequest::new(params))
+        Arguments::EmailSubmissionQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn email_submission_query_changes(
         params: RequestParams,
         since_query_state: String,
     ) -> Self {
-        Arguments::EmailSubmissionQueryChanges(QueryChangesRequest::new(params, since_query_state))
+        Arguments::EmailSubmissionQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
     }
 
     pub fn email_submission_set(params: RequestParams) -> Self {
-        Arguments::EmailSubmissionSet(SetRequest::new(params))
+        Arguments::EmailSubmissionSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn vacation_response_get(params: RequestParams) -> Self {
-        Arguments::VacationResponseGet(GetRequest::new(params))
+        Arguments::VacationResponseGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn vacation_response_set(params: RequestParams) -> Self {
-        Arguments::VacationResponseSet(SetRequest::new(params))
+        Arguments::VacationResponseSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn sieve_script_get(params: RequestParams) -> Self {
-        Arguments::SieveScriptGet(GetRequest::new(params))
+        Arguments::SieveScriptGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn sieve_script_query(params: RequestParams) -> Self {
-        Arguments::SieveScriptQuery(QueryRequest::new(params))
+        Arguments::SieveScriptQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn sieve_script_validate(params: RequestParams, blob_id: impl Into<String>) -> Self {
-        Arguments::SieveScriptValidate(SieveScriptValidateRequest::new(params, blob_id))
+        Arguments::SieveScriptValidate(Box::new(SieveScriptValidateRequest::new(params, blob_id)))
     }
 
     pub fn sieve_script_set(params: RequestParams) -> Self {
-        Arguments::SieveScriptSet(SetRequest::new(params))
+        Arguments::SieveScriptSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn principal_get(params: RequestParams) -> Self {
-        Arguments::PrincipalGet(GetRequest::new(params))
+        Arguments::PrincipalGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn principal_query(params: RequestParams) -> Self {
-        Arguments::PrincipalQuery(QueryRequest::new(params))
+        Arguments::PrincipalQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn principal_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::PrincipalQueryChanges(QueryChangesRequest::new(params, since_query_state))
+        Arguments::PrincipalQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
     }
 
     pub fn principal_set(params: RequestParams) -> Self {
-        Arguments::PrincipalSet(SetRequest::new(params))
+        Arguments::PrincipalSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn principal_get_availability(
@@ -296,127 +296,127 @@ impl Arguments {
         utc_start: impl Into<String>,
         utc_end: impl Into<String>,
     ) -> Self {
-        Arguments::PrincipalGetAvailability(PrincipalGetAvailabilityRequest::new(
+        Arguments::PrincipalGetAvailability(Box::new(PrincipalGetAvailabilityRequest::new(
             params, id, utc_start, utc_end,
-        ))
+        )))
     }
 
     pub fn quota_get(params: RequestParams) -> Self {
-        Arguments::QuotaGet(GetRequest::new(params))
+        Arguments::QuotaGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn quota_query(params: RequestParams) -> Self {
-        Arguments::QuotaQuery(QueryRequest::new(params))
+        Arguments::QuotaQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn quota_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::QuotaQueryChanges(QueryChangesRequest::new(params, since_query_state))
+        Arguments::QuotaQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
     }
 
     pub fn calendar_get(params: RequestParams) -> Self {
-        Arguments::CalendarGet(GetRequest::new(params))
+        Arguments::CalendarGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn calendar_set(params: RequestParams) -> Self {
-        Arguments::CalendarSet(SetRequest::new(params))
+        Arguments::CalendarSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn calendar_event_get(params: RequestParams) -> Self {
-        Arguments::CalendarEventGet(GetRequest::new(params))
+        Arguments::CalendarEventGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn calendar_event_query(params: RequestParams) -> Self {
-        Arguments::CalendarEventQuery(QueryRequest::new(params))
+        Arguments::CalendarEventQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn calendar_event_query_changes(
         params: RequestParams,
         since_query_state: String,
     ) -> Self {
-        Arguments::CalendarEventQueryChanges(QueryChangesRequest::new(
+        Arguments::CalendarEventQueryChanges(Box::new(QueryChangesRequest::new(
             params,
             since_query_state,
-        ))
+        )))
     }
 
     pub fn calendar_event_set(params: RequestParams) -> Self {
-        Arguments::CalendarEventSet(SetRequest::new(params))
+        Arguments::CalendarEventSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn calendar_event_parse(params: RequestParams) -> Self {
-        Arguments::CalendarEventParse(CalendarEventParseRequest::new(params))
+        Arguments::CalendarEventParse(Box::new(CalendarEventParseRequest::new(params)))
     }
 
     pub fn calendar_event_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::CalendarEventCopy(CopyRequest::new(params, from_account_id))
+        Arguments::CalendarEventCopy(Box::new(CopyRequest::new(params, from_account_id)))
     }
 
     pub fn calendar_event_notification_get(params: RequestParams) -> Self {
-        Arguments::CalendarEventNotificationGet(GetRequest::new(params))
+        Arguments::CalendarEventNotificationGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn calendar_event_notification_query(params: RequestParams) -> Self {
-        Arguments::CalendarEventNotificationQuery(QueryRequest::new(params))
+        Arguments::CalendarEventNotificationQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn calendar_event_notification_query_changes(
         params: RequestParams,
         since_query_state: String,
     ) -> Self {
-        Arguments::CalendarEventNotificationQueryChanges(QueryChangesRequest::new(
+        Arguments::CalendarEventNotificationQueryChanges(Box::new(QueryChangesRequest::new(
             params,
             since_query_state,
-        ))
+        )))
     }
 
     pub fn calendar_event_notification_set(params: RequestParams) -> Self {
-        Arguments::CalendarEventNotificationSet(SetRequest::new(params))
+        Arguments::CalendarEventNotificationSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn participant_identity_get(params: RequestParams) -> Self {
-        Arguments::ParticipantIdentityGet(GetRequest::new(params))
+        Arguments::ParticipantIdentityGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn participant_identity_set(params: RequestParams) -> Self {
-        Arguments::ParticipantIdentitySet(SetRequest::new(params))
+        Arguments::ParticipantIdentitySet(Box::new(SetRequest::new(params)))
     }
 
     pub fn address_book_get(params: RequestParams) -> Self {
-        Arguments::AddressBookGet(GetRequest::new(params))
+        Arguments::AddressBookGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn address_book_set(params: RequestParams) -> Self {
-        Arguments::AddressBookSet(SetRequest::new(params))
+        Arguments::AddressBookSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn contact_card_get(params: RequestParams) -> Self {
-        Arguments::ContactCardGet(GetRequest::new(params))
+        Arguments::ContactCardGet(Box::new(GetRequest::new(params)))
     }
 
     pub fn contact_card_query(params: RequestParams) -> Self {
-        Arguments::ContactCardQuery(QueryRequest::new(params))
+        Arguments::ContactCardQuery(Box::new(QueryRequest::new(params)))
     }
 
     pub fn contact_card_query_changes(
         params: RequestParams,
         since_query_state: String,
     ) -> Self {
-        Arguments::ContactCardQueryChanges(QueryChangesRequest::new(
+        Arguments::ContactCardQueryChanges(Box::new(QueryChangesRequest::new(
             params,
             since_query_state,
-        ))
+        )))
     }
 
     pub fn contact_card_set(params: RequestParams) -> Self {
-        Arguments::ContactCardSet(SetRequest::new(params))
+        Arguments::ContactCardSet(Box::new(SetRequest::new(params)))
     }
 
     pub fn contact_card_parse(params: RequestParams) -> Self {
-        Arguments::ContactCardParse(ContactCardParseRequest::new(params))
+        Arguments::ContactCardParse(Box::new(ContactCardParseRequest::new(params)))
     }
 
     pub fn contact_card_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::ContactCardCopy(CopyRequest::new(params, from_account_id))
+        Arguments::ContactCardCopy(Box::new(CopyRequest::new(params, from_account_id)))
     }
 
     pub fn changes_mut(&mut self) -> &mut ChangesRequest {
