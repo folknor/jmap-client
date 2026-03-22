@@ -14,14 +14,13 @@ use crate::{
     core::{
         changes::ChangesResponse,
         query::{Comparator, Filter, QueryResponse},
-        query_changes::QueryChangesResponse,
     },
     Get,
 };
 
 use super::{
     parse::ContactCardParseRequest,
-    ContactCard, ContactCardChanges, ContactCardGet, ContactCardQuery, ContactCardQueryChanges,
+    ContactCard, ContactCardChanges, ContactCardGet, ContactCardQuery,
     ContactCardSet, Property,
 };
 

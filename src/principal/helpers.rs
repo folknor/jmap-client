@@ -14,14 +14,13 @@ use crate::{
     core::{
         changes::ChangesResponse,
         query::{Comparator, Filter, QueryResponse},
-        query_changes::QueryChangesResponse,
         set::SetObject,
     },
     Get,
 };
 
 use super::{
-    Principal, PrincipalChanges, PrincipalGet, PrincipalQuery, PrincipalQueryChanges,
+    Principal, PrincipalChanges, PrincipalGet, PrincipalQuery,
     PrincipalSet, Property, Type, DKIM,
 };
 

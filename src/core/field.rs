@@ -22,8 +22,10 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 /// Serializes as: omitted → absent, null → JSON null, value → JSON value.
 /// Deserializes from: absent → Omitted, null → Null, value → Value(T).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Default)]
 pub enum Field<T> {
     /// Property not included / not requested.
+    #[default]
     Omitted,
     /// Property explicitly set to null.
     Null,
@@ -31,11 +33,6 @@ pub enum Field<T> {
     Value(T),
 }
 
-impl<T> Default for Field<T> {
-    fn default() -> Self {
-        Field::Omitted
-    }
-}
 
 impl<T> Field<T> {
     /// Returns `true` if the field is `Omitted`.

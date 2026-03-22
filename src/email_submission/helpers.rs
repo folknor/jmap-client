@@ -14,15 +14,13 @@ use crate::{
     core::{
         changes::ChangesResponse,
         query::{Comparator, Filter, QueryResponse},
-        query_changes::QueryChangesResponse,
         set::SetObject,
     },
     Get,
 };
 
 use super::{
-    Address, EmailSubmission, EmailSubmissionChanges, EmailSubmissionGet, EmailSubmissionQuery,
-    EmailSubmissionQueryChanges, EmailSubmissionSet, Property, UndoStatus,
+    Address, EmailSubmission, EmailSubmissionChanges, EmailSubmissionGet, EmailSubmissionQuery, EmailSubmissionSet, Property, UndoStatus,
 };
 
 impl Client {

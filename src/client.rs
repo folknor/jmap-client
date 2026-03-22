@@ -346,11 +346,9 @@ impl Client {
             .get(header::CONTENT_TYPE)
             .is_some_and(|h| h.as_bytes().starts_with(b"application/problem+json"))
         {
-            Err(crate::core::error::ProblemDetails::from(
-                serde_json::from_slice::<crate::core::error::ProblemDetails>(
+            Err(serde_json::from_slice::<crate::core::error::ProblemDetails>(
                     &response.bytes().await?,
-                )?,
-            )
+                )?
             .into())
         } else {
             Err(Error::Internal(format!("{}", response.status())))

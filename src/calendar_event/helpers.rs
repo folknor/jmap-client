@@ -14,15 +14,13 @@ use crate::{
     core::{
         changes::ChangesResponse,
         query::{Comparator, Filter, QueryResponse},
-        query_changes::QueryChangesResponse,
     },
     Get,
 };
 
 use super::{
     parse::CalendarEventParseRequest,
-    CalendarEvent, CalendarEventChanges, CalendarEventGet, CalendarEventQuery,
-    CalendarEventQueryChanges, CalendarEventSet, Property,
+    CalendarEvent, CalendarEventChanges, CalendarEventGet, CalendarEventQuery, CalendarEventSet, Property,
 };
 
 impl Client {

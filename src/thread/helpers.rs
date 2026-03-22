@@ -11,7 +11,7 @@
 
 use crate::client::Client;
 
-use super::{Thread, ThreadChanges, ThreadGet};
+use super::{Thread, ThreadGet};
 
 impl Client {
     pub async fn thread_get(&self, id: &str) -> crate::Result<Option<Thread>> {

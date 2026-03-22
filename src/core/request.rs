@@ -9,7 +9,6 @@
  * except according to those terms.
  */
 
-use std::any::Any;
 use std::marker::PhantomData;
 
 use serde::ser::{SerializeStruct, SerializeTuple};

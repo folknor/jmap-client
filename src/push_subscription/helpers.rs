@@ -15,7 +15,7 @@ use crate::{
     DataType,
 };
 
-use super::{Keys, PushSubscription, PushSubscriptionGet, PushSubscriptionSet};
+use super::{Keys, PushSubscription, PushSubscriptionSet};
 
 impl Client {
     pub async fn push_subscription_create(

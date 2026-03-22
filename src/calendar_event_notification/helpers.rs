@@ -14,14 +14,13 @@ use crate::{
     core::{
         changes::ChangesResponse,
         query::{Comparator, Filter, QueryResponse},
-        query_changes::QueryChangesResponse,
     },
     Get,
 };
 
 use super::{
     CalendarEventNotification, CalendarEventNotificationChanges, CalendarEventNotificationGet,
-    CalendarEventNotificationQuery, CalendarEventNotificationQueryChanges,
+    CalendarEventNotificationQuery,
     CalendarEventNotificationSet, Property,
 };
 

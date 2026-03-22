@@ -14,7 +14,6 @@ use crate::{
     core::{
         changes::ChangesResponse,
         query::{Comparator, Filter, QueryResponse},
-        query_changes::QueryChangesResponse,
         set::SetObject,
     },
     principal::ACL,
@@ -22,7 +21,7 @@ use crate::{
 };
 
 use super::{
-    Mailbox, MailboxChanges, MailboxGet, MailboxQuery, MailboxQueryChanges, MailboxSet, Property,
+    Mailbox, MailboxChanges, MailboxGet, MailboxQuery, MailboxSet, Property,
     Role,
 };
 
