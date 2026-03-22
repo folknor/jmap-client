@@ -270,6 +270,24 @@ impl Session {
         self.capabilities.contains_key(capability.as_ref())
     }
 
+    /// Get a typed capability configuration by its capability marker type.
+    ///
+    /// Returns `None` if the server does not advertise the capability.
+    ///
+    /// ```ignore
+    /// use jmap_client::core::capability::{Capability, Mail};
+    /// if let Some(mail) = session.capability::<Mail>() {
+    ///     println!("max mailbox depth: {}", mail.max_mailbox_depth());
+    /// }
+    /// ```
+    pub fn typed_capability<C: super::capability::Capability>(&self) -> Option<C::Config> {
+        let cap = self.capabilities.get(C::URI)?;
+        // Serialize the enum variant to Value, then deserialize into Config.
+        // This is a one-time cost per access (session parsing is infrequent).
+        let value = serde_json::to_value(cap).ok()?;
+        serde_json::from_value(value).ok()
+    }
+
     pub fn websocket_capabilities(&self) -> Option<&WebSocketCapabilities> {
         self.capabilities
             .get(crate::core::capability::WebSocket::URI)
