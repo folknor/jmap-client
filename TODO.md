@@ -1,62 +1,103 @@
-# TODO — jmap-client pre-1.0
+# TODO — jmap-client
 
-## Bugs (remaining)
-
-### LOW
-
-1. **`unimplemented!()` in 14 `SetObject for <Get>::new()` impls** — panic reachable through public trait via nonsensical usage. Would need trait redesign to eliminate. Low risk — type system makes it unlikely to hit.
-
-2. **`session_updated` uses `Relaxed` ordering** — `client.rs:284,297,302`. Race between `send_request` and `refresh_session` in concurrent use. Consequence is a stale "needs refresh" flag, not data corruption. Fix: `Release`/`Acquire` or fold into mutex.
-
-3. **`event_source` ignores `last_event_id` parameter** — `event_source/stream.rs:34`. SSE reconnection with Last-Event-ID is unimplemented. Documented by underscore prefix.
+Items below have been evaluated and consciously deferred. Each includes the rationale for deferral and the conditions under which it should be revisited.
 
 ---
 
-## Optimization (remaining)
+## Bugs (low severity — not blocking 1.0)
 
-### MEDIUM
+### 1. `unimplemented!()` in `SetObject for <Get>::new()` (14 sites)
 
-1. **`capability_config()` serialize/deserialize round-trip** — `core/session.rs:280-286`. Accepted as bridge — hand-written accessors are zero-cost primary path. Session parsing is infrequent.
+Every JMAP object type implements `SetObject` for both `Type<Set>` and `Type<Get>`. The `<Get>` impl's `new()` method contains `unimplemented!()` because Get-state objects should never be constructed through the set path — they come from server responses.
 
-2. **`default_account_id().to_string()` copied ~90 times** — every helpers.rs. One heap allocation per convenience API call. Fix: method constructors accept `&str` internally, or use `Cow<'_, str>`.
+**Risk:** A downstream consumer who implements a custom type and incorrectly calls `SetObject::new()` on a `<Get>` variant will panic. The type system makes this unlikely in normal usage — `SetRequest` is generic over `<Set>` variants, not `<Get>`.
 
-3. **`body.to_vec()` copies reqwest's `Bytes` buffer** — `transport_reqwest.rs`. `Bytes` is reference-counted but `.to_vec()` copies. Fix: `HttpTransport` trait returns `Bytes` instead of `Vec<u8>`. Breaking trait change.
+**Why deferred:** Fixing this requires redesigning the `SetObject` trait to either remove `new()` from `<Get>` impls (impossible without splitting the trait or adding negative bounds) or returning `Result` from `new()` (breaks every existing impl). The `json_object_struct!` and `impl_jmap_object!` macros generate these impls, so the surface is controlled.
 
-### LOW
-
-4. **`CallHandle.call_id` is heap `String` for "s0","s1"** — `core/request.rs:29`. Two allocations per method call. Fix: use `usize` index, format during serialization.
-
-5. **`try_cap!` clones `Value` before deserialization attempt** — `core/session.rs:106-113`. Accepted — session parsing is infrequent.
+**Revisit when:** If the trait system is redesigned, or if a user reports hitting this panic.
 
 ---
 
-## Duplication (~550 lines reducible)
+### 2. `session_updated` uses `Relaxed` atomic ordering
 
-### HIGH
+`Client` tracks whether the session needs refreshing via an `AtomicBool` with `Relaxed` ordering at `client.rs:284,297,302`. Both `send_request()` and `refresh_session()` take `&self` and can be called concurrently.
 
-1. **Parse request/response types (3 identical files, ~120 lines)** — `email/parse.rs`, `calendar_event/parse.rs`, `contact_card/parse.rs`. Fix: generic `ParseResponse<T>` + `define_parse_method!` macro.
+**Risk:** If thread A calls `send_request()` (which sets the flag to `false` when session state diverges) and thread B calls `refresh_session()` (which sets it to `true`) concurrently, the flag could end up in the wrong state. The consequence is a stale "needs refresh" indicator — the client might think the session is current when it isn't, or vice versa.
 
-### MODERATE
+**Why deferred:** The flag is advisory. No data corruption or incorrect JMAP behavior results from a stale value — the worst case is an unnecessary `refresh_session()` call or a missed refresh that self-corrects on the next request. Fixing properly would require `Acquire`/`Release` ordering or folding the flag into the session mutex, both of which add complexity for a marginal correctness improvement.
 
-2. **Session capability accessors (10 identical methods, ~90 lines)** — `core/session.rs:288-383`. Fix: `session_cap_accessor!` macro.
+**Revisit when:** If concurrent client usage becomes a primary use case, or if users report stale session state.
 
-3. **Helper method patterns (~200-300 lines)** — 17 helpers.rs files. `*_get`, `*_destroy`, `*_changes`, `*_query` follow identical patterns. Fix: `define_client_helpers!` macro.
+---
 
-4. **Property enum serde boilerplate (~80 lines)** — `calendar_event/mod.rs`, `contact_card/mod.rs`. Fix: `define_property_enum!` macro.
+### 3. EventSource ignores `last_event_id` parameter
 
-### LOW
+`event_source/stream.rs:34` accepts `_last_event_id: Option<&str>` but never uses it. Per the W3C Server-Sent Events specification, when reconnecting to an SSE endpoint, the client should send the `Last-Event-ID` HTTP header with the value of the last received event ID, allowing the server to replay missed events.
 
-5. **GetObject dual impls (~28 lines)** — 14 `get.rs` files. Fix: fold into existing macro.
+**Risk:** If the EventSource connection drops and the caller reconnects, events between the disconnect and reconnect are lost. The caller has no way to request replay from the server.
 
-6. **Mailbox manual Object impls (~10 lines)** — custom ChangesResponse. Fix: extend `impl_jmap_object!`.
+**Why deferred:** JMAP's EventSource is primarily used for state change notifications, not for reliable event delivery. Missed state changes are detected on the next successful request (the session state comparison in `send_request()` catches divergence). Full reconnection support would also need retry logic, backoff, and connection lifecycle management — a significant feature, not a bug fix.
 
-7. **json_object_struct common accessors (~20 lines)** — Fix: `JsonObject` trait with default methods.
+**Revisit when:** Implementing robust EventSource reconnection, or if a user needs reliable event replay.
+
+---
+
+## Optimization (accepted trade-offs)
+
+### 1. `capability_config()` serde round-trip
+
+`Session::capability_config::<C>()` at `core/session.rs` serializes the `Capabilities` enum variant to `serde_json::Value`, then deserializes it into `C::Config`. This is two serde passes to extract a typed config that's already stored in the enum.
+
+**Why accepted:** Session parsing happens once per connection (at connect) and capability configs are accessed infrequently. The hand-written accessors (`core_capabilities()`, `mail_capabilities()`, etc.) return `&T` with zero overhead and are the primary path. `capability_config()` is a convenience bridge for generic code. The round-trip cost is ~microseconds on a structure with a handful of fields.
+
+**Revisit when:** If `capability_config()` is called in a hot loop, or if the hand-written accessors are removed in favor of the generic path (which would require storing raw JSON alongside the enum for direct deserialization).
+
+---
+
+### 2. `default_account_id().to_string()` copied in ~90 helper methods
+
+Every convenience helper method (e.g., `email_get`, `mailbox_create`, `calendar_event_query`) calls `request.default_account_id().to_string()` to pass the account ID to method struct constructors. This allocates one `String` per helper call.
+
+**Why accepted:** The allocation is small (account IDs are typically 10-30 bytes) and happens once per JMAP operation — dwarfed by the HTTP request cost. Fixing would require changing all method constructors to accept `&str` and store `Cow<'_, str>`, or passing the account ID by reference through the entire builder chain. That's ~90 call sites of mechanical churn for a sub-microsecond improvement.
+
+**Revisit when:** If profiling shows helper method overhead is significant relative to network I/O, or if the `AccountScope` type grows helper methods that can pass the account ID by reference internally.
+
+---
+
+### 3. `body.to_vec()` copies reqwest's `Bytes` buffer
+
+`transport_reqwest.rs` calls `.to_vec()` on the `bytes::Bytes` response from reqwest. `Bytes` is reference-counted and zero-copy from the network buffer, but `.to_vec()` copies the entire body into a new `Vec<u8>`.
+
+**Why accepted:** Changing this requires modifying the `HttpTransport` trait to return `bytes::Bytes` instead of `Vec<u8>`, which would add `bytes` as a public API dependency of the trait (not just an internal dependency). Every custom transport implementor would need to depend on the `bytes` crate. The copy cost is O(n) in response size but is a single memcpy — fast relative to network latency and JSON parsing.
+
+**Revisit when:** If a second transport implementation is written that also uses `Bytes` natively, making the trait change justified. Or if profiling shows the copy is significant for large blob downloads.
+
+---
+
+### 4. `CallHandle.call_id` is heap-allocated `String`
+
+`CallHandle` stores `call_id: String` which is always a short string like `"s0"`, `"s1"`. This allocates 2-3 bytes on the heap per method call (plus the `String` header overhead). The call_id is also cloned into `RawMethodCall`.
+
+**Why accepted:** Two tiny allocations per method call. A typical JMAP request has 1-5 method calls. The total overhead is ~100 bytes of heap allocation per request — noise compared to the JSON serialization and HTTP transfer. Fixing would require using `usize` internally and formatting to string only during serialization, which adds complexity to `CallHandle`, `ResultReference`, and the response lookup path.
+
+**Revisit when:** If the crate is used in an extremely high-throughput scenario where per-request overhead matters at the sub-microsecond level.
+
+---
+
+### 5. `try_cap!` macro clones `serde_json::Value` before deserialization
+
+The session capability deserializer at `core/session.rs` clones each capability's JSON `Value` before attempting `serde_json::from_value()`, because `from_value` takes ownership and the original is needed for the `Capabilities::Other(value)` fallback on parse failure.
+
+**Why accepted:** Session parsing happens once per connection. The clone is only wasteful when deserialization succeeds (the original is discarded), and capability objects are small (typically 2-5 fields). The key-based dispatch means the typed parse almost always succeeds, so the fallback path that needs the original value is rarely taken.
+
+**Revisit when:** Never, unless session parsing becomes a hot path (it won't — sessions are cached).
 
 ---
 
 ## Remaining specs
 
-See `plans/` directory:
-- Sharing (RFC 9670) — `plans/SHARING.md`
-- MDN (RFC 9007) — `plans/MDN.md`
-- S/MIME (RFC 9219) — `plans/SMIME.md`
+Implementation plans for additional JMAP specifications are in the `plans/` directory:
+
+- **Sharing (RFC 9670)** — `plans/SHARING.md` — ShareNotification object, shared data framework
+- **MDN (RFC 9007)** — `plans/MDN.md` — Read receipts (MDN/send, MDN/parse)
+- **S/MIME (RFC 9219)** — `plans/SMIME.md` — Email signature verification properties and filters

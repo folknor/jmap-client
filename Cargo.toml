@@ -84,6 +84,14 @@ required-features = ["mail"]
 name = "eventsource"
 required-features = ["mail"]
 
+[[example]]
+name = "result_reference"
+required-features = ["mail"]
+
+[[example]]
+name = "websocket"
+required-features = ["websockets"]
+
 [lib]
 doctest = false
 

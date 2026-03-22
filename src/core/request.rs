@@ -124,7 +124,7 @@ impl<'x, T: HttpTransport> Request<'x, T> {
 
         // Auto-add capability
         let uri = M::Cap::URI;
-        if !self.using.iter().any(|u| *u == uri) {
+        if !self.using.contains(&uri) {
             self.using.push(uri);
         }
 
@@ -147,7 +147,7 @@ impl<'x, T: HttpTransport> Request<'x, T> {
     /// Add a capability URI to the `using` array.
     pub fn add_capability<C: Capability>(&mut self) {
         let uri = C::URI;
-        if !self.using.iter().any(|u| *u == uri) {
+        if !self.using.contains(&uri) {
             self.using.push(uri);
         }
     }
