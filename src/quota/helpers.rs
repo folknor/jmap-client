@@ -25,6 +25,17 @@ use crate::{
 use super::{Property, Quota};
 
 impl Client {
+    /// Fetch all quotas for the default account.
+    #[maybe_async::maybe_async]
+    pub async fn quota_get_all(&self) -> crate::Result<Vec<Quota>> {
+        let mut request = self.build();
+        request.get_quota();
+        request
+            .send_single::<QuotaGetResponse>()
+            .await
+            .map(|mut r| r.take_list())
+    }
+
     #[maybe_async::maybe_async]
     pub async fn quota_get(
         &self,
@@ -70,6 +81,20 @@ impl Client {
             query_request.sort(sort.into_iter());
         }
         request.send_single::<QueryResponse>().await
+    }
+
+    #[maybe_async::maybe_async]
+    pub async fn quota_query_changes(
+        &self,
+        since_query_state: impl Into<String>,
+        filter: Option<impl Into<Filter<super::query::Filter>>>,
+    ) -> crate::Result<QueryChangesResponse> {
+        let mut request = self.build();
+        let query_request = request.query_quota_changes(since_query_state);
+        if let Some(filter) = filter {
+            query_request.filter(filter);
+        }
+        request.send_single::<QueryChangesResponse>().await
     }
 }
 

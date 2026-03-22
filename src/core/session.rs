@@ -74,6 +74,7 @@ pub enum Capabilities {
     Submission(SubmissionCapabilities),
     WebSocket(WebSocketCapabilities),
     Sieve(SieveCapabilities),
+    Quota(QuotaCapabilities),
     Blob(BlobCapabilities),
     Calendars(CalendarsCapabilities),
     Contacts(ContactsCapabilities),
@@ -110,7 +111,9 @@ where
             "urn:ietf:params:jmap:sieve" => serde_json::from_value(value)
                 .map(Capabilities::Sieve)
                 .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:quota" => Capabilities::Other(value),
+            "urn:ietf:params:jmap:quota" => serde_json::from_value(value)
+                .map(Capabilities::Quota)
+                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
             "urn:ietf:params:jmap:blob" => serde_json::from_value(value)
                 .map(Capabilities::Blob)
                 .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
@@ -185,6 +188,12 @@ pub struct SieveCapabilities {
     #[serde(rename = "externalLists")]
     ext_lists: Option<Vec<String>>,
 }
+
+/// Capabilities for `urn:ietf:params:jmap:quota` (RFC 9425).
+///
+/// Empty capability object per spec — presence indicates quota support.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QuotaCapabilities {}
 
 /// Capabilities for `urn:ietf:params:jmap:blob` (RFC 9404).
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -295,6 +304,15 @@ impl Session {
             .get(URI::Sieve.as_ref())
             .and_then(|v| match v {
                 Capabilities::Sieve(capabilities) => Some(capabilities),
+                _ => None,
+            })
+    }
+
+    pub fn quota_capabilities(&self) -> Option<&QuotaCapabilities> {
+        self.capabilities
+            .get(URI::Quota.as_ref())
+            .and_then(|v| match v {
+                Capabilities::Quota(capabilities) => Some(capabilities),
                 _ => None,
             })
     }
