@@ -11,9 +11,11 @@
 
 use super::Changes;
 use crate::{
-    event_source::{CalendarAlert, PushNotification},
+    event_source::PushNotification,
     PushObject,
 };
+#[cfg(feature = "calendars")]
+use crate::event_source::CalendarAlert;
 
 const MAX_EVENT_SIZE: usize = 1024 * 1024;
 
@@ -24,6 +26,7 @@ pub enum EventType {
     Ping,
     #[default]
     State,
+    #[cfg(feature = "calendars")]
     CalendarAlert,
 }
 
@@ -93,6 +96,7 @@ impl EventParser {
                         Err(err) => Some(Err(err.into())),
                     };
                 }
+                #[cfg(feature = "calendars")]
                 Ok(Event {
                     event: EventType::CalendarAlert,
                     data,
@@ -191,6 +195,7 @@ impl Iterator for EventParser {
                                 self.result.data.extend_from_slice(&self.value);
                             }
                             b"event" => match &self.value[..] {
+                                #[cfg(feature = "calendars")]
                                 b"calendarAlert" => {
                                     self.result.event = EventType::CalendarAlert;
                                 }

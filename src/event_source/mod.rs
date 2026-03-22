@@ -12,7 +12,9 @@
 pub mod parser;
 pub mod stream;
 
-use crate::{core::session::URLParser, CalendarAlert, DataType};
+use crate::{core::session::URLParser, DataType};
+#[cfg(feature = "calendars")]
+use crate::CalendarAlert;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
@@ -38,6 +40,7 @@ impl URLParser for URLParameter {
 #[non_exhaustive]
 pub enum PushNotification {
     StateChange(Changes),
+    #[cfg(feature = "calendars")]
     CalendarAlert(CalendarAlert),
 }
 

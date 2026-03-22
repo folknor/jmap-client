@@ -61,52 +61,84 @@ pub mod client_ws;
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Clone)]
 #[non_exhaustive]
 pub enum DataType {
-    #[serde(rename = "Email")]
-    Email = 0,
-    #[serde(rename = "EmailDelivery")]
-    EmailDelivery = 1,
-    #[serde(rename = "EmailSubmission")]
-    EmailSubmission = 2,
-    #[serde(rename = "Mailbox")]
-    Mailbox = 3,
-    #[serde(rename = "Thread")]
-    Thread = 4,
-    #[serde(rename = "Identity")]
-    Identity = 5,
+    // Core (always available)
     #[serde(rename = "Core")]
-    Core = 6,
+    Core,
     #[serde(rename = "PushSubscription")]
-    PushSubscription = 7,
-    #[serde(rename = "SearchSnippet")]
-    SearchSnippet = 8,
-    #[serde(rename = "VacationResponse")]
-    VacationResponse = 9,
-    #[serde(rename = "MDN")]
-    Mdn = 10,
-    #[serde(rename = "Quota")]
-    Quota = 11,
-    #[serde(rename = "SieveScript")]
-    SieveScript = 12,
-    #[serde(rename = "Calendar")]
-    Calendar = 13,
-    #[serde(rename = "CalendarEvent")]
-    CalendarEvent = 14,
-    #[serde(rename = "CalendarEventNotification")]
-    CalendarEventNotification = 15,
-    #[serde(rename = "AddressBook")]
-    AddressBook = 16,
-    #[serde(rename = "ContactCard")]
-    ContactCard = 17,
-    #[serde(rename = "FileNode")]
-    FileNode = 18,
+    PushSubscription,
     #[serde(rename = "Principal")]
-    Principal = 19,
+    Principal,
     #[serde(rename = "ShareNotification")]
-    ShareNotification = 20,
+    ShareNotification,
+
+    // Mail
+    #[cfg(feature = "mail")]
+    #[serde(rename = "Email")]
+    Email,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "EmailDelivery")]
+    EmailDelivery,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "EmailSubmission")]
+    EmailSubmission,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "Mailbox")]
+    Mailbox,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "Thread")]
+    Thread,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "Identity")]
+    Identity,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "SearchSnippet")]
+    SearchSnippet,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "VacationResponse")]
+    VacationResponse,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "MDN")]
+    Mdn,
+    #[cfg(feature = "mail")]
+    #[serde(rename = "SieveScript")]
+    SieveScript,
+
+    // Calendars
+    #[cfg(feature = "calendars")]
+    #[serde(rename = "Calendar")]
+    Calendar,
+    #[cfg(feature = "calendars")]
+    #[serde(rename = "CalendarEvent")]
+    CalendarEvent,
+    #[cfg(feature = "calendars")]
+    #[serde(rename = "CalendarEventNotification")]
+    CalendarEventNotification,
+    #[cfg(feature = "calendars")]
     #[serde(rename = "ParticipantIdentity")]
-    ParticipantIdentity = 21,
+    ParticipantIdentity,
+    #[cfg(feature = "calendars")]
     #[serde(rename = "CalendarAlert")]
-    CalendarAlert = 22,
+    CalendarAlert,
+
+    // Contacts
+    #[cfg(feature = "contacts")]
+    #[serde(rename = "AddressBook")]
+    AddressBook,
+    #[cfg(feature = "contacts")]
+    #[serde(rename = "ContactCard")]
+    ContactCard,
+
+    // Quota
+    #[cfg(feature = "quota")]
+    #[serde(rename = "Quota")]
+    Quota,
+
+    #[serde(rename = "FileNode")]
+    FileNode,
+
+    /// Unknown or feature-gated data type.
+    #[serde(other)]
+    Other,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -121,12 +153,14 @@ pub enum PushObject {
         account_id: String,
         email: serde_json::Value,
     },
+    #[cfg(feature = "calendars")]
     CalendarAlert(CalendarAlert),
     Group {
         entries: Vec<PushObject>,
     },
 }
 
+#[cfg(feature = "calendars")]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CalendarAlert {
     #[serde(rename = "accountId")]
@@ -246,29 +280,48 @@ impl Display for Error {
 impl Display for DataType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DataType::Mailbox => write!(f, "Mailbox"),
-            DataType::Thread => write!(f, "Thread"),
-            DataType::Email => write!(f, "Email"),
-            DataType::EmailDelivery => write!(f, "EmailDelivery"),
-            DataType::Identity => write!(f, "Identity"),
-            DataType::EmailSubmission => write!(f, "EmailSubmission"),
-            DataType::CalendarAlert => write!(f, "CalendarAlert"),
             DataType::Core => write!(f, "Core"),
             DataType::PushSubscription => write!(f, "PushSubscription"),
-            DataType::SearchSnippet => write!(f, "SearchSnippet"),
-            DataType::VacationResponse => write!(f, "VacationResponse"),
-            DataType::Mdn => write!(f, "MDN"),
-            DataType::Quota => write!(f, "Quota"),
-            DataType::SieveScript => write!(f, "SieveScript"),
-            DataType::Calendar => write!(f, "Calendar"),
-            DataType::CalendarEvent => write!(f, "CalendarEvent"),
-            DataType::CalendarEventNotification => write!(f, "CalendarEventNotification"),
-            DataType::AddressBook => write!(f, "AddressBook"),
-            DataType::ContactCard => write!(f, "ContactCard"),
-            DataType::FileNode => write!(f, "FileNode"),
             DataType::Principal => write!(f, "Principal"),
             DataType::ShareNotification => write!(f, "ShareNotification"),
+            DataType::FileNode => write!(f, "FileNode"),
+            #[cfg(feature = "mail")]
+            DataType::Email => write!(f, "Email"),
+            #[cfg(feature = "mail")]
+            DataType::EmailDelivery => write!(f, "EmailDelivery"),
+            #[cfg(feature = "mail")]
+            DataType::EmailSubmission => write!(f, "EmailSubmission"),
+            #[cfg(feature = "mail")]
+            DataType::Mailbox => write!(f, "Mailbox"),
+            #[cfg(feature = "mail")]
+            DataType::Thread => write!(f, "Thread"),
+            #[cfg(feature = "mail")]
+            DataType::Identity => write!(f, "Identity"),
+            #[cfg(feature = "mail")]
+            DataType::SearchSnippet => write!(f, "SearchSnippet"),
+            #[cfg(feature = "mail")]
+            DataType::VacationResponse => write!(f, "VacationResponse"),
+            #[cfg(feature = "mail")]
+            DataType::Mdn => write!(f, "MDN"),
+            #[cfg(feature = "mail")]
+            DataType::SieveScript => write!(f, "SieveScript"),
+            #[cfg(feature = "calendars")]
+            DataType::Calendar => write!(f, "Calendar"),
+            #[cfg(feature = "calendars")]
+            DataType::CalendarEvent => write!(f, "CalendarEvent"),
+            #[cfg(feature = "calendars")]
+            DataType::CalendarEventNotification => write!(f, "CalendarEventNotification"),
+            #[cfg(feature = "calendars")]
             DataType::ParticipantIdentity => write!(f, "ParticipantIdentity"),
+            #[cfg(feature = "calendars")]
+            DataType::CalendarAlert => write!(f, "CalendarAlert"),
+            #[cfg(feature = "contacts")]
+            DataType::AddressBook => write!(f, "AddressBook"),
+            #[cfg(feature = "contacts")]
+            DataType::ContactCard => write!(f, "ContactCard"),
+            #[cfg(feature = "quota")]
+            DataType::Quota => write!(f, "Quota"),
+            DataType::Other => write!(f, "Other"),
         }
     }
 }
