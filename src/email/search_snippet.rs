@@ -51,6 +51,12 @@ pub struct SearchSnippetGetResponse {
     not_found: Option<Vec<String>>,
 }
 
+impl crate::core::method::JmapMethod for SearchSnippetGetRequest {
+    const NAME: &'static str = "SearchSnippet/get";
+    type Cap = crate::core::capability::Mail;
+    type Response = SearchSnippetGetResponse;
+}
+
 impl SearchSnippetGetRequest {
     pub fn new(account_id: impl Into<String>) -> Self {
         SearchSnippetGetRequest {

@@ -19,7 +19,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::core::set::skip_if_empty_list;
-use crate::{Get, DataType};
+use crate::{Get, Set, DataType};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PushSubscription<State = Get> {
@@ -98,3 +98,7 @@ pub struct Keys {
 }
 
 crate::impl_jmap_object!(PushSubscription<State>, Property, false);
+
+// Method structs for the new architecture
+crate::define_get_method!(PushSubscriptionGet, PushSubscription<Set>, "PushSubscription/get", crate::core::capability::Core, crate::core::get::GetResponse<PushSubscription<Get>>);
+crate::define_set_method!(PushSubscriptionSet, PushSubscription<Set>, "PushSubscription/set", crate::core::capability::Core, crate::core::set::SetResponse<PushSubscription<Get>>);

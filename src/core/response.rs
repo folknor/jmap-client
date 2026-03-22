@@ -59,6 +59,7 @@ pub enum ErrorTag {
 }
 
 /// A parsed JMAP response with typed method result extraction.
+#[derive(Debug)]
 pub struct Response {
     raw: Vec<(String, RawCallResult, String)>,
     session_state: String,
@@ -66,6 +67,7 @@ pub struct Response {
 }
 
 /// A single method call result — either success data or a method error.
+#[derive(Debug)]
 enum RawCallResult {
     Success(serde_json::Value),
     Error(MethodError),

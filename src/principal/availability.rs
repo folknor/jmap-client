@@ -62,6 +62,12 @@ pub struct AvailabilityEntry {
     pub event: Option<serde_json::Value>,
 }
 
+impl crate::core::method::JmapMethod for PrincipalGetAvailabilityRequest {
+    const NAME: &'static str = "Principal/getAvailability";
+    type Cap = crate::core::capability::Principals;
+    type Response = PrincipalGetAvailabilityResponse;
+}
+
 impl PrincipalGetAvailabilityRequest {
     pub fn new(
         account_id: impl Into<String>,

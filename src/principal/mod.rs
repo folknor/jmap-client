@@ -220,3 +220,12 @@ impl Display for ACL {
 }
 
 crate::impl_jmap_object!(Principal<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(PrincipalGet, Principal<Set>, "Principal/get", crate::core::capability::Principals, crate::core::get::GetResponse<Principal<Get>>);
+crate::define_set_method!(PrincipalSet, Principal<Set>, "Principal/set", crate::core::capability::Principals, crate::core::set::SetResponse<Principal<Get>>);
+crate::define_changes_method!(PrincipalChanges, "Principal/changes", crate::core::capability::Principals, crate::core::changes::ChangesResponse<Principal<Get>>);
+crate::define_query_method!(PrincipalQuery, Principal<Set>, "Principal/query", crate::core::capability::Principals);
+crate::define_query_changes_method!(PrincipalQueryChanges, Principal<Set>, "Principal/queryChanges", crate::core::capability::Principals);

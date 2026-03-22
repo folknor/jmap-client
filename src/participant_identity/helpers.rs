@@ -11,17 +11,13 @@
 
 use crate::{
     client::Client,
-    core::{
-        changes::{ChangesRequest, ChangesResponse},
-        get::GetRequest,
-        request::{Arguments, Request},
-        response::{ParticipantIdentityGetResponse, ParticipantIdentitySetResponse},
-        set::SetRequest,
-    },
-    Get, Method, Set,
+    core::changes::ChangesResponse,
+    Get,
 };
 
-use super::{ParticipantIdentity, Property};
+use super::{
+    ParticipantIdentity, ParticipantIdentityChanges, ParticipantIdentityGet, Property,
+};
 
 impl Client {
     pub async fn participant_identity_get(
@@ -30,14 +26,15 @@ impl Client {
         properties: Option<Vec<Property>>,
     ) -> crate::Result<Option<ParticipantIdentity>> {
         let mut request = self.build();
-        let get_request = request.get_participant_identity().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = ParticipantIdentityGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<ParticipantIdentityGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn participant_identity_changes(
@@ -46,70 +43,11 @@ impl Client {
         max_changes: usize,
     ) -> crate::Result<ChangesResponse<ParticipantIdentity<Get>>> {
         let mut request = self.build();
-        request
-            .changes_participant_identity(since_state)
-            .max_changes(max_changes);
-        request.send_single().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_participant_identity(
-        &mut self,
-    ) -> &mut GetRequest<ParticipantIdentity<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::GetParticipantIdentity,
-            Arguments::participant_identity_get(
-                self.params(Method::GetParticipantIdentity),
-            ),
-        )
-        .participant_identity_get_mut()
-    }
-
-    pub async fn send_get_participant_identity(
-        self,
-    ) -> crate::Result<ParticipantIdentityGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_participant_identity(
-        &mut self,
-    ) -> &mut SetRequest<ParticipantIdentity<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::SetParticipantIdentity,
-            Arguments::participant_identity_set(
-                self.params(Method::SetParticipantIdentity),
-            ),
-        )
-        .participant_identity_set_mut()
-    }
-
-    pub async fn send_set_participant_identity(
-        self,
-    ) -> crate::Result<ParticipantIdentitySetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_participant_identity(
-        &mut self,
-        since_state: impl Into<String>,
-    ) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::ChangesParticipantIdentity,
-            Arguments::changes(
-                self.params(Method::ChangesParticipantIdentity),
-                since_state.into(),
-            ),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_participant_identity(
-        self,
-    ) -> crate::Result<ChangesResponse<ParticipantIdentity<Get>>> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut changes = ParticipantIdentityChanges::new(&account_id, since_state);
+        changes.max_changes(max_changes);
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

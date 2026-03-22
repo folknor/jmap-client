@@ -112,6 +112,24 @@ pub struct BlobUploadCreated {
     pub size: Option<u64>,
 }
 
+impl crate::core::method::JmapMethod for BlobUploadRequest {
+    const NAME: &'static str = "Blob/upload";
+    type Cap = crate::core::capability::Blob;
+    type Response = BlobUploadResponse;
+}
+
+impl crate::core::method::JmapMethod for BlobGetRequest {
+    const NAME: &'static str = "Blob/get";
+    type Cap = crate::core::capability::Blob;
+    type Response = BlobGetResponse;
+}
+
+impl crate::core::method::JmapMethod for BlobLookupRequest {
+    const NAME: &'static str = "Blob/lookup";
+    type Cap = crate::core::capability::Blob;
+    type Response = BlobLookupResponse;
+}
+
 impl BlobUploadRequest {
     pub fn new(account_id: impl Into<String>) -> Self {
         BlobUploadRequest {

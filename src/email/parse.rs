@@ -63,6 +63,12 @@ pub struct EmailParseResponse {
     not_found: Option<Vec<String>>,
 }
 
+impl crate::core::method::JmapMethod for EmailParseRequest {
+    const NAME: &'static str = "Email/parse";
+    type Cap = crate::core::capability::Mail;
+    type Response = EmailParseResponse;
+}
+
 impl EmailParseRequest {
     pub fn new(account_id: impl Into<String>) -> Self {
         EmailParseRequest {

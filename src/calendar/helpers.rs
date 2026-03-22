@@ -12,16 +12,13 @@
 use crate::{
     client::Client,
     core::{
-        changes::{ChangesRequest, ChangesResponse},
-        get::GetRequest,
-        request::{Arguments, Request},
-        response::{CalendarGetResponse, CalendarSetResponse},
-        set::{SetObject, SetRequest},
+        changes::ChangesResponse,
+        set::SetObject,
     },
-    Get, Method, Set,
+    Get,
 };
 
-use super::{Calendar, Property};
+use super::{Calendar, CalendarChanges, CalendarGet, CalendarSet, Property};
 
 impl Client {
     pub async fn calendar_create(
@@ -29,18 +26,18 @@ impl Client {
         name: impl Into<String>,
     ) -> crate::Result<Calendar> {
         let mut request = self.build();
-        let id = request
-            .set_calendar()
+        let account_id = request.default_account_id().to_string();
+        let mut set = CalendarSet::new(&account_id);
+        let id = set
             .create()
             .name(name)
             .is_subscribed(true)
             .is_visible(true)
             .create_id()
             .unwrap();
-        request
-            .send_single::<CalendarSetResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn calendar_destroy(
@@ -49,15 +46,14 @@ impl Client {
         remove_events: bool,
     ) -> crate::Result<()> {
         let mut request = self.build();
-        request
-            .set_calendar()
-            .destroy([id])
+        let account_id = request.default_account_id().to_string();
+        let mut set = CalendarSet::new(&account_id);
+        set.destroy([id])
             .arguments()
             .on_destroy_remove_events(remove_events);
-        request
-            .send_single::<CalendarSetResponse>()
-            .await?
-            .destroyed(id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn calendar_get(
@@ -66,14 +62,15 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<Calendar>> {
         let mut request = self.build();
-        let get_request = request.get_calendar().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = CalendarGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<CalendarGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn calendar_changes(
@@ -82,53 +79,11 @@ impl Client {
         max_changes: usize,
     ) -> crate::Result<ChangesResponse<Calendar<Get>>> {
         let mut request = self.build();
-        request
-            .changes_calendar(since_state)
-            .max_changes(max_changes);
-        request.send_single().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_calendar(&mut self) -> &mut GetRequest<Calendar<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::GetCalendar,
-            Arguments::calendar_get(self.params(Method::GetCalendar)),
-        )
-        .calendar_get_mut()
-    }
-
-    pub async fn send_get_calendar(self) -> crate::Result<CalendarGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_calendar(&mut self) -> &mut SetRequest<Calendar<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::SetCalendar,
-            Arguments::calendar_set(self.params(Method::SetCalendar)),
-        )
-        .calendar_set_mut()
-    }
-
-    pub async fn send_set_calendar(self) -> crate::Result<CalendarSetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_calendar(
-        &mut self,
-        since_state: impl Into<String>,
-    ) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::ChangesCalendar,
-            Arguments::changes(self.params(Method::ChangesCalendar), since_state.into()),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_calendar(self) -> crate::Result<ChangesResponse<Calendar<Get>>> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut changes = CalendarChanges::new(&account_id, since_state);
+        changes.max_changes(max_changes);
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

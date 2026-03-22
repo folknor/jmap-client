@@ -88,3 +88,10 @@ impl Display for Property {
 }
 
 crate::impl_jmap_object!(ParticipantIdentity<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(ParticipantIdentityGet, ParticipantIdentity<Set>, "ParticipantIdentity/get", crate::core::capability::Calendars, crate::core::get::GetResponse<ParticipantIdentity<Get>>);
+crate::define_set_method!(ParticipantIdentitySet, ParticipantIdentity<Set>, "ParticipantIdentity/set", crate::core::capability::Calendars, crate::core::set::SetResponse<ParticipantIdentity<Get>>);
+crate::define_changes_method!(ParticipantIdentityChanges, "ParticipantIdentity/changes", crate::core::capability::Calendars, crate::core::changes::ChangesResponse<ParticipantIdentity<Get>>);

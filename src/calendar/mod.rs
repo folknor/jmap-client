@@ -216,3 +216,10 @@ impl Display for Property {
 }
 
 crate::impl_jmap_object!(Calendar<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(CalendarGet, Calendar<Set>, "Calendar/get", crate::core::capability::Calendars, crate::core::get::GetResponse<Calendar<Get>>);
+crate::define_set_method!(CalendarSet, Calendar<Set>, "Calendar/set", crate::core::capability::Calendars, crate::core::set::SetResponse<Calendar<Get>>);
+crate::define_changes_method!(CalendarChanges, "Calendar/changes", crate::core::capability::Calendars, crate::core::changes::ChangesResponse<Calendar<Get>>);

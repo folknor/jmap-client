@@ -11,16 +11,10 @@
 
 use crate::{
     client::Client,
-    core::{
-        get::GetRequest,
-        request::{Arguments, Request},
-        response::{VacationResponseGetResponse, VacationResponseSetResponse},
-        set::{SetObject, SetRequest},
-    },
-    Method, Set, URI,
+    core::set::SetObject,
 };
 
-use super::{Property, VacationResponse};
+use super::{Property, VacationResponse, VacationResponseGet, VacationResponseSet};
 
 impl Client {
     pub async fn vacation_response_create(
@@ -30,8 +24,9 @@ impl Client {
         html_body: Option<impl Into<String>>,
     ) -> crate::Result<VacationResponse> {
         let mut request = self.build();
-        let created_id = request
-            .set_vacation_response()
+        let account_id = request.default_account_id().to_string();
+        let mut set = VacationResponseSet::new(&account_id);
+        let created_id = set
             .create()
             .is_enabled(true)
             .subject(Some(subject))
@@ -40,10 +35,9 @@ impl Client {
             .create_id()
             .unwrap();
 
-        request
-            .send_single::<VacationResponseSetResponse>()
-            .await?
-            .created(&created_id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&created_id)
     }
 
     pub async fn vacation_response_enable(
@@ -53,31 +47,28 @@ impl Client {
         html_body: Option<impl Into<String>>,
     ) -> crate::Result<Option<VacationResponse>> {
         let mut request = self.build();
-        request
-            .set_vacation_response()
-            .update("singleton")
+        let account_id = request.default_account_id().to_string();
+        let mut set = VacationResponseSet::new(&account_id);
+        set.update("singleton")
             .is_enabled(true)
             .subject(Some(subject))
             .text_body(text_body)
             .html_body(html_body);
 
-        request
-            .send_single::<VacationResponseSetResponse>()
-            .await?
-            .updated("singleton")
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated("singleton")
     }
 
     pub async fn vacation_response_disable(&self) -> crate::Result<Option<VacationResponse>> {
         let mut request = self.build();
-        request
-            .set_vacation_response()
-            .update("singleton")
-            .is_enabled(false);
+        let account_id = request.default_account_id().to_string();
+        let mut set = VacationResponseSet::new(&account_id);
+        set.update("singleton").is_enabled(false);
 
-        request
-            .send_single::<VacationResponseSetResponse>()
-            .await?
-            .updated("singleton")
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated("singleton")
     }
 
     pub async fn vacation_response_set_dates(
@@ -86,17 +77,16 @@ impl Client {
         to_date: Option<i64>,
     ) -> crate::Result<Option<VacationResponse>> {
         let mut request = self.build();
-        request
-            .set_vacation_response()
-            .update("singleton")
+        let account_id = request.default_account_id().to_string();
+        let mut set = VacationResponseSet::new(&account_id);
+        set.update("singleton")
             .is_enabled(true)
             .from_date(from_date)
             .to_date(to_date);
 
-        request
-            .send_single::<VacationResponseSetResponse>()
-            .await?
-            .updated("singleton")
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated("singleton")
     }
 
     pub async fn vacation_response_get(
@@ -104,50 +94,24 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<VacationResponse>> {
         let mut request = self.build();
-        let get_request = request.get_vacation_response().ids(["singleton"]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = VacationResponseGet::new(&account_id);
+        get.ids(["singleton"]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<VacationResponseGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn vacation_response_destroy(&self) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_vacation_response().destroy(["singleton"]);
-        request
-            .send_single::<VacationResponseSetResponse>()
-            .await?
-            .destroyed("singleton")
-    }
-}
-
-impl Request<'_> {
-    pub fn get_vacation_response(&mut self) -> &mut GetRequest<VacationResponse<Set>> {
-        self.add_capability(URI::VacationResponse);
-        self.add_method_call(
-            Method::GetVacationResponse,
-            Arguments::vacation_response_get(self.params(Method::GetVacationResponse)),
-        )
-        .vacation_response_get_mut()
-    }
-
-    pub async fn send_get_vacation_response(self) -> crate::Result<VacationResponseGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_vacation_response(&mut self) -> &mut SetRequest<VacationResponse<Set>> {
-        self.add_capability(URI::VacationResponse);
-        self.add_method_call(
-            Method::SetVacationResponse,
-            Arguments::vacation_response_set(self.params(Method::GetVacationResponse)),
-        )
-        .vacation_response_set_mut()
-    }
-
-    pub async fn send_set_vacation_response(self) -> crate::Result<VacationResponseSetResponse> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut set = VacationResponseSet::new(&account_id);
+        set.destroy(["singleton"]);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed("singleton")
     }
 }

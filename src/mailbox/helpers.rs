@@ -12,19 +12,19 @@
 use crate::{
     client::Client,
     core::{
-        changes::{ChangesRequest, ChangesResponse},
-        get::GetRequest,
-        query::{Comparator, Filter, QueryRequest, QueryResponse},
-        query_changes::{QueryChangesRequest, QueryChangesResponse},
-        request::{Arguments, Request},
-        response::{MailboxGetResponse, MailboxSetResponse},
-        set::{SetObject, SetRequest},
+        changes::ChangesResponse,
+        query::{Comparator, Filter, QueryResponse},
+        query_changes::QueryChangesResponse,
+        set::SetObject,
     },
     principal::ACL,
-    Get, Method, Set,
+    Get,
 };
 
-use super::{Mailbox, Property, Role};
+use super::{
+    Mailbox, MailboxChanges, MailboxGet, MailboxQuery, MailboxQueryChanges, MailboxSet, Property,
+    Role,
+};
 
 impl Client {
     pub async fn mailbox_create(
@@ -34,18 +34,18 @@ impl Client {
         role: Role,
     ) -> crate::Result<Mailbox> {
         let mut request = self.build();
-        let id = request
-            .set_mailbox()
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        let id = set
             .create()
             .name(name)
             .role(role)
             .parent_id(parent_id)
             .create_id()
             .unwrap();
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn mailbox_rename(
@@ -54,11 +54,12 @@ impl Client {
         name: impl Into<String>,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        request.set_mailbox().update(id).name(name);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        set.update(id).name(name);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn mailbox_move(
@@ -67,11 +68,12 @@ impl Client {
         parent_id: Option<impl Into<String>>,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        request.set_mailbox().update(id).parent_id(parent_id);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        set.update(id).parent_id(parent_id);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn mailbox_update_role(
@@ -80,11 +82,12 @@ impl Client {
         role: Role,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        request.set_mailbox().update(id).role(role);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        set.update(id).role(role);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn mailbox_update_acl(
@@ -94,11 +97,12 @@ impl Client {
         acl: impl IntoIterator<Item = ACL>,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        request.set_mailbox().update(id).acl(account_id, acl);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .updated(id)
+        let default_account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&default_account_id);
+        set.update(id).acl(account_id, acl);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn mailbox_update_sort_order(
@@ -107,11 +111,12 @@ impl Client {
         sort_order: u32,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        request.set_mailbox().update(id).sort_order(sort_order);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        set.update(id).sort_order(sort_order);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn mailbox_subscribe(
@@ -120,27 +125,24 @@ impl Client {
         is_subscribed: bool,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        request
-            .set_mailbox()
-            .update(id)
-            .is_subscribed(is_subscribed);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        set.update(id).is_subscribed(is_subscribed);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn mailbox_destroy(&self, id: &str, delete_emails: bool) -> crate::Result<()> {
         let mut request = self.build();
-        request
-            .set_mailbox()
-            .destroy([id])
+        let account_id = request.default_account_id().to_string();
+        let mut set = MailboxSet::new(&account_id);
+        set.destroy([id])
             .arguments()
             .on_destroy_remove_emails(delete_emails);
-        request
-            .send_single::<MailboxSetResponse>()
-            .await?
-            .destroyed(id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn mailbox_get(
@@ -149,14 +151,15 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<Mailbox>> {
         let mut request = self.build();
-        let get_request = request.get_mailbox().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = MailboxGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<MailboxGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn mailbox_query(
@@ -165,14 +168,17 @@ impl Client {
         sort: Option<impl IntoIterator<Item = Comparator<super::query::Comparator>>>,
     ) -> crate::Result<QueryResponse> {
         let mut request = self.build();
-        let query_request = request.query_mailbox();
+        let account_id = request.default_account_id().to_string();
+        let mut query = MailboxQuery::new(&account_id);
         if let Some(filter) = filter {
-            query_request.filter(filter);
+            query.filter(filter);
         }
         if let Some(sort) = sort {
-            query_request.sort(sort);
+            query.sort(sort);
         }
-        request.send_single::<QueryResponse>().await
+        let handle = request.call(query)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 
     pub async fn mailbox_changes(
@@ -181,82 +187,11 @@ impl Client {
         max_changes: usize,
     ) -> crate::Result<ChangesResponse<Mailbox<Get>>> {
         let mut request = self.build();
-        request
-            .changes_mailbox(since_state)
-            .max_changes(max_changes);
-        request.send_single().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_mailbox(&mut self) -> &mut GetRequest<Mailbox<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::GetMailbox,
-            Arguments::mailbox_get(self.params(Method::GetMailbox)),
-        )
-        .mailbox_get_mut()
-    }
-
-    pub async fn send_get_mailbox(self) -> crate::Result<MailboxGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_mailbox(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::ChangesMailbox,
-            Arguments::changes(self.params(Method::ChangesMailbox), since_state.into()),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_mailbox(self) -> crate::Result<ChangesResponse<Mailbox<Get>>> {
-        self.send_single().await
-    }
-
-    pub fn query_mailbox(&mut self) -> &mut QueryRequest<Mailbox<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::QueryMailbox,
-            Arguments::mailbox_query(self.params(Method::QueryMailbox)),
-        )
-        .mailbox_query_mut()
-    }
-
-    pub async fn send_query_mailbox(self) -> crate::Result<QueryResponse> {
-        self.send_single().await
-    }
-
-    pub fn query_mailbox_changes(
-        &mut self,
-        since_query_state: impl Into<String>,
-    ) -> &mut QueryChangesRequest<Mailbox<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::QueryChangesMailbox,
-            Arguments::mailbox_query_changes(
-                self.params(Method::QueryChangesMailbox),
-                since_query_state.into(),
-            ),
-        )
-        .mailbox_query_changes_mut()
-    }
-
-    pub async fn send_query_mailbox_changes(self) -> crate::Result<QueryChangesResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_mailbox(&mut self) -> &mut SetRequest<Mailbox<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::SetMailbox,
-            Arguments::mailbox_set(self.params(Method::SetMailbox)),
-        )
-        .mailbox_set_mut()
-    }
-
-    pub async fn send_set_mailbox(self) -> crate::Result<MailboxSetResponse> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut changes = MailboxChanges::new(&account_id, since_state);
+        changes.max_changes(max_changes);
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

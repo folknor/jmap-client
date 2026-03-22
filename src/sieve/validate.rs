@@ -20,6 +20,12 @@ pub struct SieveScriptValidateResponse {
     error: Option<SetError<String>>,
 }
 
+impl crate::core::method::JmapMethod for SieveScriptValidateRequest {
+    const NAME: &'static str = "SieveScript/validate";
+    type Cap = crate::core::capability::Sieve;
+    type Response = SieveScriptValidateResponse;
+}
+
 impl SieveScriptValidateRequest {
     pub fn new(account_id: impl Into<String>, blob_id: impl Into<String>) -> Self {
         SieveScriptValidateRequest {

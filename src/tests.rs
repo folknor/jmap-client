@@ -842,13 +842,10 @@ mod alert_trigger_deserialization {
 mod blob_get_request_serialization {
     use super::*;
     use crate::blob::manage::BlobGetRequest;
-    use crate::core::RequestParams;
-    use crate::Method;
 
     #[test]
     fn blob_get_request_basic_serialization() {
-        let params = RequestParams { account_id: "acct-1", method: Method::GetBlob, call_id: 0 };
-        let mut req = BlobGetRequest::new(params);
+        let mut req = BlobGetRequest::new("acct-1");
         req.ids(["blob-1", "blob-2"]);
         req.properties(["data:asText", "size"]);
 
@@ -875,8 +872,7 @@ mod blob_get_request_serialization {
 
     #[test]
     fn blob_get_request_with_offset_and_length() {
-        let params = RequestParams { account_id: "acct-1", method: Method::GetBlob, call_id: 0 };
-        let mut req = BlobGetRequest::new(params);
+        let mut req = BlobGetRequest::new("acct-1");
         req.ids(["blob-1"]);
         req.offset(100);
         req.length(500);
@@ -888,8 +884,7 @@ mod blob_get_request_serialization {
 
     #[test]
     fn blob_get_request_without_optional_fields() {
-        let params = RequestParams { account_id: "acct-1", method: Method::GetBlob, call_id: 0 };
-        let mut req = BlobGetRequest::new(params);
+        let mut req = BlobGetRequest::new("acct-1");
         req.ids(["blob-1"]);
 
         let value = serde_json::to_value(&req).unwrap();

@@ -112,3 +112,11 @@ impl Display for Property {
 }
 
 crate::impl_jmap_object!(Quota<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(QuotaGet, Quota<Set>, "Quota/get", crate::core::capability::Quota, crate::core::get::GetResponse<Quota<Get>>);
+crate::define_changes_method!(QuotaChanges, "Quota/changes", crate::core::capability::Quota, crate::core::changes::ChangesResponse<Quota<Get>>);
+crate::define_query_method!(QuotaQuery, Quota<Set>, "Quota/query", crate::core::capability::Quota);
+crate::define_query_changes_method!(QuotaQueryChanges, Quota<Set>, "Quota/queryChanges", crate::core::capability::Quota);

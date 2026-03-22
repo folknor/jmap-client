@@ -77,6 +77,12 @@ pub struct EmailImportResponse {
     not_created: Option<HashMap<String, SetError<Property>>>,
 }
 
+impl crate::core::method::JmapMethod for EmailImportRequest {
+    const NAME: &'static str = "Email/import";
+    type Cap = crate::core::capability::Mail;
+    type Response = EmailImportResponse;
+}
+
 impl EmailImportRequest {
     pub fn new(account_id: impl Into<String>) -> Self {
         EmailImportRequest {

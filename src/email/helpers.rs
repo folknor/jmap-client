@@ -12,23 +12,19 @@
 use crate::{
     client::Client,
     core::{
-        changes::{ChangesRequest, ChangesResponse},
-        copy::CopyRequest,
-        get::GetRequest,
-        query::{Comparator, Filter, QueryRequest, QueryResponse},
-        query_changes::{QueryChangesRequest, QueryChangesResponse},
-        request::{Arguments, Request},
-        response::{EmailCopyResponse, EmailGetResponse, EmailSetResponse},
-        set::SetRequest,
+        changes::ChangesResponse,
+        query::{Comparator, Filter, QueryResponse},
+        query_changes::QueryChangesResponse,
     },
-    Get, Method, Set,
+    Get,
 };
 
 use super::{
-    import::{EmailImportRequest, EmailImportResponse},
-    parse::{EmailParseRequest, EmailParseResponse},
+    import::EmailImportRequest,
+    parse::EmailParseRequest,
     search_snippet::{SearchSnippetGetRequest, SearchSnippetGetResponse},
-    BodyProperty, Email, Property,
+    BodyProperty, Email, EmailChanges, EmailCopy, EmailGet, EmailQuery, EmailQueryChanges,
+    EmailSet, Property,
 };
 
 impl Client {
@@ -74,25 +70,23 @@ impl Client {
             .await?
             .take_blob_id();
         let mut request = self.build();
-        let import_request = request
-            .import_email()
-            .account_id(account_id)
+        let mut import = EmailImportRequest::new(account_id);
+        let import_item = import
             .email(blob_id)
             .mailbox_ids(mailbox_ids);
 
         if let Some(keywords) = keywords {
-            import_request.keywords(keywords);
+            import_item.keywords(keywords);
         }
 
         if let Some(received_at) = received_at {
-            import_request.received_at(received_at);
+            import_item.received_at(received_at);
         }
 
-        let id = import_request.create_id();
-        request
-            .send_single::<EmailImportResponse>()
-            .await?
-            .created(&id)
+        let id = import_item.create_id();
+        let handle = request.call(import)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn email_set_mailbox(
@@ -102,8 +96,12 @@ impl Client {
         set: bool,
     ) -> crate::Result<Option<Email>> {
         let mut request = self.build();
-        request.set_email().update(id).mailbox_id(mailbox_id, set);
-        request.send_single::<EmailSetResponse>().await?.updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut email_set = EmailSet::new(&account_id);
+        email_set.update(id).mailbox_id(mailbox_id, set);
+        let handle = request.call(email_set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn email_set_mailboxes<T, U>(
@@ -116,8 +114,12 @@ impl Client {
         U: Into<String>,
     {
         let mut request = self.build();
-        request.set_email().update(id).mailbox_ids(mailbox_ids);
-        request.send_single::<EmailSetResponse>().await?.updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut email_set = EmailSet::new(&account_id);
+        email_set.update(id).mailbox_ids(mailbox_ids);
+        let handle = request.call(email_set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn email_set_keyword(
@@ -127,8 +129,12 @@ impl Client {
         set: bool,
     ) -> crate::Result<Option<Email>> {
         let mut request = self.build();
-        request.set_email().update(id).keyword(keyword, set);
-        request.send_single::<EmailSetResponse>().await?.updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut email_set = EmailSet::new(&account_id);
+        email_set.update(id).keyword(keyword, set);
+        let handle = request.call(email_set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn email_set_keywords<T, U>(
@@ -141,17 +147,22 @@ impl Client {
         U: Into<String>,
     {
         let mut request = self.build();
-        request.set_email().update(id).keywords(keywords);
-        request.send_single::<EmailSetResponse>().await?.updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut email_set = EmailSet::new(&account_id);
+        email_set.update(id).keywords(keywords);
+        let handle = request.call(email_set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn email_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_email().destroy([id]);
-        request
-            .send_single::<EmailSetResponse>()
-            .await?
-            .destroyed(id)
+        let account_id = request.default_account_id().to_string();
+        let mut email_set = EmailSet::new(&account_id);
+        email_set.destroy([id]);
+        let handle = request.call(email_set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn email_get(
@@ -160,14 +171,15 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<Email<Get>>> {
         let mut request = self.build();
-        let get_request = request.get_email().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = EmailGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<EmailGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn email_changes(
@@ -176,11 +188,14 @@ impl Client {
         max_changes: Option<usize>,
     ) -> crate::Result<ChangesResponse<Email<Get>>> {
         let mut request = self.build();
-        let changes_request = request.changes_email(since_state);
+        let account_id = request.default_account_id().to_string();
+        let mut changes = EmailChanges::new(&account_id, since_state);
         if let Some(max_changes) = max_changes {
-            changes_request.max_changes(max_changes);
+            changes.max_changes(max_changes);
         }
-        request.send_single().await
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 
     pub async fn email_query(
@@ -189,14 +204,17 @@ impl Client {
         sort: Option<impl IntoIterator<Item = Comparator<super::query::Comparator>>>,
     ) -> crate::Result<QueryResponse> {
         let mut request = self.build();
-        let query_request = request.query_email();
+        let account_id = request.default_account_id().to_string();
+        let mut query = EmailQuery::new(&account_id);
         if let Some(filter) = filter {
-            query_request.filter(filter);
+            query.filter(filter);
         }
         if let Some(sort) = sort {
-            query_request.sort(sort);
+            query.sort(sort);
         }
-        request.send_single::<QueryResponse>().await
+        let handle = request.call(query)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 
     pub async fn email_query_changes(
@@ -205,11 +223,14 @@ impl Client {
         filter: Option<impl Into<Filter<super::query::Filter>>>,
     ) -> crate::Result<QueryChangesResponse> {
         let mut request = self.build();
-        let query_request = request.query_email_changes(since_query_state);
+        let account_id = request.default_account_id().to_string();
+        let mut query = EmailQueryChanges::new(&account_id, since_query_state);
         if let Some(filter) = filter {
-            query_request.filter(filter);
+            query.filter(filter);
         }
-        request.send_single::<QueryChangesResponse>().await
+        let handle = request.call(query)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 
     pub async fn email_parse(
@@ -220,25 +241,26 @@ impl Client {
         max_body_value_bytes: Option<usize>,
     ) -> crate::Result<Email> {
         let mut request = self.build();
-        let parse_request = request.parse_email().blob_ids([blob_id]);
+        let account_id = request.default_account_id().to_string();
+        let mut parse = EmailParseRequest::new(&account_id);
+        parse.blob_ids([blob_id]);
         if let Some(properties) = properties {
-            parse_request.properties(properties);
+            parse.properties(properties);
         }
 
         if let Some(body_properties) = body_properties {
-            parse_request.body_properties(body_properties);
+            parse.body_properties(body_properties);
         }
 
         if let Some(max_body_value_bytes) = max_body_value_bytes {
-            parse_request
+            parse
                 .fetch_all_body_values(true)
                 .max_body_value_bytes(max_body_value_bytes);
         }
 
-        request
-            .send_single::<EmailParseResponse>()
-            .await
-            .and_then(|mut r| r.parsed(blob_id))
+        let handle = request.call(parse)?;
+        let mut response = request.send().await?;
+        response.get(&handle).and_then(|mut r| r.parsed(blob_id))
     }
 
     pub async fn email_copy<T, U, V, W>(
@@ -257,10 +279,9 @@ impl Client {
     {
         let id = id.into();
         let mut request = self.build();
-        let email = request
-            .copy_email(from_account_id)
-            .create(id.clone())
-            .mailbox_ids(mailbox_ids);
+        let account_id = request.default_account_id().to_string();
+        let mut copy = EmailCopy::new(&account_id, from_account_id);
+        let email = copy.create(id.clone()).mailbox_ids(mailbox_ids);
 
         if let Some(keywords) = keywords {
             email.keywords(keywords);
@@ -270,10 +291,9 @@ impl Client {
             email.received_at(received_at);
         }
 
-        request
-            .send_single::<EmailCopyResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(copy)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn search_snippet_get(
@@ -282,139 +302,14 @@ impl Client {
         email_ids: impl IntoIterator<Item = impl Into<String>>,
     ) -> crate::Result<SearchSnippetGetResponse> {
         let mut request = self.build();
-        let snippet_request = request.get_search_snippet();
+        let account_id = request.default_account_id().to_string();
+        let mut snippet = SearchSnippetGetRequest::new(&account_id);
         if let Some(filter) = filter {
-            snippet_request.filter(filter);
+            snippet.filter(filter);
         }
-        snippet_request.email_ids(email_ids);
-        request.send_single::<SearchSnippetGetResponse>().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_email(&mut self) -> &mut GetRequest<Email<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::GetEmail,
-            Arguments::email_get(self.params(Method::GetEmail)),
-        )
-        .email_get_mut()
-    }
-
-    pub async fn send_get_email(self) -> crate::Result<EmailGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_email(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::ChangesEmail,
-            Arguments::changes(self.params(Method::ChangesEmail), since_state.into()),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_email(self) -> crate::Result<ChangesResponse<Email<Get>>> {
-        self.send_single().await
-    }
-
-    pub fn query_email(&mut self) -> &mut QueryRequest<Email<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::QueryEmail,
-            Arguments::email_query(self.params(Method::QueryEmail)),
-        )
-        .email_query_mut()
-    }
-
-    pub async fn send_query_email(self) -> crate::Result<QueryResponse> {
-        self.send_single().await
-    }
-
-    pub fn query_email_changes(
-        &mut self,
-        since_query_state: impl Into<String>,
-    ) -> &mut QueryChangesRequest<Email<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::QueryChangesEmail,
-            Arguments::email_query_changes(
-                self.params(Method::QueryChangesEmail),
-                since_query_state.into(),
-            ),
-        )
-        .email_query_changes_mut()
-    }
-
-    pub async fn send_query_email_changes(self) -> crate::Result<QueryChangesResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_email(&mut self) -> &mut SetRequest<Email<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::SetEmail,
-            Arguments::email_set(self.params(Method::SetEmail)),
-        )
-        .email_set_mut()
-    }
-
-    pub async fn send_set_email(self) -> crate::Result<EmailSetResponse> {
-        self.send_single().await
-    }
-
-    pub fn copy_email(
-        &mut self,
-        from_account_id: impl Into<String>,
-    ) -> &mut CopyRequest<Email<Set>> {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::CopyEmail,
-            Arguments::email_copy(self.params(Method::CopyEmail), from_account_id.into()),
-        )
-        .email_copy_mut()
-    }
-
-    pub async fn send_copy_email(self) -> crate::Result<EmailCopyResponse> {
-        self.send_single().await
-    }
-
-    pub fn import_email(&mut self) -> &mut EmailImportRequest {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::ImportEmail,
-            Arguments::email_import(self.params(Method::ImportEmail)),
-        )
-        .email_import_mut()
-    }
-
-    pub async fn send_import_email(self) -> crate::Result<EmailImportResponse> {
-        self.send_single().await
-    }
-
-    pub fn parse_email(&mut self) -> &mut EmailParseRequest {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::ParseEmail,
-            Arguments::email_parse(self.params(Method::ParseEmail)),
-        )
-        .email_parse_mut()
-    }
-
-    pub async fn send_parse_email(self) -> crate::Result<EmailParseResponse> {
-        self.send_single().await
-    }
-
-    pub fn get_search_snippet(&mut self) -> &mut SearchSnippetGetRequest {
-        self.add_capability(crate::URI::Mail);
-        self.add_method_call(
-            Method::GetSearchSnippet,
-            Arguments::search_snippet_get(self.params(Method::GetSearchSnippet)),
-        )
-        .search_snippet_get_mut()
-    }
-
-    pub async fn send_get_search_snippet(self) -> crate::Result<SearchSnippetGetResponse> {
-        self.send_single().await
+        snippet.email_ids(email_ids);
+        let handle = request.call(snippet)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

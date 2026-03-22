@@ -43,6 +43,12 @@ pub struct CalendarEventParseResponse {
     not_found: Option<Vec<String>>,
 }
 
+impl crate::core::method::JmapMethod for CalendarEventParseRequest {
+    const NAME: &'static str = "CalendarEvent/parse";
+    type Cap = crate::core::capability::CalendarsParse;
+    type Response = CalendarEventParseResponse;
+}
+
 impl CalendarEventParseRequest {
     pub fn new(account_id: impl Into<String>) -> Self {
         CalendarEventParseRequest {

@@ -92,3 +92,9 @@ impl Display for Property {
 }
 
 crate::impl_jmap_object!(VacationResponse<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(VacationResponseGet, VacationResponse<Set>, "VacationResponse/get", crate::core::capability::VacationResponseCap, crate::core::get::GetResponse<VacationResponse<Get>>);
+crate::define_set_method!(VacationResponseSet, VacationResponse<Set>, "VacationResponse/set", crate::core::capability::VacationResponseCap, crate::core::set::SetResponse<VacationResponse<Get>>);

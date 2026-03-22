@@ -11,16 +11,11 @@
 
 use crate::{
     client::Client,
-    core::{
-        get::GetRequest,
-        request::{Arguments, Request},
-        response::{PushSubscriptionGetResponse, PushSubscriptionSetResponse},
-        set::{SetObject, SetRequest},
-    },
-    Method, Set, DataType,
+    core::set::SetObject,
+    DataType,
 };
 
-use super::{Keys, PushSubscription};
+use super::{Keys, PushSubscription, PushSubscriptionGet, PushSubscriptionSet};
 
 impl Client {
     pub async fn push_subscription_create(
@@ -30,8 +25,9 @@ impl Client {
         keys: Option<Keys>,
     ) -> crate::Result<PushSubscription> {
         let mut request = self.build();
-        let create_req = request
-            .set_push_subscription()
+        let account_id = request.default_account_id().to_string();
+        let mut set = PushSubscriptionSet::new(&account_id);
+        let create_req = set
             .create()
             .device_client_id(device_client_id)
             .url(url);
@@ -41,10 +37,9 @@ impl Client {
         }
 
         let id = create_req.create_id().unwrap();
-        request
-            .send_single::<PushSubscriptionSetResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn push_subscription_verify(
@@ -53,14 +48,12 @@ impl Client {
         verification_code: impl Into<String>,
     ) -> crate::Result<Option<PushSubscription>> {
         let mut request = self.build();
-        request
-            .set_push_subscription()
-            .update(id)
-            .verification_code(verification_code);
-        request
-            .send_single::<PushSubscriptionSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = PushSubscriptionSet::new(&account_id);
+        set.update(id).verification_code(verification_code);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn push_subscription_update_types(
@@ -69,45 +62,21 @@ impl Client {
         types: Option<impl IntoIterator<Item = DataType>>,
     ) -> crate::Result<Option<PushSubscription>> {
         let mut request = self.build();
-        request.set_push_subscription().update(id).types(types);
-        request
-            .send_single::<PushSubscriptionSetResponse>()
-            .await?
-            .updated(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = PushSubscriptionSet::new(&account_id);
+        set.update(id).types(types);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn push_subscription_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_push_subscription().destroy([id]);
-        request
-            .send_single::<PushSubscriptionSetResponse>()
-            .await?
-            .destroyed(id)
-    }
-}
-
-impl Request<'_> {
-    pub fn get_push_subscription(&mut self) -> &mut GetRequest<PushSubscription<Set>> {
-        self.add_method_call(
-            Method::GetPushSubscription,
-            Arguments::push_get(self.params(Method::GetPushSubscription)),
-        )
-        .push_get_mut()
-    }
-
-    pub async fn send_get_push_subscription(self) -> crate::Result<PushSubscriptionGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_push_subscription(&mut self) -> &mut SetRequest<PushSubscription<Set>> {
-        self.add_method_call(
-            Method::SetPushSubscription,
-            Arguments::push_set(self.params(Method::SetPushSubscription)),
-        )
-        .push_set_mut()
-    }
-
-    pub async fn send_set_push_subscription(self) -> crate::Result<PushSubscriptionSetResponse> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut set = PushSubscriptionSet::new(&account_id);
+        set.destroy([id]);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 }

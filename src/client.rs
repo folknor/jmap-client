@@ -365,7 +365,7 @@ impl Client {
     async fn send_bytes(
         &self,
         request: &request::Request<'_>,
-    ) -> crate::Result<bytes::Bytes> {
+    ) -> crate::Result<Vec<u8>> {
         Ok(Client::handle_error(
             HttpClient::builder()
                 .redirect(self.redirect_policy())
@@ -380,7 +380,8 @@ impl Client {
         )
         .await?
         .bytes()
-        .await?)
+        .await?
+        .to_vec())
     }
 
 
@@ -489,11 +490,11 @@ impl From<(String, String)> for Credentials {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::response::{Response, TaggedMethodResponse};
+    use crate::core::response::Response;
 
     #[test]
     fn test_deserialize() {
-        let _r: Response<TaggedMethodResponse> = serde_json::from_slice(
+        let _r: Response = serde_json::from_slice(
             br#"{"sessionState": "123", "methodResponses": [[ "Email/query", {
                 "accountId": "A1",
                 "queryState": "abcdefg",

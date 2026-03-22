@@ -12,16 +12,13 @@
 use crate::{
     client::Client,
     core::{
-        changes::{ChangesRequest, ChangesResponse},
-        get::GetRequest,
-        request::{Arguments, Request},
-        response::{AddressBookGetResponse, AddressBookSetResponse},
-        set::{SetObject, SetRequest},
+        changes::ChangesResponse,
+        set::SetObject,
     },
-    Get, Method, Set,
+    Get,
 };
 
-use super::{AddressBook, Property};
+use super::{AddressBook, AddressBookChanges, AddressBookGet, AddressBookSet, Property};
 
 impl Client {
     pub async fn address_book_create(
@@ -29,17 +26,17 @@ impl Client {
         name: impl Into<String>,
     ) -> crate::Result<AddressBook> {
         let mut request = self.build();
-        let id = request
-            .set_address_book()
+        let account_id = request.default_account_id().to_string();
+        let mut set = AddressBookSet::new(&account_id);
+        let id = set
             .create()
             .name(name)
             .is_subscribed(true)
             .create_id()
             .unwrap();
-        request
-            .send_single::<AddressBookSetResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn address_book_destroy(
@@ -48,15 +45,14 @@ impl Client {
         remove_contents: bool,
     ) -> crate::Result<()> {
         let mut request = self.build();
-        request
-            .set_address_book()
-            .destroy([id])
+        let account_id = request.default_account_id().to_string();
+        let mut set = AddressBookSet::new(&account_id);
+        set.destroy([id])
             .arguments()
             .on_destroy_remove_contents(remove_contents);
-        request
-            .send_single::<AddressBookSetResponse>()
-            .await?
-            .destroyed(id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn address_book_get(
@@ -65,14 +61,15 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<AddressBook>> {
         let mut request = self.build();
-        let get_request = request.get_address_book().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = AddressBookGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<AddressBookGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn address_book_changes(
@@ -81,53 +78,11 @@ impl Client {
         max_changes: usize,
     ) -> crate::Result<ChangesResponse<AddressBook<Get>>> {
         let mut request = self.build();
-        request
-            .changes_address_book(since_state)
-            .max_changes(max_changes);
-        request.send_single().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_address_book(&mut self) -> &mut GetRequest<AddressBook<Set>> {
-        self.add_capability(crate::URI::Contacts);
-        self.add_method_call(
-            Method::GetAddressBook,
-            Arguments::address_book_get(self.params(Method::GetAddressBook)),
-        )
-        .address_book_get_mut()
-    }
-
-    pub async fn send_get_address_book(self) -> crate::Result<AddressBookGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_address_book(&mut self) -> &mut SetRequest<AddressBook<Set>> {
-        self.add_capability(crate::URI::Contacts);
-        self.add_method_call(
-            Method::SetAddressBook,
-            Arguments::address_book_set(self.params(Method::SetAddressBook)),
-        )
-        .address_book_set_mut()
-    }
-
-    pub async fn send_set_address_book(self) -> crate::Result<AddressBookSetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_address_book(
-        &mut self,
-        since_state: impl Into<String>,
-    ) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Contacts);
-        self.add_method_call(
-            Method::ChangesAddressBook,
-            Arguments::changes(self.params(Method::ChangesAddressBook), since_state.into()),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_address_book(self) -> crate::Result<ChangesResponse<AddressBook<Get>>> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut changes = AddressBookChanges::new(&account_id, since_state);
+        changes.max_changes(max_changes);
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

@@ -12,20 +12,18 @@
 use crate::{
     client::Client,
     core::{
-        changes::{ChangesRequest, ChangesResponse},
-        get::GetRequest,
-        query::{Comparator, Filter, QueryRequest, QueryResponse},
-        query_changes::{QueryChangesRequest, QueryChangesResponse},
-        request::{Arguments, Request},
-        response::{
-            CalendarEventNotificationGetResponse, CalendarEventNotificationSetResponse,
-        },
-        set::SetRequest,
+        changes::ChangesResponse,
+        query::{Comparator, Filter, QueryResponse},
+        query_changes::QueryChangesResponse,
     },
-    Get, Method, Set,
+    Get,
 };
 
-use super::{CalendarEventNotification, Property};
+use super::{
+    CalendarEventNotification, CalendarEventNotificationChanges, CalendarEventNotificationGet,
+    CalendarEventNotificationQuery, CalendarEventNotificationQueryChanges,
+    CalendarEventNotificationSet, Property,
+};
 
 impl Client {
     pub async fn calendar_event_notification_get(
@@ -34,23 +32,25 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<CalendarEventNotification>> {
         let mut request = self.build();
-        let get_request = request.get_calendar_event_notification().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = CalendarEventNotificationGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<CalendarEventNotificationGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn calendar_event_notification_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_calendar_event_notification().destroy([id]);
-        request
-            .send_single::<CalendarEventNotificationSetResponse>()
-            .await?
-            .destroyed(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = CalendarEventNotificationSet::new(&account_id);
+        set.destroy([id]);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn calendar_event_notification_changes(
@@ -59,10 +59,12 @@ impl Client {
         max_changes: usize,
     ) -> crate::Result<ChangesResponse<CalendarEventNotification<Get>>> {
         let mut request = self.build();
-        request
-            .changes_calendar_event_notification(since_state)
-            .max_changes(max_changes);
-        request.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut changes = CalendarEventNotificationChanges::new(&account_id, since_state);
+        changes.max_changes(max_changes);
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 
     pub async fn calendar_event_notification_query(
@@ -73,114 +75,16 @@ impl Client {
         >,
     ) -> crate::Result<QueryResponse> {
         let mut request = self.build();
-        let query_request = request.query_calendar_event_notification();
+        let account_id = request.default_account_id().to_string();
+        let mut query = CalendarEventNotificationQuery::new(&account_id);
         if let Some(filter) = filter {
-            query_request.filter(filter);
+            query.filter(filter);
         }
         if let Some(sort) = sort {
-            query_request.sort(sort);
+            query.sort(sort);
         }
-        request.send_single::<QueryResponse>().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_calendar_event_notification(
-        &mut self,
-    ) -> &mut GetRequest<CalendarEventNotification<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::GetCalendarEventNotification,
-            Arguments::calendar_event_notification_get(
-                self.params(Method::GetCalendarEventNotification),
-            ),
-        )
-        .calendar_event_notification_get_mut()
-    }
-
-    pub async fn send_get_calendar_event_notification(
-        self,
-    ) -> crate::Result<CalendarEventNotificationGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_calendar_event_notification(
-        &mut self,
-    ) -> &mut SetRequest<CalendarEventNotification<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::SetCalendarEventNotification,
-            Arguments::calendar_event_notification_set(
-                self.params(Method::SetCalendarEventNotification),
-            ),
-        )
-        .calendar_event_notification_set_mut()
-    }
-
-    pub async fn send_set_calendar_event_notification(
-        self,
-    ) -> crate::Result<CalendarEventNotificationSetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_calendar_event_notification(
-        &mut self,
-        since_state: impl Into<String>,
-    ) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::ChangesCalendarEventNotification,
-            Arguments::changes(
-                self.params(Method::ChangesCalendarEventNotification),
-                since_state.into(),
-            ),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_calendar_event_notification(
-        self,
-    ) -> crate::Result<ChangesResponse<CalendarEventNotification<Get>>> {
-        self.send_single().await
-    }
-
-    pub fn query_calendar_event_notification(
-        &mut self,
-    ) -> &mut QueryRequest<CalendarEventNotification<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::QueryCalendarEventNotification,
-            Arguments::calendar_event_notification_query(
-                self.params(Method::QueryCalendarEventNotification),
-            ),
-        )
-        .calendar_event_notification_query_mut()
-    }
-
-    pub async fn send_query_calendar_event_notification(
-        self,
-    ) -> crate::Result<QueryResponse> {
-        self.send_single().await
-    }
-
-    pub fn query_calendar_event_notification_changes(
-        &mut self,
-        since_query_state: impl Into<String>,
-    ) -> &mut QueryChangesRequest<CalendarEventNotification<Set>> {
-        self.add_capability(crate::URI::Calendars);
-        self.add_method_call(
-            Method::QueryChangesCalendarEventNotification,
-            Arguments::calendar_event_notification_query_changes(
-                self.params(Method::QueryChangesCalendarEventNotification),
-                since_query_state.into(),
-            ),
-        )
-        .calendar_event_notification_query_changes_mut()
-    }
-
-    pub async fn send_query_calendar_event_notification_changes(
-        self,
-    ) -> crate::Result<QueryChangesResponse> {
-        self.send_single().await
+        let handle = request.call(query)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

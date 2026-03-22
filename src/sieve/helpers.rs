@@ -12,18 +12,14 @@
 use crate::{
     client::Client,
     core::{
-        get::GetRequest,
-        query::{Comparator, Filter, QueryRequest, QueryResponse},
-        request::{Arguments, Request},
-        response::{SieveScriptGetResponse, SieveScriptSetResponse},
-        set::{SetObject, SetRequest},
+        query::{Comparator, Filter, QueryResponse},
+        set::SetObject,
     },
-    Method, Set, URI,
 };
 
 use super::{
-    validate::{SieveScriptValidateRequest, SieveScriptValidateResponse},
-    Property, SieveScript,
+    validate::SieveScriptValidateRequest,
+    Property, SieveScript, SieveScriptGet, SieveScriptQuery, SieveScriptSet,
 };
 
 impl Client {
@@ -35,22 +31,21 @@ impl Client {
     ) -> crate::Result<SieveScript> {
         let blob_id = self.upload(None, script.into(), None).await?.take_blob_id();
         let mut request = self.build();
-        let set_request = request.set_sieve_script();
-        let id = set_request
+        let account_id = request.default_account_id().to_string();
+        let mut set = SieveScriptSet::new(&account_id);
+        let id = set
             .create()
             .name(name)
             .blob_id(blob_id)
             .create_id()
             .unwrap();
         if activate {
-            set_request
-                .arguments()
+            set.arguments()
                 .on_success_activate_script(id.clone());
         }
-        request
-            .send_single::<SieveScriptSetResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn sieve_script_replace(
@@ -61,15 +56,15 @@ impl Client {
     ) -> crate::Result<Option<SieveScript>> {
         let blob_id = self.upload(None, script.into(), None).await?.take_blob_id();
         let mut request = self.build();
-        let set_request = request.set_sieve_script();
-        set_request.update(id).blob_id(blob_id);
+        let account_id = request.default_account_id().to_string();
+        let mut set = SieveScriptSet::new(&account_id);
+        set.update(id).blob_id(blob_id);
         if activate {
-            set_request.arguments().on_success_activate_script_id(id);
+            set.arguments().on_success_activate_script_id(id);
         }
-        request
-            .send_single::<SieveScriptSetResponse>()
-            .await?
-            .updated(id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn sieve_script_rename(
@@ -79,48 +74,45 @@ impl Client {
         activate: bool,
     ) -> crate::Result<Option<SieveScript>> {
         let mut request = self.build();
-        let set_request = request.set_sieve_script();
-        set_request.update(id).name(name);
+        let account_id = request.default_account_id().to_string();
+        let mut set = SieveScriptSet::new(&account_id);
+        set.update(id).name(name);
         if activate {
-            set_request.arguments().on_success_activate_script_id(id);
+            set.arguments().on_success_activate_script_id(id);
         }
-        request
-            .send_single::<SieveScriptSetResponse>()
-            .await?
-            .updated(id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.updated(id)
     }
 
     pub async fn sieve_script_activate(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
-        request
-            .set_sieve_script()
-            .arguments()
-            .on_success_activate_script_id(id);
-        request
-            .send_single::<SieveScriptSetResponse>()
-            .await?
-            .unwrap_update_errors()
+        let account_id = request.default_account_id().to_string();
+        let mut set = SieveScriptSet::new(&account_id);
+        set.arguments().on_success_activate_script_id(id);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.unwrap_update_errors()
     }
 
     pub async fn sieve_script_deactivate(&self) -> crate::Result<()> {
         let mut request = self.build();
-        request
-            .set_sieve_script()
-            .arguments()
-            .on_success_deactivate_script(true);
-        request
-            .send_single::<SieveScriptSetResponse>()
-            .await?
-            .unwrap_update_errors()
+        let account_id = request.default_account_id().to_string();
+        let mut set = SieveScriptSet::new(&account_id);
+        set.arguments().on_success_deactivate_script(true);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.unwrap_update_errors()
     }
 
     pub async fn sieve_script_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_sieve_script().destroy([id]);
-        request
-            .send_single::<SieveScriptSetResponse>()
-            .await?
-            .destroyed(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = SieveScriptSet::new(&account_id);
+        set.destroy([id]);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn sieve_script_get(
@@ -129,14 +121,15 @@ impl Client {
         properties: Option<impl IntoIterator<Item = Property>>,
     ) -> crate::Result<Option<SieveScript>> {
         let mut request = self.build();
-        let get_request = request.get_sieve_script().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = SieveScriptGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<SieveScriptGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn sieve_script_query(
@@ -145,80 +138,26 @@ impl Client {
         sort: Option<impl IntoIterator<Item = Comparator<super::query::Comparator>>>,
     ) -> crate::Result<QueryResponse> {
         let mut request = self.build();
-        let query_request = request.query_sieve_script();
+        let account_id = request.default_account_id().to_string();
+        let mut query = SieveScriptQuery::new(&account_id);
         if let Some(filter) = filter {
-            query_request.filter(filter);
+            query.filter(filter);
         }
         if let Some(sort) = sort {
-            query_request.sort(sort);
+            query.sort(sort);
         }
-        request.send_single::<QueryResponse>().await
+        let handle = request.call(query)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 
     pub async fn sieve_script_validate(&self, script: impl Into<Vec<u8>>) -> crate::Result<()> {
         let blob_id = self.upload(None, script.into(), None).await?.take_blob_id();
         let mut request = self.build();
-        request.validate_sieve_script(blob_id);
-        request
-            .send_single::<SieveScriptValidateResponse>()
-            .await?
-            .unwrap_error()
-    }
-}
-
-impl Request<'_> {
-    pub fn get_sieve_script(&mut self) -> &mut GetRequest<SieveScript<Set>> {
-        self.add_capability(URI::Sieve);
-        self.add_method_call(
-            Method::GetSieveScript,
-            Arguments::sieve_script_get(self.params(Method::GetSieveScript)),
-        )
-        .sieve_script_get_mut()
-    }
-
-    pub async fn send_get_sieve_script(self) -> crate::Result<SieveScriptGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_sieve_script(&mut self) -> &mut SetRequest<SieveScript<Set>> {
-        self.add_capability(URI::Sieve);
-        self.add_method_call(
-            Method::SetSieveScript,
-            Arguments::sieve_script_set(self.params(Method::SetSieveScript)),
-        )
-        .sieve_script_set_mut()
-    }
-
-    pub async fn send_set_sieve_script(self) -> crate::Result<SieveScriptSetResponse> {
-        self.send_single().await
-    }
-
-    pub fn validate_sieve_script(
-        &mut self,
-        blob_id: impl Into<String>,
-    ) -> &mut SieveScriptValidateRequest {
-        self.add_capability(URI::Sieve);
-        self.add_method_call(
-            Method::ValidateSieveScript,
-            Arguments::sieve_script_validate(self.params(Method::ValidateSieveScript), blob_id),
-        )
-        .sieve_script_validate_mut()
-    }
-
-    pub async fn send_validate_sieve_script(self) -> crate::Result<SieveScriptValidateResponse> {
-        self.send_single().await
-    }
-
-    pub fn query_sieve_script(&mut self) -> &mut QueryRequest<SieveScript<Set>> {
-        self.add_capability(URI::Sieve);
-        self.add_method_call(
-            Method::QuerySieveScript,
-            Arguments::sieve_script_query(self.params(Method::QuerySieveScript)),
-        )
-        .sieve_script_query_mut()
-    }
-
-    pub async fn send_query_sieve_script(self) -> crate::Result<QueryResponse> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let validate = SieveScriptValidateRequest::new(&account_id, blob_id);
+        let handle = request.call(validate)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.unwrap_error()
     }
 }

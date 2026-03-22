@@ -97,3 +97,10 @@ impl Display for Property {
 }
 
 crate::impl_jmap_object!(Identity<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(IdentityGet, Identity<Set>, "Identity/get", crate::core::capability::Submission, crate::core::get::GetResponse<Identity<Get>>);
+crate::define_set_method!(IdentitySet, Identity<Set>, "Identity/set", crate::core::capability::Submission, crate::core::set::SetResponse<Identity<Get>>);
+crate::define_changes_method!(IdentityChanges, "Identity/changes", crate::core::capability::Submission, crate::core::changes::ChangesResponse<Identity<Get>>);

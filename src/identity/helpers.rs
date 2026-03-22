@@ -12,16 +12,13 @@
 use crate::{
     client::Client,
     core::{
-        changes::{ChangesRequest, ChangesResponse},
-        get::GetRequest,
-        request::{Arguments, Request},
-        response::{IdentityGetResponse, IdentitySetResponse},
-        set::{SetObject, SetRequest},
+        changes::ChangesResponse,
+        set::SetObject,
     },
-    Get, Method, Set,
+    Get,
 };
 
-use super::{Identity, Property};
+use super::{Identity, IdentityChanges, IdentityGet, IdentitySet, Property};
 
 impl Client {
     pub async fn identity_create(
@@ -30,26 +27,27 @@ impl Client {
         email: impl Into<String>,
     ) -> crate::Result<Identity> {
         let mut request = self.build();
-        let id = request
-            .set_identity()
+        let account_id = request.default_account_id().to_string();
+        let mut set = IdentitySet::new(&account_id);
+        let id = set
             .create()
             .name(name)
             .email(email)
             .create_id()
             .unwrap();
-        request
-            .send_single::<IdentitySetResponse>()
-            .await?
-            .created(&id)
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.created(&id)
     }
 
     pub async fn identity_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
-        request.set_identity().destroy([id]);
-        request
-            .send_single::<IdentitySetResponse>()
-            .await?
-            .destroyed(id)
+        let account_id = request.default_account_id().to_string();
+        let mut set = IdentitySet::new(&account_id);
+        set.destroy([id]);
+        let handle = request.call(set)?;
+        let mut response = request.send().await?;
+        response.get(&handle)?.destroyed(id)
     }
 
     pub async fn identity_get(
@@ -58,14 +56,15 @@ impl Client {
         properties: Option<Vec<Property>>,
     ) -> crate::Result<Option<Identity>> {
         let mut request = self.build();
-        let get_request = request.get_identity().ids([id]);
+        let account_id = request.default_account_id().to_string();
+        let mut get = IdentityGet::new(&account_id);
+        get.ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties);
+            get.properties(properties);
         }
-        request
-            .send_single::<IdentityGetResponse>()
-            .await
-            .map(|mut r| r.take_list().pop())
+        let handle = request.call(get)?;
+        let mut response = request.send().await?;
+        response.get(&handle).map(|mut r| r.take_list().pop())
     }
 
     pub async fn identity_changes(
@@ -74,50 +73,11 @@ impl Client {
         max_changes: usize,
     ) -> crate::Result<ChangesResponse<Identity<Get>>> {
         let mut request = self.build();
-        request
-            .changes_identity(since_state)
-            .max_changes(max_changes);
-        request.send_single().await
-    }
-}
-
-impl Request<'_> {
-    pub fn get_identity(&mut self) -> &mut GetRequest<Identity<Set>> {
-        self.add_capability(crate::URI::Submission);
-        self.add_method_call(
-            Method::GetIdentity,
-            Arguments::identity_get(self.params(Method::GetIdentity)),
-        )
-        .identity_get_mut()
-    }
-
-    pub async fn send_get_identity(self) -> crate::Result<IdentityGetResponse> {
-        self.send_single().await
-    }
-
-    pub fn set_identity(&mut self) -> &mut SetRequest<Identity<Set>> {
-        self.add_capability(crate::URI::Submission);
-        self.add_method_call(
-            Method::SetIdentity,
-            Arguments::identity_set(self.params(Method::SetIdentity)),
-        )
-        .identity_set_mut()
-    }
-
-    pub async fn send_set_identity(self) -> crate::Result<IdentitySetResponse> {
-        self.send_single().await
-    }
-
-    pub fn changes_identity(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
-        self.add_capability(crate::URI::Submission);
-        self.add_method_call(
-            Method::ChangesIdentity,
-            Arguments::changes(self.params(Method::ChangesIdentity), since_state.into()),
-        )
-        .changes_mut()
-    }
-
-    pub async fn send_changes_identity(self) -> crate::Result<ChangesResponse<Identity<Get>>> {
-        self.send_single().await
+        let account_id = request.default_account_id().to_string();
+        let mut changes = IdentityChanges::new(&account_id, since_state);
+        changes.max_changes(max_changes);
+        let handle = request.call(changes)?;
+        let mut response = request.send().await?;
+        response.get(&handle)
     }
 }

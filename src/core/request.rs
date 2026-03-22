@@ -55,10 +55,10 @@ pub struct ResultReference {
 }
 
 /// A type-erased method call stored in the request batch.
-struct RawMethodCall {
-    name: &'static str,
-    arguments: serde_json::Value,
-    call_id: String,
+pub(crate) struct RawMethodCall {
+    pub(crate) name: &'static str,
+    pub(crate) arguments: serde_json::Value,
+    pub(crate) call_id: String,
 }
 
 impl Serialize for RawMethodCall {
@@ -75,9 +75,9 @@ impl Serialize for RawMethodCall {
 pub struct Request<'x> {
     client: &'x Client,
     account_id: String,
-    using: Vec<String>,
-    method_calls: Vec<RawMethodCall>,
-    created_ids: Option<std::collections::HashMap<String, String>>,
+    pub(crate) using: Vec<String>,
+    pub(crate) method_calls: Vec<RawMethodCall>,
+    pub(crate) created_ids: Option<std::collections::HashMap<String, String>>,
 }
 
 impl Serialize for Request<'_> {

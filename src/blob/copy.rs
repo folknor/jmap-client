@@ -39,6 +39,12 @@ pub struct CopyBlobResponse {
     not_copied: Option<HashMap<String, SetError<String>>>,
 }
 
+impl crate::core::method::JmapMethod for CopyBlobRequest {
+    const NAME: &'static str = "Blob/copy";
+    type Cap = crate::core::capability::Core;
+    type Response = CopyBlobResponse;
+}
+
 impl CopyBlobRequest {
     pub fn new(account_id: impl Into<String>, from_account_id: impl Into<String>) -> Self {
         CopyBlobRequest {

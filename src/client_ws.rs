@@ -29,10 +29,10 @@ use crate::{
     client::Client,
     core::{
         error::{ProblemDetails, ProblemType},
-        request::{Arguments, Request},
-        response::{Response, TaggedMethodResponse},
+        request::Request,
+        response::Response,
     },
-    DataType, Method, PushObject, URI,
+    DataType, PushObject,
 };
 
 #[derive(Debug, Serialize)]
@@ -43,10 +43,10 @@ struct WebSocketRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
 
-    using: Vec<URI>,
+    using: Vec<String>,
 
     #[serde(rename = "methodCalls")]
-    method_calls: Vec<(Method, Arguments, String)>,
+    method_calls: serde_json::Value,
 
     #[serde(rename = "createdIds")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,7 +62,7 @@ pub struct WebSocketResponse {
     request_id: Option<String>,
 
     #[serde(rename = "methodResponses")]
-    method_responses: Vec<TaggedMethodResponse>,
+    method_responses: Vec<serde_json::Value>,
 
     #[serde(rename = "createdIds")]
     created_ids: Option<HashMap<String, String>>,
@@ -153,7 +153,7 @@ enum WebSocketMessage_ {
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum WebSocketMessage {
-    Response(Response<TaggedMethodResponse>),
+    Response(Response),
     PushNotification(PushObject),
 }
 
@@ -262,12 +262,16 @@ impl Client {
                         match serde_json::from_slice::<WebSocketMessage_>(&message.into_data()) {
                             Ok(message) => match message {
                                 WebSocketMessage_::Response(response) => {
-                                    yield Ok(WebSocketMessage::Response(Response::new(
-                                        response.method_responses,
-                                        response.created_ids,
-                                        response.session_state,
-                                        response.request_id,
-                                    )))
+                                    // Deserialize the raw method responses into a Response
+                                    let json = serde_json::json!({
+                                        "methodResponses": response.method_responses,
+                                        "createdIds": response.created_ids,
+                                        "sessionState": response.session_state,
+                                    });
+                                    match serde_json::from_value::<Response>(json) {
+                                        Ok(resp) => yield Ok(WebSocketMessage::Response(resp)),
+                                        Err(e) => yield Err(crate::Error::Parse(e)),
+                                    }
                                 }
                                 WebSocketMessage_::PushNotification(push) => {
                                     yield Ok(WebSocketMessage::PushNotification(push.push))
@@ -294,13 +298,15 @@ impl Client {
         let request_id = ws.req_id.to_string();
         ws.req_id += 1;
 
+        let method_calls = serde_json::to_value(&request.method_calls)
+            .unwrap_or(serde_json::Value::Array(vec![]));
         ws.tx
             .send(Message::text(
                 serde_json::to_string(&WebSocketRequest {
                     _type: WebSocketRequestType::Request,
                     id: request_id.clone().into(),
                     using: request.using,
-                    method_calls: request.method_calls,
+                    method_calls,
                     created_ids: request.created_ids,
                 })
                 .unwrap_or_default(),

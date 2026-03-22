@@ -43,6 +43,12 @@ pub struct ContactCardParseResponse {
     not_found: Option<Vec<String>>,
 }
 
+impl crate::core::method::JmapMethod for ContactCardParseRequest {
+    const NAME: &'static str = "ContactCard/parse";
+    type Cap = crate::core::capability::ContactsParse;
+    type Response = ContactCardParseResponse;
+}
+
 impl ContactCardParseRequest {
     pub fn new(account_id: impl Into<String>) -> Self {
         ContactCardParseRequest {

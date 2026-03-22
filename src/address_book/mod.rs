@@ -145,3 +145,10 @@ impl Display for Property {
 }
 
 crate::impl_jmap_object!(AddressBook<State>, Property, true);
+
+use crate::Set;
+
+// Method structs for the new architecture
+crate::define_get_method!(AddressBookGet, AddressBook<Set>, "AddressBook/get", crate::core::capability::Contacts, crate::core::get::GetResponse<AddressBook<Get>>);
+crate::define_set_method!(AddressBookSet, AddressBook<Set>, "AddressBook/set", crate::core::capability::Contacts, crate::core::set::SetResponse<AddressBook<Get>>);
+crate::define_changes_method!(AddressBookChanges, "AddressBook/changes", crate::core::capability::Contacts, crate::core::changes::ChangesResponse<AddressBook<Get>>);
