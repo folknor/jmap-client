@@ -613,3 +613,6 @@ impl Display for DataType {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
