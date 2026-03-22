@@ -14,6 +14,7 @@ use std::future::Future;
 /// Transport-level error. Wraps the underlying HTTP client error
 /// without leaking it into the crate's public error model.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct TransportError {
     pub message: String,
     /// HTTP response body, if available (for parsing ProblemDetails).

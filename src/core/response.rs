@@ -21,7 +21,8 @@ use super::request::CallHandle;
 /// Raw deserialized JMAP response envelope (used internally).
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
-pub struct RawResponse<T> {
+#[allow(dead_code)]
+pub(crate) struct RawResponse<T> {
     #[serde(rename = "methodResponses")]
     method_responses: Vec<T>,
 
@@ -32,6 +33,7 @@ pub struct RawResponse<T> {
     session_state: String,
 }
 
+#[allow(dead_code)]
 impl<T> RawResponse<T> {
     pub fn unwrap_method_responses(self) -> Vec<T> {
         self.method_responses

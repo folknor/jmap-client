@@ -35,17 +35,11 @@ pub struct ReqwestTransport {
 
 impl ReqwestTransport {
     pub fn new(
-        mut headers: header::HeaderMap,
+        headers: header::HeaderMap,
         timeout: Duration,
         accept_invalid_certs: bool,
         trusted_hosts: Arc<HashSet<String>>,
     ) -> Result<Self, TransportError> {
-        // Add JSON content type for API requests
-        headers.insert(
-            header::CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
-
         let trusted_hosts_ = Arc::clone(&trusted_hosts);
         let client = HttpClient::builder()
             .redirect(redirect::Policy::custom(move |attempt| {
@@ -77,7 +71,6 @@ impl ReqwestTransport {
         })
     }
 
-    /// Access the underlying reqwest::Client for streaming operations
     /// (EventSource, WebSocket) that can't use the HttpTransport trait.
 
     #[cfg(feature = "websockets")]
@@ -120,6 +113,7 @@ impl HttpTransport for ReqwestTransport {
         let response = self
             .client
             .post(url)
+            .header(header::CONTENT_TYPE, "application/json")
             .body(body)
             .send()
             .await

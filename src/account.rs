@@ -19,14 +19,21 @@ use crate::{
 
 /// An account-scoped view of a [`Client`].
 ///
-/// Holds a reference to the client and a specific account ID,
-/// eliminating the need to pass account IDs to every method call.
+/// Pairs a client reference with a specific account ID. Use
+/// [`Account::build()`] to create request batches pre-scoped to
+/// this account, avoiding the need to thread account IDs manually.
 ///
 /// ```ignore
 /// let account = client.account(client.default_account());
-/// let email = account.email_get(&email_id, None).await?;
-/// let quotas = account.quota_get_all().await?;
+/// let mut request = account.build();
+/// let handle = request.call(EmailGet::new(account.id_str()))?;
+/// let mut response = request.send().await?;
+/// let emails = response.get(&handle)?;
 /// ```
+///
+/// This is an unchecked view — the account ID is not validated
+/// against the session. Use [`Client::session()`] to check
+/// available accounts.
 pub struct Account<'a, Tr: HttpTransport> {
     client: &'a Client<Tr>,
     account_id: AccountId,

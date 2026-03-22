@@ -89,18 +89,12 @@ let email = client
     .unwrap();
 assert_eq!(email.preview().unwrap(), "test");
 
-// Account-scoped operations.
+// Account-scoped request batching.
 let account = client.account(client.default_account());
-let quotas = account.client().quota_get_all().await.unwrap();
-for quota in &quotas {
-    println!(
-        "{}: {} / {} {}",
-        quota.name().unwrap_or("unnamed"),
-        quota.used().unwrap_or(0),
-        quota.hard_limit().unwrap_or(0),
-        quota.resource_type().unwrap_or("octets"),
-    );
-}
+let mut request = account.build();
+let handle = request.call(quota::QuotaGet::new(account.id_str())).unwrap();
+let mut response = request.send().await.unwrap();
+let quotas = response.get(&handle).unwrap();
 
 // Typed request batching with result references.
 let mut request = client.build();

@@ -8,7 +8,7 @@ use super::response::Response;
 use super::request::CallHandle;
 use super::method::JmapMethod;
 use super::get::{GetObject, GetResponse};
-use super::query::{QueryObject, QueryResponse};
+use super::query::QueryObject;
 use crate::{Get, Set, Error};
 
 // -- Minimal test types --
@@ -78,13 +78,15 @@ impl QueryObject for TestObj<Set> {
     type Sort = ();
 }
 
-// Define test method types
+// Define test method types (allow dead_code — some macro-generated methods unused in tests)
+#[allow(dead_code)]
 crate::define_get_method!(
     TestGet, TestObj<Set>, "Test/get",
     crate::core::capability::Core,
     GetResponse<TestObj<Get>>
 );
 
+#[allow(dead_code)]
 crate::define_query_method!(
     TestQuery, TestObj<Set>, "Test/query",
     crate::core::capability::Core
