@@ -18,10 +18,8 @@ use std::fmt::Display;
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::core::changes::ChangesObject;
-use crate::core::set::string_not_set;
-use crate::core::Object;
-use crate::{Get, Set};
+use crate::core::set::skip_if_empty_str;
+use crate::Get;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressBook<State = Get> {
@@ -36,7 +34,7 @@ pub struct AddressBook<State = Get> {
     pub id: Option<String>,
 
     #[serde(rename = "name")]
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     pub name: Option<String>,
 
     #[serde(rename = "description")]
@@ -145,26 +143,4 @@ impl Display for Property {
     }
 }
 
-impl Object for AddressBook<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for AddressBook<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for AddressBook<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for AddressBook<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(AddressBook<State>, Property, true);

@@ -18,10 +18,8 @@ use std::fmt::Display;
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::core::changes::ChangesObject;
-use crate::core::set::map_not_set;
-use crate::core::Object;
-use crate::{Get, Set};
+use crate::core::set::skip_if_empty_map;
+use crate::Get;
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ParticipantIdentitySetArguments {
@@ -57,7 +55,7 @@ pub struct ParticipantIdentity<State = Get> {
     pub name: Option<String>,
 
     #[serde(rename = "sendTo")]
-    #[serde(skip_serializing_if = "map_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_map")]
     pub send_to: Option<AHashMap<String, String>>,
 
     #[serde(rename = "isDefault")]
@@ -88,26 +86,4 @@ impl Display for Property {
     }
 }
 
-impl Object for ParticipantIdentity<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for ParticipantIdentity<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for ParticipantIdentity<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for ParticipantIdentity<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(ParticipantIdentity<State>, Property, true);

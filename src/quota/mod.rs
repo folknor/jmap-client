@@ -17,9 +17,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::changes::ChangesObject;
-use crate::core::Object;
-use crate::{Get, Set};
+use crate::Get;
 
 /// A quota object representing a storage or count limit (RFC 9425).
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,26 +110,4 @@ impl Display for Property {
     }
 }
 
-impl Object for Quota<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for Quota<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for Quota<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for Quota<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(Quota<State>, Property, true);

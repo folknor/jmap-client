@@ -17,10 +17,7 @@ pub mod validate;
 
 use std::fmt::Display;
 
-use crate::core::changes::ChangesObject;
-use crate::core::Object;
 use crate::Get;
-use crate::Set;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,26 +78,4 @@ impl Display for Property {
     }
 }
 
-impl Object for SieveScript<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for SieveScript<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for SieveScript<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for SieveScript<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(SieveScript<State>, Property, true);

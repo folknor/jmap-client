@@ -15,15 +15,12 @@ pub mod helpers;
 pub mod query;
 pub mod set;
 
-use crate::core::set::{list_not_set, map_not_set, string_not_set};
+use crate::core::set::{skip_if_empty_list, skip_if_empty_map, skip_if_empty_str};
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-use crate::{
-    core::{changes::ChangesObject, Object},
-    Get, Set,
-};
+use crate::Get;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Principal<State = Get> {
@@ -40,25 +37,25 @@ pub struct Principal<State = Get> {
     #[serde(skip_serializing_if = "Option::is_none")]
     ptype: Option<Type>,
 
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     name: Option<String>,
 
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     description: Option<String>,
 
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     email: Option<String>,
 
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     timezone: Option<String>,
 
-    #[serde(skip_serializing_if = "list_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_list")]
     capabilities: Option<Vec<String>>,
 
-    #[serde(skip_serializing_if = "list_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_list")]
     aliases: Option<Vec<String>>,
 
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     secret: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -67,13 +64,13 @@ pub struct Principal<State = Get> {
     #[serde(skip_serializing_if = "Option::is_none")]
     quota: Option<u32>,
 
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     picture: Option<String>,
 
-    #[serde(skip_serializing_if = "list_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_list")]
     members: Option<Vec<String>>,
 
-    #[serde(skip_serializing_if = "map_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_map")]
     acl: Option<AHashMap<String, Vec<ACL>>>,
 
     #[serde(flatten)]
@@ -219,26 +216,4 @@ impl Display for ACL {
     }
 }
 
-impl Object for Principal<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for Principal<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for Principal<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for Principal<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(Principal<State>, Property, true);

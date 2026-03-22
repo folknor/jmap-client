@@ -22,33 +22,11 @@ use serde::{de::Visitor, Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 
 use crate::{
-    core::{changes::ChangesObject, request::ResultReference, Object},
-    Get, Set,
+    core::request::ResultReference,
+    Get,
 };
 
-impl Object for Email<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for Email<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for Email<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for Email<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(Email<State>, Property, true);
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Email<State = Get> {

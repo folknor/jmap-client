@@ -18,9 +18,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::changes::ChangesObject;
-use crate::core::Object;
-use crate::{Get, Set};
+use crate::Get;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CalendarEventNotification<State = Get> {
@@ -123,26 +121,4 @@ impl Display for Property {
     }
 }
 
-impl Object for CalendarEventNotification<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for CalendarEventNotification<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for CalendarEventNotification<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for CalendarEventNotification<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(CalendarEventNotification<State>, Property, true);

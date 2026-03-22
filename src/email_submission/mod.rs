@@ -20,7 +20,6 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
 use crate::{
-    core::{changes::ChangesObject, Object},
     email::Email,
     Get, Set,
 };
@@ -185,26 +184,4 @@ impl Display for Property {
     }
 }
 
-impl Object for EmailSubmission<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for EmailSubmission<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for EmailSubmission<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for EmailSubmission<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(EmailSubmission<State>, Property, true);

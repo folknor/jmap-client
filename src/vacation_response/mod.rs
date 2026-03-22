@@ -15,12 +15,9 @@ pub mod set;
 
 use std::fmt::Display;
 
-use crate::core::changes::ChangesObject;
-use crate::core::set::date_not_set;
-use crate::core::set::string_not_set;
-use crate::core::Object;
+use crate::core::set::skip_if_zero_date;
+use crate::core::set::skip_if_empty_str;
 use crate::Get;
-use crate::Set;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -41,23 +38,23 @@ pub struct VacationResponse<State = Get> {
     is_enabled: Option<bool>,
 
     #[serde(rename = "fromDate")]
-    #[serde(skip_serializing_if = "date_not_set")]
+    #[serde(skip_serializing_if = "skip_if_zero_date")]
     from_date: Option<DateTime<Utc>>,
 
     #[serde(rename = "toDate")]
-    #[serde(skip_serializing_if = "date_not_set")]
+    #[serde(skip_serializing_if = "skip_if_zero_date")]
     to_date: Option<DateTime<Utc>>,
 
     #[serde(rename = "subject")]
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     subject: Option<String>,
 
     #[serde(rename = "textBody")]
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     text_body: Option<String>,
 
     #[serde(rename = "htmlBody")]
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     html_body: Option<String>,
 }
 
@@ -93,26 +90,4 @@ impl Display for Property {
     }
 }
 
-impl Object for VacationResponse<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for VacationResponse<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for VacationResponse<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for VacationResponse<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(VacationResponse<State>, Property, true);

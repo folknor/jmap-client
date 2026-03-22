@@ -16,8 +16,6 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::{changes::ChangesObject, Object};
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Thread {
     id: String,
@@ -33,13 +31,7 @@ pub enum Property {
     EmailIds,
 }
 
-impl Object for Thread {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
+crate::impl_jmap_object!(Thread, Property, true);
 
 impl Display for Property {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -50,6 +42,3 @@ impl Display for Property {
     }
 }
 
-impl ChangesObject for Thread {
-    type ChangesResponse = ();
-}

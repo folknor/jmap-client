@@ -15,10 +15,7 @@ pub mod set;
 
 use std::fmt::Display;
 
-use crate::core::changes::ChangesObject;
-use crate::core::set::list_not_set;
-use crate::core::Object;
-use crate::Set;
+use crate::core::set::skip_if_empty_list;
 use crate::{email::EmailAddress, Get};
 use serde::{Deserialize, Serialize};
 
@@ -43,11 +40,11 @@ pub struct Identity<State = Get> {
     pub email: Option<String>,
 
     #[serde(rename = "replyTo")]
-    #[serde(skip_serializing_if = "list_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_list")]
     pub reply_to: Option<Vec<EmailAddress>>,
 
     #[serde(rename = "bcc")]
-    #[serde(skip_serializing_if = "list_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_list")]
     pub bcc: Option<Vec<EmailAddress>>,
 
     #[serde(rename = "textSignature")]
@@ -98,26 +95,4 @@ impl Display for Property {
     }
 }
 
-impl Object for Identity<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl Object for Identity<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
-}
-
-impl ChangesObject for Identity<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for Identity<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(Identity<State>, Property, true);

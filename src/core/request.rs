@@ -162,7 +162,10 @@ macro_rules! impl_arguments_accessor {
         pub fn $method_name(&mut self) -> &mut $return_type {
             match self {
                 Arguments::$variant(r) => r.as_mut(),
-                _ => unreachable!(),
+                _ => panic!(
+                    "called {} on wrong Arguments variant",
+                    stringify!($method_name)
+                ),
             }
         }
     };

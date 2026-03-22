@@ -82,8 +82,10 @@ pub enum AlertTrigger {
         #[serde(rename = "when")]
         when: String,
     },
-    #[serde(rename = "UnknownTrigger")]
-    UnknownTrigger {},
+    /// Catch-all for unrecognized trigger types. Matches any `@type`
+    /// value not handled by the other variants.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

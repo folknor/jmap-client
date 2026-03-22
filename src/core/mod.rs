@@ -37,6 +37,50 @@ pub trait Object: Sized {
     fn requires_account_id() -> bool;
 }
 
+/// Generates Object and ChangesObject impls for a typed JMAP entity.
+///
+/// Usage: `impl_jmap_object!(MyType, MyProperty, true)` for account-scoped,
+/// or `impl_jmap_object!(MyType, MyProperty, false)` for non-account-scoped.
+#[macro_export]
+macro_rules! impl_jmap_object {
+    ($name:ident < $s:ident >, $property:ty, $requires_account:expr) => {
+        impl $crate::core::Object for $name<$crate::Set> {
+            type Property = $property;
+            fn requires_account_id() -> bool {
+                $requires_account
+            }
+        }
+
+        impl $crate::core::Object for $name<$crate::Get> {
+            type Property = $property;
+            fn requires_account_id() -> bool {
+                $requires_account
+            }
+        }
+
+        impl $crate::core::changes::ChangesObject for $name<$crate::Set> {
+            type ChangesResponse = ();
+        }
+
+        impl $crate::core::changes::ChangesObject for $name<$crate::Get> {
+            type ChangesResponse = ();
+        }
+    };
+    // Non-generic type (e.g. Thread)
+    ($name:ident, $property:ty, $requires_account:expr) => {
+        impl $crate::core::Object for $name {
+            type Property = $property;
+            fn requires_account_id() -> bool {
+                $requires_account
+            }
+        }
+
+        impl $crate::core::changes::ChangesObject for $name {
+            type ChangesResponse = ();
+        }
+    };
+}
+
 /// Generates a JSON-map-backed JMAP object type with custom
 /// Serialize/Deserialize, Object, ChangesObject, and SetObject impls.
 ///

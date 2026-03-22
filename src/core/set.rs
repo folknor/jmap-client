@@ -437,18 +437,18 @@ pub fn from_timestamp(timestamp: i64) -> DateTime<Utc> {
     DateTime::from_timestamp(timestamp, 0).unwrap_or_default()
 }
 
-pub fn string_not_set(string: &Option<String>) -> bool {
+pub fn skip_if_empty_str(string: &Option<String>) -> bool {
     matches!(string, Some(string) if string.is_empty())
 }
 
-pub fn date_not_set(date: &Option<DateTime<Utc>>) -> bool {
+pub fn skip_if_zero_date(date: &Option<DateTime<Utc>>) -> bool {
     matches!(date, Some(date) if date.timestamp() == 0)
 }
 
-pub fn list_not_set<O>(list: &Option<Vec<O>>) -> bool {
+pub fn skip_if_empty_list<O>(list: &Option<Vec<O>>) -> bool {
     matches!(list, Some(list) if list.is_empty() )
 }
 
-pub fn map_not_set<K, V>(list: &Option<AHashMap<K, V>>) -> bool {
+pub fn skip_if_empty_map<K, V>(list: &Option<AHashMap<K, V>>) -> bool {
     matches!(list, Some(list) if list.is_empty() )
 }

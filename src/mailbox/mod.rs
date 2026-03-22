@@ -14,12 +14,10 @@ pub mod helpers;
 pub mod query;
 pub mod set;
 
-use crate::core::changes::ChangesObject;
-use crate::core::set::{map_not_set, string_not_set};
-use crate::core::Object;
+use crate::core::set::{skip_if_empty_map, skip_if_empty_str};
 use crate::mailbox::set::role_not_set;
 use crate::principal::ACL;
-use crate::{Get, Set};
+use crate::Get;
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -62,7 +60,7 @@ pub struct Mailbox<State = Get> {
     name: Option<String>,
 
     #[serde(rename = "parentId")]
-    #[serde(skip_serializing_if = "string_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_str")]
     parent_id: Option<String>,
 
     #[serde(rename = "role")]
@@ -98,7 +96,7 @@ pub struct Mailbox<State = Get> {
     is_subscribed: Option<bool>,
 
     #[serde(rename = "shareWith")]
-    #[serde(skip_serializing_if = "map_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_map")]
     share_with: Option<AHashMap<String, AHashMap<ACL, bool>>>,
 
     #[serde(flatten)]
@@ -232,27 +230,21 @@ impl ChangesResponse {
     }
 }
 
-impl Object for Mailbox<Set> {
+impl crate::core::Object for Mailbox<crate::Set> {
     type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
+    fn requires_account_id() -> bool { true }
 }
 
-impl Object for Mailbox<Get> {
+impl crate::core::Object for Mailbox<crate::Get> {
     type Property = Property;
-
-    fn requires_account_id() -> bool {
-        true
-    }
+    fn requires_account_id() -> bool { true }
 }
 
-impl ChangesObject for Mailbox<Set> {
+impl crate::core::changes::ChangesObject for Mailbox<crate::Set> {
     type ChangesResponse = ChangesResponse;
 }
 
-impl ChangesObject for Mailbox<Get> {
+impl crate::core::changes::ChangesObject for Mailbox<crate::Get> {
     type ChangesResponse = ChangesResponse;
 }
 

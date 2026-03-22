@@ -811,30 +811,15 @@ mod alert_trigger_deserialization {
     }
 
     #[test]
-    fn unknown_trigger_type_fails() {
-        // AlertTrigger uses #[serde(tag = "@type")] with only OffsetTrigger,
-        // AbsoluteTrigger, and UnknownTrigger as variants. A completely
-        // unrecognized @type value will fail to deserialize because
-        // UnknownTrigger is not a catch-all — it only matches the literal
-        // string "UnknownTrigger".
-        let json_str =
-            r#"{"@type":"FutureTriggerType","foo":"bar"}"#;
-        let result = serde_json::from_str::<AlertTrigger>(json_str);
-        assert!(
-            result.is_err(),
-            "unknown @type should fail deserialization"
-        );
-    }
-
-    #[test]
-    fn unknown_trigger_variant_deserializes() {
-        // The literal "UnknownTrigger" @type IS a valid variant.
-        let json_str = r#"{"@type":"UnknownTrigger"}"#;
+    fn unknown_trigger_type_deserializes_as_unknown() {
+        // #[serde(other)] catches any unrecognized @type value.
+        let json_str = r#"{"@type":"FutureTriggerType","foo":"bar"}"#;
         let trigger: AlertTrigger = serde_json::from_str(json_str).unwrap();
-        match trigger {
-            AlertTrigger::UnknownTrigger {} => {}
-            other => panic!("expected UnknownTrigger, got {:?}", other),
-        }
+        assert!(
+            matches!(trigger, AlertTrigger::Unknown),
+            "expected Unknown, got {:?}",
+            trigger
+        );
     }
 
     #[test]

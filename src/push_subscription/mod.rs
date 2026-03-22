@@ -18,10 +18,8 @@ use std::fmt::Display;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::core::changes::ChangesObject;
-use crate::core::set::list_not_set;
-use crate::core::Object;
-use crate::{Get, Set, DataType};
+use crate::core::set::skip_if_empty_list;
+use crate::{Get, DataType};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PushSubscription<State = Get> {
@@ -56,7 +54,7 @@ pub struct PushSubscription<State = Get> {
     expires: Option<DateTime<Utc>>,
 
     #[serde(rename = "types")]
-    #[serde(skip_serializing_if = "list_not_set")]
+    #[serde(skip_serializing_if = "skip_if_empty_list")]
     types: Option<Vec<DataType>>,
 }
 
@@ -98,26 +96,4 @@ pub struct Keys {
     auth: String,
 }
 
-impl Object for PushSubscription<Set> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        false
-    }
-}
-
-impl Object for PushSubscription<Get> {
-    type Property = Property;
-
-    fn requires_account_id() -> bool {
-        false
-    }
-}
-
-impl ChangesObject for PushSubscription<Set> {
-    type ChangesResponse = ();
-}
-
-impl ChangesObject for PushSubscription<Get> {
-    type ChangesResponse = ();
-}
+crate::impl_jmap_object!(PushSubscription<State>, Property, false);
