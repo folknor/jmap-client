@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Error;
 
-use super::set::{SetError, SetObject};
+use super::set::{SetError, SetObject, SetObjectCreatable};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct CopyRequest<O: SetObject> {
@@ -64,7 +64,7 @@ pub struct CopyResponse<O: SetObject> {
     not_created: Option<HashMap<String, SetError<O::Property>>>,
 }
 
-impl<T: SetObject> CopyRequest<T> {
+impl<T: SetObjectCreatable> CopyRequest<T> {
     pub fn new(account_id: impl Into<String>, from_account_id: impl Into<String>) -> Self {
         CopyRequest {
             from_account_id: from_account_id.into(),

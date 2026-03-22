@@ -56,14 +56,15 @@ impl GetObject for TestObj<Get> {
 }
 impl super::set::SetObject for TestObj<Set> {
     type SetArguments = ();
+    fn create_id(&self) -> Option<String> { None }
+}
+impl super::set::SetObjectCreatable for TestObj<Set> {
     fn new(_: Option<usize>) -> Self {
         TestObj { _state: Default::default(), id: None, name: None }
     }
-    fn create_id(&self) -> Option<String> { None }
 }
 impl super::set::SetObject for TestObj<Get> {
     type SetArguments = ();
-    fn new(_: Option<usize>) -> Self { unimplemented!() }
     fn create_id(&self) -> Option<String> { None }
 }
 impl super::changes::ChangesObject for TestObj<Set> {
@@ -259,6 +260,32 @@ fn transport_error_without_body_stays_transport() {
     let err = TransportError::new("connection refused");
     let error: Error = err.into();
     assert!(matches!(error, Error::Transport(_)));
+}
+
+#[test]
+fn set_response_deserializes_without_creatable() {
+    // SetResponse<TestObj<Get>> must work even though TestObj<Get>
+    // does not implement SetObjectCreatable — only SetObject.
+    use super::set::SetResponse;
+
+    let raw = json!({
+        "accountId": "A1",
+        "oldState": "s1",
+        "newState": "s2",
+        "created": {
+            "c0": {"id": "new-1", "name": "created-obj"}
+        },
+        "updated": null,
+        "destroyed": null,
+        "notCreated": null,
+        "notUpdated": null,
+        "notDestroyed": null
+    });
+
+    let mut response: SetResponse<TestObj<Get>> = serde_json::from_value(raw).unwrap();
+    assert_eq!(response.new_state(), "s2");
+    let created = response.created("c0").unwrap();
+    assert_eq!(created.name.as_deref(), Some("created-obj"));
 }
 
 #[test]

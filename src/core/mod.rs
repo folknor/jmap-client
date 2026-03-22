@@ -200,6 +200,12 @@ macro_rules! json_object_struct {
         impl $crate::core::set::SetObject for $name<$crate::Set> {
             type SetArguments = $set_args;
 
+            fn create_id(&self) -> Option<String> {
+                self._create_id.map(|id| format!("c{}", id))
+            }
+        }
+
+        impl $crate::core::set::SetObjectCreatable for $name<$crate::Set> {
             fn new(_create_id: Option<usize>) -> Self {
                 $name {
                     _create_id,
@@ -207,18 +213,10 @@ macro_rules! json_object_struct {
                     properties: serde_json::Map::new(),
                 }
             }
-
-            fn create_id(&self) -> Option<String> {
-                self._create_id.map(|id| format!("c{}", id))
-            }
         }
 
         impl $crate::core::set::SetObject for $name<$crate::Get> {
             type SetArguments = $set_args;
-
-            fn new(_create_id: Option<usize>) -> Self {
-                unimplemented!()
-            }
 
             fn create_id(&self) -> Option<String> {
                 None

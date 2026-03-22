@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use crate::{core::set::SetObject, Get, Set};
+use crate::{core::set::{SetObject, SetObjectCreatable}, Get, Set};
 
 use super::ParticipantIdentity;
 
@@ -35,6 +35,12 @@ impl ParticipantIdentity<Set> {
 impl SetObject for ParticipantIdentity<Set> {
     type SetArguments = super::ParticipantIdentitySetArguments;
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for ParticipantIdentity<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         ParticipantIdentity {
             _create_id,
@@ -45,18 +51,10 @@ impl SetObject for ParticipantIdentity<Set> {
             is_default: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for ParticipantIdentity<Get> {
     type SetArguments = super::ParticipantIdentitySetArguments;
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

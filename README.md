@@ -22,7 +22,7 @@ _jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in 
 ## Features
 
 - **Trait-based method dispatch** — `JmapMethod` trait, typed `CallHandle<M>`, compile-time safe response extraction.
-- **Transport-generic** — `Client<T: HttpTransport>` with `ReqwestTransport` default. Custom transports for testing/WASM.
+- **Transport-generic** — `Client<T: HttpTransport>` with `ReqwestTransport` default. Zero-copy `Bytes` responses. Custom transports for testing/WASM.
 - **Async-only** — powered by `reqwest` + `tokio`.
 - **WebSocket and EventSource** streaming.
 - **Feature-gated per RFC** — compile only what you need.

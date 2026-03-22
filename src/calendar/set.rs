@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use crate::{calendar_event::Alert, core::field::Field, core::set::SetObject, Get, Set};
+use crate::{calendar_event::Alert, core::field::Field, core::set::{SetObject, SetObjectCreatable}, Get, Set};
 
 use super::{Calendar, CalendarRights, CalendarSetArguments, IncludeInAvailability};
 
@@ -105,6 +105,12 @@ impl Calendar<Set> {
 impl SetObject for Calendar<Set> {
     type SetArguments = CalendarSetArguments;
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for Calendar<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         Calendar {
             _create_id,
@@ -125,18 +131,10 @@ impl SetObject for Calendar<Set> {
             my_rights: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for Calendar<Get> {
     type SetArguments = CalendarSetArguments;
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

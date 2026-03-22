@@ -10,7 +10,7 @@
  */
 
 use crate::{
-    core::set::{from_timestamp, SetObject},
+    core::set::{from_timestamp, SetObject, SetObjectCreatable},
     Get, Set,
 };
 
@@ -51,6 +51,12 @@ impl VacationResponse<Set> {
 impl SetObject for VacationResponse<Set> {
     type SetArguments = ();
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for VacationResponse<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         VacationResponse {
             _create_id,
@@ -64,18 +70,10 @@ impl SetObject for VacationResponse<Set> {
             html_body: String::new().into(),
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for VacationResponse<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

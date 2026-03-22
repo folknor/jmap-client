@@ -10,7 +10,7 @@
  */
 
 use super::{ACLPatch, Mailbox, Role, SetArguments};
-use crate::{core::set::SetObject, principal::ACL, Get, Set};
+use crate::{core::set::{SetObject, SetObjectCreatable}, principal::ACL, Get, Set};
 use std::collections::HashMap;
 
 impl Mailbox<Set> {
@@ -85,6 +85,12 @@ pub fn role_not_set(role: &Option<Role>) -> bool {
 impl SetObject for Mailbox<Set> {
     type SetArguments = SetArguments;
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for Mailbox<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         Mailbox {
             _create_id,
@@ -104,18 +110,10 @@ impl SetObject for Mailbox<Set> {
             acl_patch: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for Mailbox<Get> {
     type SetArguments = SetArguments;
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

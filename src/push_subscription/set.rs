@@ -10,7 +10,7 @@
  */
 
 use crate::{
-    core::set::{from_timestamp, SetObject},
+    core::set::{from_timestamp, SetObject, SetObjectCreatable},
     Get, Set, DataType,
 };
 
@@ -51,6 +51,12 @@ impl PushSubscription<Set> {
 impl SetObject for PushSubscription<Set> {
     type SetArguments = ();
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for PushSubscription<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         PushSubscription {
             _create_id,
@@ -64,18 +70,10 @@ impl SetObject for PushSubscription<Set> {
             types: Vec::with_capacity(0).into(),
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for PushSubscription<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

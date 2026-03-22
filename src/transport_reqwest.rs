@@ -85,7 +85,7 @@ impl ReqwestTransport {
         &self.trusted_hosts
     }
 
-    async fn handle_response(response: reqwest::Response) -> Result<Vec<u8>, TransportError> {
+    async fn handle_response(response: reqwest::Response) -> Result<bytes::Bytes, TransportError> {
         let status = response.status();
         let body = response
             .bytes()
@@ -93,12 +93,12 @@ impl ReqwestTransport {
             .map_err(|e| TransportError::with_source("Failed to read response body", e))?;
 
         if status.is_success() {
-            Ok(body.to_vec())
+            Ok(body)
         } else {
             // Return the full body so the caller can parse ProblemDetails
             Err(TransportError::with_body(
                 format!("HTTP {status}"),
-                body.to_vec(),
+                body,
             ))
         }
     }
@@ -109,7 +109,7 @@ impl HttpTransport for ReqwestTransport {
         &self,
         url: &str,
         body: Vec<u8>,
-    ) -> Result<Vec<u8>, TransportError> {
+    ) -> Result<bytes::Bytes, TransportError> {
         let response = self
             .client
             .post(url)
@@ -126,7 +126,7 @@ impl HttpTransport for ReqwestTransport {
         url: &str,
         body: Vec<u8>,
         content_type: Option<&str>,
-    ) -> Result<Vec<u8>, TransportError> {
+    ) -> Result<bytes::Bytes, TransportError> {
         let mut req = self.client.post(url);
         if let Some(ct) = content_type {
             req = req.header(header::CONTENT_TYPE, ct);
@@ -139,7 +139,7 @@ impl HttpTransport for ReqwestTransport {
         Self::handle_response(response).await
     }
 
-    async fn download(&self, url: &str) -> Result<Vec<u8>, TransportError> {
+    async fn download(&self, url: &str) -> Result<bytes::Bytes, TransportError> {
         let response = self
             .client
             .get(url)
@@ -149,7 +149,7 @@ impl HttpTransport for ReqwestTransport {
         Self::handle_response(response).await
     }
 
-    async fn get_session(&self, url: &str) -> Result<Vec<u8>, TransportError> {
+    async fn get_session(&self, url: &str) -> Result<bytes::Bytes, TransportError> {
         let response = self
             .client
             .get(url)

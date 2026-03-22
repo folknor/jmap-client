@@ -12,8 +12,8 @@ Fork of stalwartlabs/jmap-client (Apache-2.0 / MIT), maintained at folknor/jmap-
 
 ```bash
 cargo build                        # default features
-cargo test --lib                   # 65 tests with all features
-cargo test --lib --no-default-features  # 13 core-only tests
+cargo test --lib                   # 66 tests with all features
+cargo test --lib --no-default-features  # 14 core-only tests
 cargo build --no-default-features  # minimal build (core + principal + push)
 cargo clippy --lib                 # zero warnings expected
 ```
@@ -49,8 +49,8 @@ let result = response.get(&handle)?;  // compile-time safe extraction
 ### Transport abstraction
 
 `Client<T: HttpTransport = ReqwestTransport>` — generic over transport.
-- `HttpTransport` — api_request, upload, download, get_session
-- `SseTransport` — open_sse (EventSource)
+- `HttpTransport` — api_request, upload, download, get_session (returns `Bytes`)
+- `SseTransport` — open_sse (EventSource, with `last_event_id` support)
 - `ReqwestTransport` — default implementation with pooled reqwest::Client
 - `Client::with_transport(transport, session)` — custom transport injection
 - WebSocket remains reqwest-specific (documented)
@@ -62,7 +62,7 @@ All convenience helpers are `impl<Tr: HttpTransport> Client<Tr>` — custom tran
 Every JMAP object type under `src/<type>/`:
 - `mod.rs` — struct with `<State = Get>` phantom, Property enum, method struct definitions via `define_*_method!` macros
 - `get.rs` — getters on `T<Get>`, GetObject impl
-- `set.rs` — builder methods on `T<Set>`, SetObject impl
+- `set.rs` — builder methods on `T<Set>`, SetObject + SetObjectCreatable impls
 - `query.rs` — Filter/Comparator enums, QueryObject impl
 - `helpers.rs` — `impl<Tr: HttpTransport> Client<Tr>` convenience methods
 
@@ -78,7 +78,7 @@ Every JMAP object type under `src/<type>/`:
 - `Id<T>` — phantom-typed string ID: `AccountId`, `BlobId`, `State`. Available for incremental adoption.
 - `Account<'a, Tr>` — account-scoped view of Client. Use `account.build()` for scoped requests.
 - `Capability` trait — typed URIs with associated `Config` type.
-- `TransportError` — crate-owned, `#[non_exhaustive]`, carries response body for ProblemDetails parsing.
+- `TransportError` — crate-owned, `#[non_exhaustive]`, carries response body (`Bytes`) for ProblemDetails parsing.
 
 ### Capabilities
 
@@ -120,6 +120,6 @@ RFC 8620: `null` removes map keys, not `false`. Email `patch` field uses `HashMa
 - Clippy lints in Cargo.toml `[lints.clippy]`
 - `#[serde(skip_serializing_if = "...")]` on optional fields
 - `Field::is_omitted` for skip_serializing_if on Field<T> fields (with `#[serde(default)]`)
-- SetObject::new() initializes optional fields to None/Omitted, not empty collections
+- SetObjectCreatable::new() initializes optional fields to None/Omitted, not empty collections
 - Don't commit .md reference docs (CALENDARS.md, etc.)
 - Helper impl blocks use `impl<Tr: HttpTransport> Client<Tr>` (not bare `impl Client`)

@@ -10,7 +10,7 @@
  */
 
 use super::{Address, EmailSubmission, Envelope, SetArguments, UndoStatus};
-use crate::{core::set::SetObject, email::Email, Get, Set};
+use crate::{core::set::{SetObject, SetObjectCreatable}, email::Email, Get, Set};
 use std::collections::HashMap;
 
 impl EmailSubmission<Set> {
@@ -43,6 +43,12 @@ impl EmailSubmission<Set> {
 impl SetObject for EmailSubmission<Set> {
     type SetArguments = SetArguments;
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for EmailSubmission<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         EmailSubmission {
             _create_id,
@@ -59,18 +65,10 @@ impl SetObject for EmailSubmission<Set> {
             mdn_blob_ids: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for EmailSubmission<Get> {
     type SetArguments = SetArguments;
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

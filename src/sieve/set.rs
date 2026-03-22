@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::set::SetObject, Get, Set};
+use crate::{core::set::{SetObject, SetObjectCreatable}, Get, Set};
 
 use super::{SetArguments, SieveScript};
 
@@ -28,6 +28,12 @@ impl SieveScript<Set> {
 impl SetObject for SieveScript<Set> {
     type SetArguments = SetArguments;
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for SieveScript<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         SieveScript {
             _create_id,
@@ -37,10 +43,6 @@ impl SetObject for SieveScript<Set> {
             blob_id: None,
             is_active: None,
         }
-    }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
     }
 }
 
@@ -63,10 +65,6 @@ impl SetArguments {
 
 impl SetObject for SieveScript<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

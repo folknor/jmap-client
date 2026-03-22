@@ -1,3 +1,20 @@
+jmap-client 0.5.1
+================================
+
+### Breaking changes (vs 0.5.0)
+- **`SetObject` trait split** — `new()` moved to new `SetObjectCreatable` supertrait. `SetRequest` and `CopyRequest` now bound on `SetObjectCreatable`; `SetResponse` and `CopyResponse` remain bound on `SetObject`. `<Get>` types no longer implement `new()` — eliminates 15 `unimplemented!()` panics. Custom types implementing `SetObject` must add a separate `impl SetObjectCreatable` for the `<Set>` variant.
+- **`HttpTransport` returns `bytes::Bytes`** instead of `Vec<u8>`. Custom transport implementations must update return types. `Client::download()` now returns `Bytes`. `TransportError::body` is now `Option<Bytes>`. `bytes::Bytes` is re-exported as `jmap_client::Bytes`.
+- **`SseTransport::open_sse`** now takes `last_event_id: Option<&str>` parameter. Custom SSE transport implementations must update their signature.
+
+### Bug fixes
+- `session_updated` atomic flag now uses `Acquire`/`Release` ordering instead of `Relaxed`.
+- `SseTransport::open_sse` passes `last_event_id` as `Last-Event-ID` header (was ignored).
+- `try_cap!` macro no longer clones `serde_json::Value` before deserialization.
+- `Client::authorization()` accessor exposed for `websockets` feature.
+
+### Testing
+- 66 tests (up from 65): new `SetResponse<TestObj<Get>>` deserialization test confirms trait split correctness.
+
 jmap-client 0.5.0
 ================================
 

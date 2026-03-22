@@ -11,7 +11,7 @@ mod patch_object_null_semantics {
     use super::*;
     use crate::calendar_event::CalendarEvent;
     use crate::contact_card::ContactCard;
-    use crate::core::set::SetObject;
+    use crate::core::set::SetObjectCreatable;
     use crate::Set;
 
     #[test]
@@ -491,7 +491,7 @@ mod query_filter_serialization {
 mod calendar_option_option_serialization {
     use super::*;
     use crate::calendar::Calendar;
-    use crate::core::set::SetObject;
+    use crate::core::set::SetObjectCreatable;
     use crate::Set;
 
     #[test]

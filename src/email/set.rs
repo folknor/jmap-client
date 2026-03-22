@@ -16,7 +16,7 @@ use super::{
 use crate::{
     core::{
         request::ResultReference,
-        set::{from_timestamp, SetObject},
+        set::{from_timestamp, SetObject, SetObjectCreatable},
     },
     Get, Set,
 };
@@ -216,6 +216,12 @@ impl Email<Set> {
 impl SetObject for Email<Set> {
     type SetArguments = ();
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for Email<Set> {
     fn new(_create_id: Option<usize>) -> Email<Set> {
         Email {
             _create_id,
@@ -250,18 +256,10 @@ impl SetObject for Email<Set> {
             patch: Default::default(),
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for Email<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Email<Get> {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None
@@ -473,7 +471,7 @@ mod tests {
 
     #[test]
     fn mailbox_id_false_serializes_as_null_patch() {
-        let mut e = <Email<Set> as SetObject>::new(None);
+        let mut e = <Email<Set> as SetObjectCreatable>::new(None);
         e.mailbox_id("mb_inbox", false);
         let v = serde_json::to_value(&e).expect("json");
         assert_eq!(v.get("mailboxIds/mb_inbox"), Some(&serde_json::Value::Null));
@@ -481,7 +479,7 @@ mod tests {
 
     #[test]
     fn keyword_false_serializes_as_null_patch() {
-        let mut e = <Email<Set> as SetObject>::new(None);
+        let mut e = <Email<Set> as SetObjectCreatable>::new(None);
         e.keyword("$seen", false);
         let v = serde_json::to_value(&e).expect("json");
         assert_eq!(v.get("keywords/$seen"), Some(&serde_json::Value::Null));

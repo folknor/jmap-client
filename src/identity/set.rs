@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::set::SetObject, email::EmailAddress, Get, Set};
+use crate::{core::set::{SetObject, SetObjectCreatable}, email::EmailAddress, Get, Set};
 
 use super::Identity;
 
@@ -56,6 +56,12 @@ impl Identity<Set> {
 impl SetObject for Identity<Set> {
     type SetArguments = ();
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for Identity<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         Identity {
             _create_id,
@@ -70,18 +76,10 @@ impl SetObject for Identity<Set> {
             may_delete: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for Identity<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

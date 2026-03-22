@@ -11,6 +11,8 @@
 
 use std::future::Future;
 
+use bytes::Bytes;
+
 /// Transport-level error. Wraps the underlying HTTP client error
 /// without leaking it into the crate's public error model.
 #[derive(Debug)]
@@ -18,7 +20,7 @@ use std::future::Future;
 pub struct TransportError {
     pub message: String,
     /// HTTP response body, if available (for parsing ProblemDetails).
-    pub body: Option<Vec<u8>>,
+    pub body: Option<Bytes>,
     source: Option<Box<dyn std::error::Error + Send + Sync>>,
 }
 
@@ -56,10 +58,10 @@ impl TransportError {
         }
     }
 
-    pub fn with_body(message: impl Into<String>, body: Vec<u8>) -> Self {
+    pub fn with_body(message: impl Into<String>, body: impl Into<Bytes>) -> Self {
         Self {
             message: message.into(),
-            body: Some(body),
+            body: Some(body.into()),
             source: None,
         }
     }
@@ -75,7 +77,7 @@ pub trait HttpTransport: Send + Sync + 'static {
         &self,
         url: &str,
         body: Vec<u8>,
-    ) -> impl Future<Output = Result<Vec<u8>, TransportError>> + Send;
+    ) -> impl Future<Output = Result<Bytes, TransportError>> + Send;
 
     /// Upload a blob (POST with binary body).
     fn upload(
@@ -83,17 +85,17 @@ pub trait HttpTransport: Send + Sync + 'static {
         url: &str,
         body: Vec<u8>,
         content_type: Option<&str>,
-    ) -> impl Future<Output = Result<Vec<u8>, TransportError>> + Send;
+    ) -> impl Future<Output = Result<Bytes, TransportError>> + Send;
 
     /// Download a blob (GET, returns raw bytes).
     fn download(&self, url: &str)
-        -> impl Future<Output = Result<Vec<u8>, TransportError>> + Send;
+        -> impl Future<Output = Result<Bytes, TransportError>> + Send;
 
     /// Fetch the session resource (GET, returns JSON).
     fn get_session(
         &self,
         url: &str,
-    ) -> impl Future<Output = Result<Vec<u8>, TransportError>> + Send;
+    ) -> impl Future<Output = Result<Bytes, TransportError>> + Send;
 }
 
 /// Streaming transport for Server-Sent Events (EventSource).

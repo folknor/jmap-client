@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use crate::{core::field::Field, core::set::SetObject, Get, Set};
+use crate::{core::field::Field, core::set::{SetObject, SetObjectCreatable}, Get, Set};
 
 use super::{AddressBook, AddressBookRights, AddressBookSetArguments};
 
@@ -54,6 +54,12 @@ impl AddressBook<Set> {
 impl SetObject for AddressBook<Set> {
     type SetArguments = AddressBookSetArguments;
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for AddressBook<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         AddressBook {
             _create_id,
@@ -68,18 +74,10 @@ impl SetObject for AddressBook<Set> {
             my_rights: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for AddressBook<Get> {
     type SetArguments = AddressBookSetArguments;
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

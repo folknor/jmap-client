@@ -49,6 +49,8 @@ pub mod transport_reqwest;
 #[cfg(feature = "mail")]
 pub mod vacation_response;
 
+pub use bytes::Bytes;
+
 use crate::core::error::MethodError;
 use crate::core::error::ProblemDetails;
 use crate::core::set::SetError;

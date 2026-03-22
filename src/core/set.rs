@@ -20,8 +20,11 @@ use super::{request::ResultReference, Object};
 pub trait SetObject: Object {
     type SetArguments: Default;
 
-    fn new(create_id: Option<usize>) -> Self;
     fn create_id(&self) -> Option<String>;
+}
+
+pub trait SetObjectCreatable: SetObject {
+    fn new(create_id: Option<usize>) -> Self;
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -151,7 +154,7 @@ pub enum SetErrorType {
     Other,
 }
 
-impl<O: SetObject> SetRequest<O> {
+impl<O: SetObjectCreatable> SetRequest<O> {
     pub fn new(account_id: impl Into<String>) -> Self {
         let account_id = account_id.into();
         Self {

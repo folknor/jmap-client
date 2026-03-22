@@ -9,13 +9,19 @@
  * except according to those terms.
  */
 
-use crate::{core::set::SetObject, Get, Set};
+use crate::{core::set::{SetObject, SetObjectCreatable}, Get, Set};
 
 use super::CalendarEventNotification;
 
 impl SetObject for CalendarEventNotification<Set> {
     type SetArguments = ();
 
+    fn create_id(&self) -> Option<String> {
+        self._create_id.map(|id| format!("c{id}"))
+    }
+}
+
+impl SetObjectCreatable for CalendarEventNotification<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         CalendarEventNotification {
             _create_id,
@@ -30,18 +36,10 @@ impl SetObject for CalendarEventNotification<Set> {
             event_patch: None,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{id}"))
-    }
 }
 
 impl SetObject for CalendarEventNotification<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None

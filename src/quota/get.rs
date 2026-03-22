@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::field::Field, core::set::SetObject, Get, Set};
+use crate::{core::field::Field, core::set::{SetObject, SetObjectCreatable}, Get, Set};
 
 use super::Quota;
 
@@ -81,6 +81,12 @@ crate::impl_get_object!(Quota, ());
 impl SetObject for Quota<Set> {
     type SetArguments = ();
 
+    fn create_id(&self) -> Option<String> {
+        None
+    }
+}
+
+impl SetObjectCreatable for Quota<Set> {
     fn new(_create_id: Option<usize>) -> Self {
         Quota {
             _create_id,
@@ -97,18 +103,10 @@ impl SetObject for Quota<Set> {
             description: Field::Omitted,
         }
     }
-
-    fn create_id(&self) -> Option<String> {
-        None
-    }
 }
 
 impl SetObject for Quota<Get> {
     type SetArguments = ();
-
-    fn new(_create_id: Option<usize>) -> Self {
-        unimplemented!()
-    }
 
     fn create_id(&self) -> Option<String> {
         None
