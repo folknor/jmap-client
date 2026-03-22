@@ -1,30 +1,52 @@
 # jmap-client
 
 [![crates.io](https://img.shields.io/crates/v/jmap-client)](https://crates.io/crates/jmap-client)
-[![build](https://github.com/stalwartlabs/jmap-client/actions/workflows/rust.yml/badge.svg)](https://github.com/stalwartlabs/jmap-client/actions/workflows/rust.yml)
 [![docs.rs](https://img.shields.io/docsrs/jmap-client)](https://docs.rs/jmap-client)
 [![crates.io](https://img.shields.io/crates/l/jmap-client)](http://www.apache.org/licenses/LICENSE-2.0)
 
-_jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in Rust. The library is a full implementation of the JMAP RFCs including:
+_jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in Rust. Originally by [Stalwart Labs](https://github.com/stalwartlabs/jmap-client), this fork adds full support for JMAP Calendars, Contacts, Blob Management, and Quotas.
 
-- JMAP Core ([RFC 8620](https://datatracker.ietf.org/doc/html/rfc8620))
-- JMAP for Mail ([RFC 8621](https://datatracker.ietf.org/doc/html/rfc8621)) 
-- JMAP over WebSocket ([RFC 8887](https://datatracker.ietf.org/doc/html/rfc8887)).
-- JMAP for Sieve Scripts ([DRAFT-SIEVE-14](https://www.ietf.org/archive/id/draft-ietf-jmap-sieve-14.html)).
+## Supported RFCs
 
-Features:
+| Spec | Status |
+|------|--------|
+| [RFC 8620](https://datatracker.ietf.org/doc/html/rfc8620) — JMAP Core | Complete |
+| [RFC 8621](https://datatracker.ietf.org/doc/html/rfc8621) — JMAP for Mail | Complete |
+| [RFC 8887](https://datatracker.ietf.org/doc/html/rfc8887) — JMAP over WebSocket | Complete |
+| [draft-ietf-jmap-calendars-26](https://www.ietf.org/archive/id/draft-ietf-jmap-calendars-26.html) — JMAP for Calendars | Complete |
+| [RFC 9610](https://www.rfc-editor.org/rfc/rfc9610) — JMAP for Contacts | Complete |
+| [RFC 9404](https://www.rfc-editor.org/rfc/rfc9404) — JMAP Blob Management | Complete |
+| [RFC 9425](https://www.rfc-editor.org/rfc/rfc9425) — JMAP Quotas | Complete |
+| [draft-ietf-jmap-sieve-14](https://www.ietf.org/archive/id/draft-ietf-jmap-sieve-14.html) — JMAP for Sieve Scripts | Complete |
 
-- Async and blocking support (use the cargo feature ``blocking`` to enable blocking).
-- WebSocket async streams (use the cargo feature ``websockets`` to enable JMAP over WebSocket).
+## Features
+
+- Async and blocking support (`blocking` cargo feature).
+- WebSocket async streams (`websockets` cargo feature).
 - EventSource async streams.
-- Helper functions to reduce boilerplate code and quickly build JMAP requests.
-- Fast parsing and encoding of JMAP requests.
+- Typed builders and accessors for all JMAP object types.
+- CalendarEvent and ContactCard use JSON map backing for full JSCalendar/JSContact fidelity, including vendor extension properties.
+- Session capability introspection for all supported extensions.
+
+## Cargo Features
+
+| Feature | Default | Description |
+|---------|---------|-------------|
+| `async` | Yes | Async client with `reqwest` |
+| `blocking` | No | Synchronous client |
+| `websockets` | Yes | JMAP over WebSocket |
+| `mail` | Yes | Email, Mailbox, Thread, Identity, EmailSubmission, Sieve, VacationResponse |
+| `calendars` | Yes | Calendar, CalendarEvent, CalendarEventNotification, ParticipantIdentity |
+| `contacts` | Yes | AddressBook, ContactCard |
+| `blob` | Yes | Blob/upload, Blob/get, Blob/lookup (RFC 9404) |
+| `quota` | Yes | Quota/get, Quota/query (RFC 9425) |
+| `ring` | Yes | Use `ring` as TLS backend |
+| `aws_lc_rs` | No | Use `aws-lc-rs` as TLS backend |
 
 ## Usage Example
 
 ```rust
 // Connect to the JMAP server using Basic authentication.
-// (just for demonstration purposes, Bearer tokens should be used instead)
 let client = Client::new()
     .credentials(("john@example.org", "secret"))
     .connect("https://jmap.example.org")
@@ -49,13 +71,12 @@ client
     .await
     .unwrap();
 
-// Obtain all e-mail ids matching a filter.
+// Query emails matching a filter.
 let email_id = client
     .email_query(
         Filter::and([
             email::query::Filter::subject("test"),
             email::query::Filter::in_mailbox(&mailbox_id),
-            email::query::Filter::has_keyword("$draft"),
         ])
         .into(),
         [email::query::Comparator::from()].into(),
@@ -66,7 +87,7 @@ let email_id = client
     .pop()
     .unwrap();
 
-// Fetch an e-mail message.
+// Fetch an email.
 let email = client
     .email_get(
         &email_id,
@@ -76,84 +97,47 @@ let email = client
     .unwrap()
     .unwrap();
 assert_eq!(email.preview().unwrap(), "test");
-assert_eq!(email.subject().unwrap(), "test");
-assert_eq!(email.keywords(), ["$draft"]);
 
-// Fetch only the updated properties of all mailboxes that changed
-// since a state.
+// Create a calendar and event.
+let calendar = client.calendar_create("Work").await.unwrap();
 let mut request = client.build();
-let changes_request = request.changes_mailbox("n").max_changes(0);
-let properties_ref = changes_request.updated_properties_reference();
-let updated_ref = changes_request.updated_reference();
 request
-    .get_mailbox()
-    .ids_ref(updated_ref)
-    .properties_ref(properties_ref);
-for mailbox in request
-    .send()
-    .await
-    .unwrap()
-    .unwrap_method_responses()
-    .pop()
-    .unwrap()
-    .unwrap_get_mailbox()
-    .unwrap()
-    .take_list()
-{
-    println!("Changed mailbox: {:#?}", mailbox);
-}
+    .set_calendar_event()
+    .create()
+    .calendar_ids([calendar.id().unwrap()])
+    .title("Team meeting")
+    .start("2025-06-15T10:00:00")
+    .duration("PT1H")
+    .time_zone(Some("America/New_York"));
+request.send().await.unwrap();
 
-// Delete the mailbox including any messages
-client.mailbox_destroy(&mailbox_id, true).await.unwrap();
-
-// Open an EventSource connection with the JMAP server.
-let mut stream = client
-    .event_source(
-        [
-            TypeState::Email,
-            TypeState::EmailDelivery,
-            TypeState::Mailbox,
-            TypeState::EmailSubmission,
-            TypeState::Identity,
-        ]
-        .into(),
-        false,
-        60.into(),
-        None,
+// Query calendar events.
+let events = client
+    .calendar_event_query(
+        calendar_event::query::Filter::in_calendar(calendar.id().unwrap()).into(),
+        [calendar_event::query::Comparator::start()].into(),
     )
     .await
     .unwrap();
 
-// Consume events received over EventSource.
-while let Some(event) = stream.next().await {
-    let changes = event.unwrap();
-    println!("-> Change id: {:?}", changes.id());
-    for account_id in changes.changed_accounts() {
-        println!(" Account {} has changes:", account_id);
-        if let Some(account_changes) = changes.changes(account_id) {
-            for (type_state, state_id) in account_changes {
-                println!("   Type {:?} has a new state {}.", type_state, state_id);
-            }
-        }
-    }
+// Check quotas.
+let quotas = client.quota_get_all().await.unwrap();
+for quota in &quotas {
+    println!(
+        "{}: {} / {} {}",
+        quota.name().unwrap_or("unnamed"),
+        quota.used().unwrap_or(0),
+        quota.hard_limit().unwrap_or(0),
+        quota.resource_type().unwrap_or("octets"),
+    );
 }
 ```
 
-More examples available under the [examples](examples) directory. 
-
 ## Testing
 
-To run the testsuite:
-
 ```bash
- $ cargo test --all-features
+cargo test --lib
 ```
-
-## Conformed RFCs
-
-- [RFC 8620 - The JSON Meta Application Protocol (JMAP)](https://datatracker.ietf.org/doc/html/rfc8620)
-- [RFC 8621 - The JSON Meta Application Protocol (JMAP) for Mail](https://datatracker.ietf.org/doc/html/rfc8621)
-- [RFC 8887 - A JSON Meta Application Protocol (JMAP) Subprotocol for WebSocket](https://datatracker.ietf.org/doc/html/rfc8887)
 
 ## License
 
@@ -167,4 +151,3 @@ at your option.
 ## Copyright
 
 Copyright (C) 2022, Stalwart Labs LLC
-
