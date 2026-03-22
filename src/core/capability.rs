@@ -127,5 +127,5 @@ impl Capability for Principals {
 pub struct PrincipalsOwner;
 impl Capability for PrincipalsOwner {
     const URI: &'static str = "urn:ietf:params:jmap:principals:owner";
-    type Config = serde_json::Value;
+    type Config = session::PrincipalsOwnerCapabilities;
 }

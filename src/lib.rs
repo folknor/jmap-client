@@ -39,6 +39,7 @@ pub mod mailbox;
 pub mod participant_identity;
 pub mod principal;
 pub mod push_subscription;
+pub mod share_notification;
 #[cfg(feature = "quota")]
 pub mod quota;
 #[cfg(feature = "mail")]

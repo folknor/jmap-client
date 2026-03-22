@@ -208,10 +208,11 @@ impl<Tr: crate::core::transport::HttpTransport> Client<Tr> {
         response.get(&handle)?.updated(id)
     }
 
+    /// Update a principal's capabilities map (RFC 9670).
     pub async fn principal_set_capabilities(
         &self,
         id: &str,
-        capabilities: Option<impl IntoIterator<Item = impl Into<String>>>,
+        capabilities: Option<std::collections::HashMap<String, serde_json::Value>>,
     ) -> crate::Result<Option<Principal>> {
         let mut request = self.build();
         let account_id = request.default_account_id().to_string();

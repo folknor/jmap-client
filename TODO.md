@@ -50,6 +50,5 @@ Every convenience helper method (e.g., `email_get`, `mailbox_create`, `calendar_
 
 Implementation plans for additional JMAP specifications are in the `plans/` directory:
 
-- **Sharing (RFC 9670)** — `plans/SHARING.md` — ShareNotification object, shared data framework
 - **MDN (RFC 9007)** — `plans/MDN.md` — Read receipts (MDN/send, MDN/parse)
 - **S/MIME (RFC 9219)** — `plans/SMIME.md` — Email signature verification properties and filters

@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use super::{Principal, Property, Type, ACL, DKIM};
+use super::{Principal, PrincipalAccount, Property, Type, ACL, DKIM};
 use crate::{core::set::{SetObject, SetObjectCreatable}, Get, Set};
 use std::collections::HashMap;
 
@@ -80,12 +80,21 @@ impl Principal<Set> {
         self
     }
 
-    pub fn capabilities<T, U>(&mut self, capabilities: Option<T>) -> &mut Self
-    where
-        T: IntoIterator<Item = U>,
-        U: Into<String>,
-    {
-        self.capabilities = capabilities.map(|l| l.into_iter().map(std::convert::Into::into).collect());
+    /// RFC 9670: Set capabilities as a map of URI to domain-specific metadata.
+    pub fn capabilities(
+        &mut self,
+        capabilities: Option<HashMap<String, serde_json::Value>>,
+    ) -> &mut Self {
+        self.capabilities = capabilities;
+        self
+    }
+
+    /// RFC 9670: Set accounts accessible to this principal.
+    pub fn accounts(
+        &mut self,
+        accounts: Option<HashMap<String, PrincipalAccount>>,
+    ) -> &mut Self {
+        self.accounts = accounts;
         self
     }
 
@@ -125,7 +134,8 @@ impl SetObjectCreatable for Principal<Set> {
             description: String::new().into(),
             email: String::new().into(),
             timezone: String::new().into(),
-            capabilities: Vec::with_capacity(0).into(),
+            capabilities: None,
+            accounts: None,
             aliases: Vec::with_capacity(0).into(),
             secret: String::new().into(),
             dkim: None,

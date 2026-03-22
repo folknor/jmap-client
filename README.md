@@ -4,7 +4,7 @@
 [![docs.rs](https://img.shields.io/docsrs/jmap-client)](https://docs.rs/jmap-client)
 [![crates.io](https://img.shields.io/crates/l/jmap-client)](http://www.apache.org/licenses/LICENSE-2.0)
 
-_jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in Rust. Originally by [Stalwart Labs](https://github.com/stalwartlabs/jmap-client), this fork adds full support for JMAP Calendars, Contacts, Blob Management, and Quotas.
+_jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in Rust. Originally by [Stalwart Labs](https://github.com/stalwartlabs/jmap-client), this fork adds full support for JMAP Calendars, Contacts, Sharing, Blob Management, and Quotas.
 
 ## Supported RFCs
 
@@ -17,6 +17,7 @@ _jmap-client_ is a **JSON Meta Application Protocol (JMAP) library** written in 
 | [RFC 9610](https://www.rfc-editor.org/rfc/rfc9610) — JMAP for Contacts | Complete |
 | [RFC 9404](https://www.rfc-editor.org/rfc/rfc9404) — JMAP Blob Management | Complete |
 | [RFC 9425](https://www.rfc-editor.org/rfc/rfc9425) — JMAP Quotas | Complete |
+| [RFC 9670](https://www.rfc-editor.org/rfc/rfc9670) — JMAP Sharing | Complete |
 | [draft-ietf-jmap-sieve-14](https://www.ietf.org/archive/id/draft-ietf-jmap-sieve-14.html) — JMAP for Sieve Scripts | Complete |
 
 ## Features

@@ -12,9 +12,9 @@ Fork of stalwartlabs/jmap-client (Apache-2.0 / MIT), maintained at folknor/jmap-
 
 ```bash
 cargo build                        # default features
-cargo test --lib                   # 66 tests with all features
-cargo test --lib --no-default-features  # 14 core-only tests
-cargo build --no-default-features  # minimal build (core + principal + push)
+cargo test --lib                   # 74 tests with all features
+cargo test --lib --no-default-features  # 22 core-only tests
+cargo build --no-default-features  # minimal build (core + principal + share_notification + push)
 cargo clippy --lib                 # zero warnings expected
 ```
 

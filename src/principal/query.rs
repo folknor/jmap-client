@@ -22,6 +22,11 @@ use super::{Principal, Type};
 #[serde(untagged)]
 #[non_exhaustive]
 pub enum Filter {
+    /// RFC 9670: Match principals owning the specified accounts.
+    AccountIds {
+        #[serde(rename = "accountIds")]
+        value: Vec<String>,
+    },
     Email {
         #[serde(rename = "email")]
         value: String,
@@ -73,6 +78,13 @@ pub enum Comparator {
 }
 
 impl Filter {
+    /// RFC 9670: Match principals owning the specified accounts.
+    pub fn account_ids(value: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        Filter::AccountIds {
+            value: value.into_iter().map(Into::into).collect(),
+        }
+    }
+
     pub fn name(value: impl Into<String>) -> Self {
         Filter::Name {
             value: value.into(),

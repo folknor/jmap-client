@@ -85,6 +85,7 @@ pub enum Capabilities {
     #[cfg(feature = "contacts")]
     Contacts(ContactsCapabilities),
     Principals(PrincipalsCapabilities),
+    PrincipalsOwner(PrincipalsOwnerCapabilities),
     Other(serde_json::Value),
 }
 
@@ -132,6 +133,7 @@ where
             #[cfg(feature = "contacts")]
             "urn:ietf:params:jmap:contacts" => try_cap!(value, Contacts),
             "urn:ietf:params:jmap:principals" => try_cap!(value, Principals),
+            "urn:ietf:params:jmap:principals:owner" => try_cap!(value, PrincipalsOwner),
             _ => Capabilities::Other(value),
         };
         result.insert(key, cap);
@@ -310,6 +312,7 @@ impl Session {
     session_cap_accessor!(#[cfg(feature = "calendars")] calendars_capabilities, crate::core::capability::Calendars, Calendars, CalendarsCapabilities);
     session_cap_accessor!(#[cfg(feature = "contacts")] contacts_capabilities, crate::core::capability::Contacts, Contacts, ContactsCapabilities);
     session_cap_accessor!(principals_capabilities, crate::core::capability::Principals, Principals, PrincipalsCapabilities);
+    session_cap_accessor!(principals_owner_capabilities, crate::core::capability::PrincipalsOwner, PrincipalsOwner, PrincipalsOwnerCapabilities);
 
     pub fn accounts(&self) -> impl Iterator<Item = &String> {
         self.accounts.keys()
@@ -475,6 +478,30 @@ impl ContactsCapabilities {
 
     pub fn max_address_books_per_card(&self) -> Option<usize> {
         self.max_address_books_per_card
+    }
+}
+
+/// Capabilities for `urn:ietf:params:jmap:principals:owner` (RFC 9670).
+///
+/// Account-level capability indicating the owner of the account's data.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PrincipalsOwnerCapabilities {
+    #[serde(rename = "accountIdForPrincipal")]
+    #[serde(default)]
+    account_id_for_principal: Option<String>,
+
+    #[serde(rename = "principalId")]
+    #[serde(default)]
+    principal_id: Option<String>,
+}
+
+impl PrincipalsOwnerCapabilities {
+    pub fn account_id_for_principal(&self) -> Option<&str> {
+        self.account_id_for_principal.as_deref()
+    }
+
+    pub fn principal_id(&self) -> Option<&str> {
+        self.principal_id.as_deref()
     }
 }
 

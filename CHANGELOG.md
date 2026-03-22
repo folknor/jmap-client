@@ -1,10 +1,22 @@
 jmap-client 0.5.1
 ================================
 
+### New protocol support
+- **JMAP Sharing (RFC 9670)** — `ShareNotification` object with get/set (destroy-only)/changes/query/queryChanges methods, `ChangedBy` struct, filters (`after`, `before`, `objectType`, `objectAccountId`), and `created` comparator.
+- **PrincipalsOwner capability** — `urn:ietf:params:jmap:principals:owner` now has a typed `PrincipalsOwnerCapabilities` config struct with `accountIdForPrincipal` and `principalId` accessors, a `Capabilities::PrincipalsOwner` enum variant, and a `Session::principals_owner_capabilities()` accessor.
+
 ### Breaking changes (vs 0.5.0)
 - **`SetObject` trait split** — `new()` moved to new `SetObjectCreatable` supertrait. `SetRequest` and `CopyRequest` now bound on `SetObjectCreatable`; `SetResponse` and `CopyResponse` remain bound on `SetObject`. `<Get>` types no longer implement `new()` — eliminates 15 `unimplemented!()` panics. Custom types implementing `SetObject` must add a separate `impl SetObjectCreatable` for the `<Set>` variant.
 - **`HttpTransport` returns `bytes::Bytes`** instead of `Vec<u8>`. Custom transport implementations must update return types. `Client::download()` now returns `Bytes`. `TransportError::body` is now `Option<Bytes>`. `bytes::Bytes` is re-exported as `jmap_client::Bytes`.
 - **`SseTransport::open_sse`** now takes `last_event_id: Option<&str>` parameter. Custom SSE transport implementations must update their signature.
+- **`Principal.capabilities`** type changed from `Vec<String>` to `HashMap<String, serde_json::Value>` to match RFC 9670 (capability URI → metadata map). Getter returns `Option<&HashMap<String, serde_json::Value>>`. Setter accepts `Option<HashMap<String, serde_json::Value>>`.
+- **`PrincipalsOwner` capability `Config`** changed from `serde_json::Value` to `PrincipalsOwnerCapabilities`.
+- **`Principal::Property::ShareWith`** discriminant changed from 13 to 14 (new `Accounts = 13` inserted before it).
+
+### Additions
+- `Principal.accounts` field — RFC 9670 map of account ID → `PrincipalAccount` (name, isPersonal, isReadOnly, accountCapabilities).
+- `Principal::Property::Accounts` variant.
+- `principal::query::Filter::AccountIds` — RFC 9670 filter to match principals owning specified accounts.
 
 ### Bug fixes
 - `session_updated` atomic flag now uses `Acquire`/`Release` ordering instead of `Relaxed`.
@@ -13,7 +25,7 @@ jmap-client 0.5.1
 - `Client::authorization()` accessor exposed for `websockets` feature.
 
 ### Testing
-- 66 tests (up from 65): new `SetResponse<TestObj<Get>>` deserialization test confirms trait split correctness.
+- 74 tests (up from 65): ShareNotification round-trip, Principal accounts/capabilities deserialization, PrincipalsOwner session capability parsing, filter serialization, `SetResponse<TestObj<Get>>` deserialization.
 
 jmap-client 0.5.0
 ================================

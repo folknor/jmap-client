@@ -49,8 +49,14 @@ pub struct Principal<State = Get> {
     #[serde(skip_serializing_if = "skip_if_empty_str")]
     timezone: Option<String>,
 
-    #[serde(skip_serializing_if = "skip_if_empty_list")]
-    capabilities: Option<Vec<String>>,
+    /// RFC 9670: Map of JMAP capability URI to domain-specific metadata.
+    #[serde(skip_serializing_if = "skip_if_empty_map")]
+    capabilities: Option<HashMap<String, serde_json::Value>>,
+
+    /// RFC 9670: Map of account ID to account info for each JMAP account
+    /// accessible to this principal, or null if none.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    accounts: Option<HashMap<String, PrincipalAccount>>,
 
     #[serde(skip_serializing_if = "skip_if_empty_list")]
     aliases: Option<Vec<String>>,
@@ -77,6 +83,45 @@ pub struct Principal<State = Get> {
     #[serde(skip_deserializing)]
     #[serde(skip_serializing_if = "Option::is_none")]
     property_patch: Option<HashMap<String, bool>>,
+}
+
+/// Account info within a Principal's `accounts` map (RFC 9670).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PrincipalAccount {
+    #[serde(rename = "name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    #[serde(rename = "isPersonal")]
+    #[serde(default)]
+    is_personal: bool,
+
+    #[serde(rename = "isReadOnly")]
+    #[serde(default)]
+    is_read_only: bool,
+
+    #[serde(rename = "accountCapabilities")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    account_capabilities: HashMap<String, serde_json::Value>,
+}
+
+impl PrincipalAccount {
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    pub fn is_personal(&self) -> bool {
+        self.is_personal
+    }
+
+    pub fn is_read_only(&self) -> bool {
+        self.is_read_only
+    }
+
+    pub fn account_capabilities(&self) -> &HashMap<String, serde_json::Value> {
+        &self.account_capabilities
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
@@ -108,8 +153,10 @@ pub enum Property {
     Picture = 11,
     #[serde(rename = "members")]
     Members = 12,
+    #[serde(rename = "accounts")]
+    Accounts = 13,
     #[serde(rename = "shareWith")]
-    ShareWith = 13,
+    ShareWith = 14,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
@@ -197,6 +244,7 @@ impl Display for Property {
             Property::Quota => write!(f, "quota"),
             Property::Picture => write!(f, "picture"),
             Property::Members => write!(f, "members"),
+            Property::Accounts => write!(f, "accounts"),
             Property::ShareWith => write!(f, "shareWith"),
         }
     }

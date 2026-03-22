@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use super::{Principal, Type, ACL, DKIM};
+use super::{Principal, PrincipalAccount, Type, ACL, DKIM};
 use crate::Get;
 use std::collections::HashMap;
 
@@ -54,8 +54,14 @@ impl Principal<Get> {
         self.quota
     }
 
-    pub fn capabilities(&self) -> Option<&[String]> {
-        self.capabilities.as_deref()
+    /// RFC 9670: Map of JMAP capability URI to domain-specific metadata.
+    pub fn capabilities(&self) -> Option<&HashMap<String, serde_json::Value>> {
+        self.capabilities.as_ref()
+    }
+
+    /// RFC 9670: Map of account ID to account info accessible to this principal.
+    pub fn accounts(&self) -> Option<&HashMap<String, PrincipalAccount>> {
+        self.accounts.as_ref()
     }
 
     pub fn aliases(&self) -> Option<&[String]> {

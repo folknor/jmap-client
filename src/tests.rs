@@ -920,3 +920,267 @@ mod blob_get_request_serialization {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// ShareNotification (RFC 9670)
+// ---------------------------------------------------------------------------
+
+mod share_notification_serde {
+    use super::*;
+    use crate::share_notification::ShareNotification;
+    use crate::Get;
+
+    fn from_json(s: &str) -> ShareNotification<Get> {
+        serde_json::from_str(s).expect("failed to deserialize ShareNotification<Get>")
+    }
+
+    #[test]
+    fn full_notification_round_trip() {
+        let input = json!({
+            "id": "notif-1",
+            "created": "2024-11-15T10:30:00Z",
+            "changedBy": {
+                "name": "Alice",
+                "email": "alice@example.com",
+                "principalId": "p-alice"
+            },
+            "objectType": "Calendar",
+            "objectAccountId": "acct-bob",
+            "objectId": "cal-team",
+            "oldRights": null,
+            "newRights": {
+                "mayReadFreeBusy": true,
+                "mayReadItems": true,
+                "mayWriteAll": false
+            },
+            "name": "Team Calendar"
+        });
+
+        let notif: ShareNotification<Get> = serde_json::from_value(input).unwrap();
+        assert_eq!(notif.id(), Some("notif-1"));
+        assert_eq!(notif.created(), Some("2024-11-15T10:30:00Z"));
+        assert_eq!(notif.object_type(), Some("Calendar"));
+        assert_eq!(notif.object_account_id(), Some("acct-bob"));
+        assert_eq!(notif.object_id(), Some("cal-team"));
+        assert_eq!(notif.name(), Some("Team Calendar"));
+        assert!(notif.old_rights().is_none());
+        let new_rights = notif.new_rights().unwrap();
+        assert_eq!(new_rights.get("mayReadFreeBusy"), Some(&true));
+        assert_eq!(new_rights.get("mayWriteAll"), Some(&false));
+
+        let changed_by = notif.changed_by().unwrap();
+        assert_eq!(changed_by.name.as_deref(), Some("Alice"));
+        assert_eq!(changed_by.email.as_deref(), Some("alice@example.com"));
+        assert_eq!(changed_by.principal_id.as_deref(), Some("p-alice"));
+    }
+
+    #[test]
+    fn minimal_notification_deserializes() {
+        let notif = from_json(r#"{"id":"n1"}"#);
+        assert_eq!(notif.id(), Some("n1"));
+        assert!(notif.created().is_none());
+        assert!(notif.changed_by().is_none());
+        assert!(notif.object_type().is_none());
+        assert!(notif.old_rights().is_none());
+        assert!(notif.new_rights().is_none());
+    }
+
+    #[test]
+    fn property_display() {
+        use crate::share_notification::Property;
+        assert_eq!(Property::ObjectType.to_string(), "objectType");
+        assert_eq!(Property::ChangedBy.to_string(), "changedBy");
+        assert_eq!(Property::OldRights.to_string(), "oldRights");
+        assert_eq!(Property::NewRights.to_string(), "newRights");
+        assert_eq!(Property::ObjectAccountId.to_string(), "objectAccountId");
+    }
+
+    #[test]
+    fn filter_serialization() {
+        use crate::share_notification::query::Filter;
+
+        let f = Filter::after("2024-01-01T00:00:00Z");
+        let v = serde_json::to_value(&f).unwrap();
+        assert_eq!(v, json!({"after": "2024-01-01T00:00:00Z"}));
+
+        let f = Filter::object_type("Calendar");
+        let v = serde_json::to_value(&f).unwrap();
+        assert_eq!(v, json!({"objectType": "Calendar"}));
+
+        let f = Filter::object_account_id("acct-1");
+        let v = serde_json::to_value(&f).unwrap();
+        assert_eq!(v, json!({"objectAccountId": "acct-1"}));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Principal RFC 9670 additions
+// ---------------------------------------------------------------------------
+
+mod principal_rfc9670 {
+    use super::*;
+    use crate::principal::Principal;
+    use crate::Get;
+
+    #[test]
+    fn principal_with_accounts_deserializes() {
+        let input = json!({
+            "id": "p-alice",
+            "type": "individual",
+            "name": "Alice",
+            "email": "alice@example.com",
+            "capabilities": {
+                "urn:ietf:params:jmap:mail": {},
+                "urn:ietf:params:jmap:calendars": {"mayCreateCalendar": true}
+            },
+            "accounts": {
+                "acct-1": {
+                    "name": "alice@example.com",
+                    "isPersonal": true,
+                    "isReadOnly": false,
+                    "accountCapabilities": {
+                        "urn:ietf:params:jmap:mail": {}
+                    }
+                },
+                "acct-2": {
+                    "name": "shared",
+                    "isPersonal": false,
+                    "isReadOnly": true,
+                    "accountCapabilities": {}
+                }
+            }
+        });
+
+        let principal: Principal<Get> = serde_json::from_value(input).unwrap();
+        assert_eq!(principal.id(), Some("p-alice"));
+        assert_eq!(principal.name(), Some("Alice"));
+
+        let caps = principal.capabilities().unwrap();
+        assert!(caps.contains_key("urn:ietf:params:jmap:mail"));
+        assert!(caps.contains_key("urn:ietf:params:jmap:calendars"));
+
+        let accounts = principal.accounts().unwrap();
+        assert_eq!(accounts.len(), 2);
+
+        let acct1 = &accounts["acct-1"];
+        assert_eq!(acct1.name(), Some("alice@example.com"));
+        assert!(acct1.is_personal());
+        assert!(!acct1.is_read_only());
+        assert!(acct1.account_capabilities().contains_key("urn:ietf:params:jmap:mail"));
+
+        let acct2 = &accounts["acct-2"];
+        assert_eq!(acct2.name(), Some("shared"));
+        assert!(!acct2.is_personal());
+        assert!(acct2.is_read_only());
+    }
+
+    #[test]
+    fn principal_without_accounts_deserializes() {
+        let input = json!({
+            "id": "p-bob",
+            "type": "individual",
+            "name": "Bob"
+        });
+
+        let principal: Principal<Get> = serde_json::from_value(input).unwrap();
+        assert_eq!(principal.id(), Some("p-bob"));
+        assert!(principal.accounts().is_none());
+        assert!(principal.capabilities().is_none());
+    }
+
+    #[test]
+    fn principal_account_ids_filter_serialization() {
+        use crate::principal::query::Filter;
+        let f = Filter::account_ids(["acct-1", "acct-2"]);
+        let v = serde_json::to_value(&f).unwrap();
+        assert_eq!(v, json!({"accountIds": ["acct-1", "acct-2"]}));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PrincipalsOwner capability
+// ---------------------------------------------------------------------------
+
+mod principals_owner_capability {
+    use super::*;
+
+    #[test]
+    fn session_with_principals_owner() {
+        let session_json = json!({
+            "capabilities": {
+                "urn:ietf:params:jmap:core": {
+                    "maxSizeUpload": 50000000,
+                    "maxConcurrentUpload": 4,
+                    "maxSizeRequest": 10000000,
+                    "maxConcurrentRequests": 4,
+                    "maxCallsInRequest": 16,
+                    "maxObjectsInGet": 500,
+                    "maxObjectsInSet": 500,
+                    "collationAlgorithms": []
+                },
+                "urn:ietf:params:jmap:principals": {},
+                "urn:ietf:params:jmap:principals:owner": {
+                    "accountIdForPrincipal": "acct-principals",
+                    "principalId": "p-owner"
+                }
+            },
+            "accounts": {
+                "acct-1": {
+                    "name": "user@example.com",
+                    "isPersonal": true,
+                    "isReadOnly": false,
+                    "accountCapabilities": {
+                        "urn:ietf:params:jmap:principals": {
+                            "currentUserPrincipalId": "p-user"
+                        },
+                        "urn:ietf:params:jmap:principals:owner": {
+                            "accountIdForPrincipal": "acct-principals",
+                            "principalId": "p-user"
+                        }
+                    }
+                }
+            },
+            "primaryAccounts": {
+                "urn:ietf:params:jmap:principals": "acct-1"
+            },
+            "username": "user@example.com",
+            "apiUrl": "https://example.com/jmap/",
+            "downloadUrl": "https://example.com/jmap/download/{accountId}/{blobId}/{name}?accept={type}",
+            "uploadUrl": "https://example.com/jmap/upload/{accountId}/",
+            "eventSourceUrl": "https://example.com/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}",
+            "state": "abc123"
+        });
+
+        let session: crate::core::session::Session =
+            serde_json::from_value(session_json).unwrap();
+
+        // Session-level principals capability (empty object → all fields None)
+        let principals = session.principals_capabilities().unwrap();
+        assert!(principals.current_user_principal_id().is_none());
+
+        // Session-level principals:owner capability
+        let owner = session.principals_owner_capabilities().unwrap();
+        assert_eq!(owner.account_id_for_principal(), Some("acct-principals"));
+        assert_eq!(owner.principal_id(), Some("p-owner"));
+
+        // Account-level principals capability
+        let account = session.account("acct-1").unwrap();
+        let acct_principals = account.capability("urn:ietf:params:jmap:principals").unwrap();
+        match acct_principals {
+            crate::core::session::Capabilities::Principals(c) => {
+                assert_eq!(c.current_user_principal_id(), Some("p-user"));
+            }
+            _ => panic!("expected Principals variant"),
+        }
+
+        // Account-level principals:owner capability
+        let acct_owner = account.capability("urn:ietf:params:jmap:principals:owner").unwrap();
+        match acct_owner {
+            crate::core::session::Capabilities::PrincipalsOwner(c) => {
+                assert_eq!(c.account_id_for_principal(), Some("acct-principals"));
+                assert_eq!(c.principal_id(), Some("p-user"));
+            }
+            _ => panic!("expected PrincipalsOwner variant"),
+        }
+    }
+}
