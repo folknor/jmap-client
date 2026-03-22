@@ -156,24 +156,16 @@ impl<'x> Request<'x> {
         self.client.send_request(&self).await
     }
 
-    /// Send the request expecting a single method response.
+    /// Send the request and extract the response for the given handle.
+    ///
+    /// Validates that the response contains a matching call ID and handles
+    /// method errors. Equivalent to `send().await?.get(&handle)?`.
     pub async fn send_single<M: JmapMethod>(
         self,
-        _handle: &CallHandle<M>,
+        handle: &CallHandle<M>,
     ) -> crate::Result<M::Response> {
-        let response: super::response::RawResponse<(String, serde_json::Value, String)> =
-            self.client.send_raw(&self).await?;
-        let (method_name, data, _call_id) = response
-            .unwrap_method_responses()
-            .pop()
-            .ok_or_else(|| crate::Error::EmptyResponse)?;
-
-        if method_name == "error" {
-            let err: super::error::MethodError = serde_json::from_value(data)?;
-            Err(err.into())
-        } else {
-            serde_json::from_value(data).map_err(crate::Error::from)
-        }
+        let mut response = self.send().await?;
+        response.get(handle)
     }
 
     #[cfg(feature = "websockets")]

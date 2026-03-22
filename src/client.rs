@@ -20,7 +20,6 @@ use std::{
 };
 
 use reqwest::header;
-use serde::de::DeserializeOwned;
 
 use crate::{
     blob,
@@ -237,33 +236,6 @@ impl Client {
             .await
             .map_err(crate::Error::from)?;
         let response: response::Response = serde_json::from_slice(&bytes)?;
-        if response.session_state()
-            != self
-                .session
-                .lock()
-                .expect("session mutex poisoned")
-                .state()
-        {
-            self.session_updated.store(false, Ordering::Relaxed);
-        }
-        Ok(response)
-    }
-
-    /// Send a JMAP request and deserialize the raw response envelope.
-    pub async fn send_raw<R>(
-        &self,
-        request: &request::Request<'_>,
-    ) -> crate::Result<response::RawResponse<R>>
-    where
-        R: DeserializeOwned,
-    {
-        let body = serde_json::to_vec(request)?;
-        let bytes = self
-            .transport
-            .api_request(&self.api_url, body)
-            .await
-            .map_err(crate::Error::from)?;
-        let response: response::RawResponse<R> = serde_json::from_slice(&bytes)?;
         if response.session_state()
             != self
                 .session
