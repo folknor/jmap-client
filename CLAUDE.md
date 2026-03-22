@@ -6,59 +6,120 @@
 
 ## Project
 
-Fork of stalwartlabs/jmap-client (Apache-2.0 / MIT), maintained at folknor/jmap-client. Typed Rust bindings for the JMAP protocol.
+Fork of stalwartlabs/jmap-client (Apache-2.0 / MIT), maintained at folknor/jmap-client. Typed Rust bindings for the JMAP protocol. Pre-1.0 — API stabilization phase.
 
 ## Build & test
 
 ```bash
-cargo build          # default features (async)
-cargo test           # default features — 4 tests
-# cargo test --all-features  # broken upstream (blocking+async cfg conflict)
+cargo build                        # default features
+cargo test --lib                   # 65 tests with all features
+cargo test --lib --no-default-features  # 13 core-only tests
+cargo build --no-default-features  # minimal build (core + principal + push)
+cargo clippy --lib                 # zero warnings expected
 ```
+
+Lints are in `[lints.clippy]` in Cargo.toml, not inline in source.
 
 ## Architecture
 
+### Trait-based method dispatch (no central enums)
+
+Every JMAP method is a self-describing struct implementing `JmapMethod`:
+```rust
+pub trait JmapMethod: Serialize + Send {
+    const NAME: &'static str;       // "Email/get"
+    type Cap: Capability;           // capability::Mail
+    type Response: DeserializeOwned; // GetResponse<Email<Get>>
+}
+```
+
+Adding a new method: define a struct, use `define_get_method!` / `define_set_method!` etc., done. **Zero central files touched.**
+
+### Request/Response flow
+
+```rust
+let mut request = client.build();
+let handle = request.call(EmailGet::new(&account_id))?;  // typed CallHandle<EmailGet>
+let mut response = request.send().await?;
+let result = response.get(&handle)?;  // compile-time safe extraction
+```
+
+`CallHandle<M>` validates call_id and method name. `Response::get()` handles method errors (returns `Error::Method` for JMAP error responses).
+
+### Transport abstraction
+
+`Client<T: HttpTransport = ReqwestTransport>` — generic over transport.
+- `HttpTransport` — api_request, upload, download, get_session
+- `SseTransport` — open_sse (EventSource)
+- `ReqwestTransport` — default implementation with pooled reqwest::Client
+- `Client::with_transport(transport, session)` — custom transport injection
+- WebSocket remains reqwest-specific (documented)
+
+All convenience helpers are `impl<Tr: HttpTransport> Client<Tr>` — custom transports get the full API.
+
 ### Module pattern
 
-Every JMAP object type follows the same structure under `src/<type>/`:
-- `mod.rs` — struct with `<State = Get>` phantom type, Property enum, Object/ChangesObject impls
+Every JMAP object type under `src/<type>/`:
+- `mod.rs` — struct with `<State = Get>` phantom, Property enum, method struct definitions via `define_*_method!` macros
 - `get.rs` — getters on `T<Get>`, GetObject impl
 - `set.rs` — builder methods on `T<Set>`, SetObject impl
-- `query.rs` — Filter enum (untagged), Comparator enum (tag = "property"), QueryObject impl
-- `helpers.rs` — `impl Client` convenience methods + `impl Request<'_>` builder methods
+- `query.rs` — Filter/Comparator enums, QueryObject impl
+- `helpers.rs` — `impl<Tr: HttpTransport> Client<Tr>` convenience methods
 
 ### Two data models
 
-**Typed structs** (Mailbox, Calendar, AddressBook, Identity, etc.): fixed fields, serde derive, `Option<T>` for optional. Good for container objects with stable schemas.
+**Typed structs** (Mailbox, Calendar, AddressBook, etc.): serde derive, `Field<T>` for nullable properties.
 
-**JSON map backing** (CalendarEvent, ContactCard): `serde_json::Map<String, Value>` with custom Serialize/Deserialize. Typed accessor/builder methods wrap the map. Property enum has `Other(String)` with custom serde. Use this for JSCalendar/JSContact objects where the property set is open-ended.
+**JSON map backing** (CalendarEvent, ContactCard): `serde_json::Map` via `json_object_struct!` macro. Property enum has `Other(String)`. Extension properties preserved on round-trip.
 
-### Wiring a new type
+### Key types
 
-Adding a new JMAP object type requires changes in:
-1. `src/lib.rs` — module declaration, Method enum variants, URI if new capability
-2. `src/core/request.rs` — Arguments enum variant, constructor, `_mut` accessor
-3. `src/core/response.rs` — response type alias, MethodResponse variant, is_type arm, unwrap method, visitor deserialization arm
-4. `src/core/session.rs` — Capabilities struct + `deserialize_capabilities_map` dispatch entry + Session accessor (if new capability)
+- `Field<T>` — three-state nullable: `Omitted` / `Null` / `Value(T)`. Use instead of `Option<Option<T>>`.
+- `Id<T>` — phantom-typed string ID: `AccountId`, `BlobId`, `State`. Available for incremental adoption.
+- `Account<'a, Tr>` — account-scoped view of Client. Use `account.build()` for scoped requests.
+- `Capability` trait — typed URIs with associated `Config` type.
+- `TransportError` — crate-owned, `#[non_exhaustive]`, carries response body for ProblemDetails parsing.
 
-### Capabilities deserialization
+### Capabilities
 
-`Capabilities` enum uses a custom `deserialize_capabilities_map` that dispatches on the URI key string, NOT `#[serde(untagged)]`. This is critical — untagged would break because several capability structs accept any JSON object. When adding a new capability, add a match arm in the deserializer.
+`Capabilities` enum in session.rs uses `deserialize_capabilities_map` to dispatch on URI key string. When adding a new capability:
+1. Add struct in session.rs
+2. Add variant to `Capabilities` enum (with `#[cfg]` if feature-gated)
+3. Add match arm in deserializer
+4. Add `Capability` impl in capability.rs with `type Config`
+5. Add session accessor method
 
-### Nullable field semantics
+`Session::typed_capability::<C>()` is a convenience bridge (serde round-trip). Hand-written accessors are zero-cost and primary.
 
-For properties that are nullable in the spec (e.g. timeZone, color), use `Option<Option<T>>` in typed structs and `Option<Option<&T>>` return types in getters. This distinguishes absent (outer None) from explicitly null (Some(None)) from has-value (Some(Some(v))). For JSON-map-backed types, the getter should check `v.is_null()`.
+### Feature gates
+
+Per-RFC features: `mail`, `calendars`, `contacts`, `blob`, `quota`. Each gates:
+- Module declarations in lib.rs
+- DataType enum variants (with `#[serde(other)]` catch-all)
+- Capabilities enum variants + session accessors + deserializer arms
+- PushObject/PushNotification variants
+- Test modules
+
+### Error model
+
+Structured variants — no `Error::Internal(String)`:
+- `CallNotFound`, `IdNotFound`, `EmptyResponse`, `NotParsable`, `InvalidUrl`, `WebSocketNotConnected`
+- `Transport(TransportError)` — wraps transport errors, auto-parses ProblemDetails from body
+- `Method(MethodError)` — JMAP method-level errors
+- No `From<reqwest::Error>` — reqwest errors converted to TransportError at point of use
 
 ### PatchObject null semantics
 
-RFC 8620 PatchObject uses `null` (not `false`) to remove map keys. The `patch` field on `Email<Set>` uses `AHashMap<String, serde_json::Value>` and inserts `Value::Null` for removals.
+RFC 8620: `null` removes map keys, not `false`. Email `patch` field uses `HashMap<String, serde_json::Value>` with `Value::Null` for removals.
 
 ## Code style
 
-- Same license header on all files
-- `#[maybe_async::maybe_async]` on all async methods
-- Request builder methods call `self.add_capability(URI::X)` for the relevant capability
-- Parse methods use separate `URI::XParse` capability (e.g. `URI::CalendarsParse`, `URI::ContactsParse`)
-- `#[serde(skip_serializing_if = "...")]` on all optional fields
-- SetObject::new() initializes optional fields to None, not empty collections
-- Don't commit .md reference docs (CALENDARS.md, CONTACTS.md, etc.)
+- License header on all files
+- Async-only (no maybe_async, no blocking)
+- `#[non_exhaustive]` on all public enums and TransportError
+- Clippy lints in Cargo.toml `[lints.clippy]`
+- `#[serde(skip_serializing_if = "...")]` on optional fields
+- `Field::is_omitted` for skip_serializing_if on Field<T> fields (with `#[serde(default)]`)
+- SetObject::new() initializes optional fields to None/Omitted, not empty collections
+- Don't commit .md reference docs (CALENDARS.md, etc.)
+- Helper impl blocks use `impl<Tr: HttpTransport> Client<Tr>` (not bare `impl Client`)
