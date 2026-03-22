@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use crate::{calendar_event::Alert, core::set::SetObject, Get, Set};
+use crate::{calendar_event::Alert, core::field::Field, core::set::SetObject, Get, Set};
 
 use super::{Calendar, CalendarRights, CalendarSetArguments, IncludeInAvailability};
 
@@ -22,12 +22,18 @@ impl Calendar<Set> {
     }
 
     pub fn description(&mut self, description: Option<impl Into<String>>) -> &mut Self {
-        self.description = Some(description.map(std::convert::Into::into));
+        self.description = match description {
+            Some(d) => Field::Value(d.into()),
+            None => Field::Null,
+        };
         self
     }
 
     pub fn color(&mut self, color: Option<impl Into<String>>) -> &mut Self {
-        self.color = Some(color.map(std::convert::Into::into));
+        self.color = match color {
+            Some(c) => Field::Value(c.into()),
+            None => Field::Null,
+        };
         self
     }
 
@@ -58,7 +64,10 @@ impl Calendar<Set> {
         &mut self,
         alerts: Option<HashMap<String, Alert>>,
     ) -> &mut Self {
-        self.default_alerts_with_time = Some(alerts);
+        self.default_alerts_with_time = match alerts {
+            Some(a) => Field::Value(a),
+            None => Field::Null,
+        };
         self
     }
 
@@ -66,12 +75,18 @@ impl Calendar<Set> {
         &mut self,
         alerts: Option<HashMap<String, Alert>>,
     ) -> &mut Self {
-        self.default_alerts_without_time = Some(alerts);
+        self.default_alerts_without_time = match alerts {
+            Some(a) => Field::Value(a),
+            None => Field::Null,
+        };
         self
     }
 
     pub fn time_zone(&mut self, time_zone: Option<impl Into<String>>) -> &mut Self {
-        self.time_zone = Some(time_zone.map(std::convert::Into::into));
+        self.time_zone = match time_zone {
+            Some(tz) => Field::Value(tz.into()),
+            None => Field::Null,
+        };
         self
     }
 
@@ -79,7 +94,10 @@ impl Calendar<Set> {
         &mut self,
         share_with: Option<HashMap<String, CalendarRights>>,
     ) -> &mut Self {
-        self.share_with = Some(share_with);
+        self.share_with = match share_with {
+            Some(sw) => Field::Value(sw),
+            None => Field::Null,
+        };
         self
     }
 }
@@ -93,17 +111,17 @@ impl SetObject for Calendar<Set> {
             _state: Default::default(),
             id: None,
             name: None,
-            description: None,
-            color: None,
+            description: Field::Omitted,
+            color: Field::Omitted,
             sort_order: None,
             is_subscribed: None,
             is_visible: None,
             is_default: None,
             include_in_availability: None,
-            default_alerts_with_time: None,
-            default_alerts_without_time: None,
-            time_zone: None,
-            share_with: None,
+            default_alerts_with_time: Field::Omitted,
+            default_alerts_without_time: Field::Omitted,
+            time_zone: Field::Omitted,
+            share_with: Field::Omitted,
             my_rights: None,
         }
     }

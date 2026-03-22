@@ -74,6 +74,7 @@ mod patch_object_null_semantics {
 
 mod calendar_event_nullable_getters {
     use crate::calendar_event::CalendarEvent;
+    use crate::core::field::Field;
     use crate::Get;
 
     /// Helper: deserialize a CalendarEvent<Get> from a JSON string.
@@ -84,85 +85,84 @@ mod calendar_event_nullable_getters {
     // -- time_zone --
 
     #[test]
-    fn time_zone_absent_returns_none() {
+    fn time_zone_absent_returns_omitted() {
         let event = from_json(r#"{"title":"test"}"#);
-        assert_eq!(event.time_zone(), None);
+        assert!(event.time_zone().is_omitted());
     }
 
     #[test]
-    fn time_zone_null_returns_some_none() {
+    fn time_zone_null_returns_null() {
         let event = from_json(r#"{"timeZone":null}"#);
-        assert_eq!(event.time_zone(), Some(None));
+        assert!(event.time_zone().is_null());
     }
 
     #[test]
-    fn time_zone_present_returns_some_some() {
+    fn time_zone_present_returns_value() {
         let event = from_json(r#"{"timeZone":"America/New_York"}"#);
-        assert_eq!(event.time_zone(), Some(Some("America/New_York")));
+        assert_eq!(event.time_zone(), Field::Value("America/New_York"));
     }
 
     // -- color --
 
     #[test]
-    fn color_absent_returns_none() {
+    fn color_absent_returns_omitted() {
         let event = from_json(r#"{"title":"test"}"#);
-        assert_eq!(event.color(), None);
+        assert!(event.color().is_omitted());
     }
 
     #[test]
-    fn color_null_returns_some_none() {
+    fn color_null_returns_null() {
         let event = from_json(r#"{"color":null}"#);
-        assert_eq!(event.color(), Some(None));
+        assert!(event.color().is_null());
     }
 
     #[test]
-    fn color_present_returns_some_some() {
+    fn color_present_returns_value() {
         let event = from_json(r##"{"color":"#ff0000"}"##);
-        assert_eq!(event.color(), Some(Some("#ff0000")));
+        assert_eq!(event.color(), Field::Value("#ff0000"));
     }
 
     // -- locale --
 
     #[test]
-    fn locale_absent_returns_none() {
+    fn locale_absent_returns_omitted() {
         let event = from_json(r#"{"title":"test"}"#);
-        assert_eq!(event.locale(), None);
+        assert!(event.locale().is_omitted());
     }
 
     #[test]
-    fn locale_null_returns_some_none() {
+    fn locale_null_returns_null() {
         let event = from_json(r#"{"locale":null}"#);
-        assert_eq!(event.locale(), Some(None));
+        assert!(event.locale().is_null());
     }
 
     #[test]
-    fn locale_present_returns_some_some() {
+    fn locale_present_returns_value() {
         let event = from_json(r#"{"locale":"en-US"}"#);
-        assert_eq!(event.locale(), Some(Some("en-US")));
+        assert_eq!(event.locale(), Field::Value("en-US"));
     }
 
     // -- alerts --
 
     #[test]
-    fn alerts_absent_returns_none() {
+    fn alerts_absent_returns_omitted() {
         let event = from_json(r#"{"title":"test"}"#);
-        assert!(event.alerts().is_none());
+        assert!(event.alerts().is_omitted());
     }
 
     #[test]
-    fn alerts_null_returns_some_none() {
+    fn alerts_null_returns_null() {
         let event = from_json(r#"{"alerts":null}"#);
-        let outer = event.alerts().expect("alerts should be Some");
-        assert!(outer.is_none(), "null alerts should give Some(None)");
+        assert!(event.alerts().is_null(), "null alerts should give Field::Null");
     }
 
     #[test]
-    fn alerts_present_returns_some_some() {
+    fn alerts_present_returns_value() {
         let event = from_json(
             r#"{"alerts":{"a1":{"trigger":{"@type":"OffsetTrigger","offset":"-PT15M"},"action":"display"}}}"#,
         );
-        let outer = event.alerts().expect("alerts should be Some");
-        let map = outer.expect("alerts should be Some(Some(map))");
+        let alerts = event.alerts();
+        let map = alerts.as_value().expect("alerts should be Value(map)");
         assert!(map.contains_key("a1"));
     }
 }

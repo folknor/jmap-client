@@ -12,6 +12,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    core::field::Field,
     core::get::GetObject,
     Get, Set,
 };
@@ -31,10 +32,13 @@ impl AddressBook<Get> {
         self.name.as_deref()
     }
 
-    pub fn description(&self) -> Option<Option<&str>> {
-        self.description
-            .as_ref()
-            .map(|d| d.as_deref())
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_value().map(String::as_str)
+    }
+
+    /// Full three-state access to the description field.
+    pub fn description_field(&self) -> &Field<String> {
+        &self.description
     }
 
     pub fn sort_order(&self) -> Option<u32> {
@@ -49,8 +53,13 @@ impl AddressBook<Get> {
         self.is_subscribed
     }
 
-    pub fn share_with(&self) -> Option<Option<&HashMap<String, AddressBookRights>>> {
-        self.share_with.as_ref().map(|s| s.as_ref())
+    pub fn share_with(&self) -> Option<&HashMap<String, AddressBookRights>> {
+        self.share_with.as_value()
+    }
+
+    /// Full three-state access to the share_with field.
+    pub fn share_with_field(&self) -> &Field<HashMap<String, AddressBookRights>> {
+        &self.share_with
     }
 
     pub fn my_rights(&self) -> Option<&AddressBookRights> {

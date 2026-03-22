@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, core::set::SetObject, Get, Set};
+use crate::{core::field::Field, core::get::GetObject, core::set::SetObject, Get, Set};
 
 use super::Quota;
 
@@ -46,16 +46,31 @@ impl Quota<Get> {
         self.types.as_deref()
     }
 
-    pub fn warn_limit(&self) -> Option<Option<u64>> {
-        self.warn_limit
+    pub fn warn_limit(&self) -> Option<u64> {
+        self.warn_limit.as_value().copied()
     }
 
-    pub fn soft_limit(&self) -> Option<Option<u64>> {
-        self.soft_limit
+    /// Full three-state access to the warn_limit field.
+    pub fn warn_limit_field(&self) -> &Field<u64> {
+        &self.warn_limit
     }
 
-    pub fn description(&self) -> Option<Option<&str>> {
-        self.description.as_ref().map(|d| d.as_deref())
+    pub fn soft_limit(&self) -> Option<u64> {
+        self.soft_limit.as_value().copied()
+    }
+
+    /// Full three-state access to the soft_limit field.
+    pub fn soft_limit_field(&self) -> &Field<u64> {
+        &self.soft_limit
+    }
+
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_value().map(String::as_str)
+    }
+
+    /// Full three-state access to the description field.
+    pub fn description_field(&self) -> &Field<String> {
+        &self.description
     }
 }
 
@@ -83,9 +98,9 @@ impl SetObject for Quota<Set> {
             scope: None,
             name: None,
             types: None,
-            warn_limit: None,
-            soft_limit: None,
-            description: None,
+            warn_limit: Field::Omitted,
+            soft_limit: Field::Omitted,
+            description: Field::Omitted,
         }
     }
 

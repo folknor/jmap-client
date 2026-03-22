@@ -18,6 +18,7 @@ use std::fmt::Display;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
+use crate::core::field::Field;
 use crate::core::set::skip_if_empty_str;
 use crate::Get;
 
@@ -40,12 +41,14 @@ pub struct Calendar<State = Get> {
     pub name: Option<String>,
 
     #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<Option<String>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub description: Field<String>,
 
     #[serde(rename = "color")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub color: Option<Option<String>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub color: Field<String>,
 
     #[serde(rename = "sortOrder")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -68,20 +71,24 @@ pub struct Calendar<State = Get> {
     pub include_in_availability: Option<IncludeInAvailability>,
 
     #[serde(rename = "defaultAlertsWithTime")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_alerts_with_time: Option<Option<HashMap<String, Alert>>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub default_alerts_with_time: Field<HashMap<String, Alert>>,
 
     #[serde(rename = "defaultAlertsWithoutTime")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_alerts_without_time: Option<Option<HashMap<String, Alert>>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub default_alerts_without_time: Field<HashMap<String, Alert>>,
 
     #[serde(rename = "timeZone")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub time_zone: Option<Option<String>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub time_zone: Field<String>,
 
     #[serde(rename = "shareWith")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub share_with: Option<Option<HashMap<String, CalendarRights>>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub share_with: Field<HashMap<String, CalendarRights>>,
 
     #[serde(rename = "myRights")]
     #[serde(skip_serializing_if = "Option::is_none")]

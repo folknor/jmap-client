@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::{core::field::Field, core::get::GetObject, Get, Set};
 
 use super::{CalendarEvent, GetArguments};
 
@@ -70,14 +70,16 @@ impl CalendarEvent<Get> {
         self.properties.get("duration")?.as_str()
     }
 
-    /// Returns `None` if the property is absent, `Some(None)` if explicitly
-    /// null, or `Some(Some(tz))` if set to a timezone string.
-    pub fn time_zone(&self) -> Option<Option<&str>> {
-        let v = self.properties.get("timeZone")?;
-        if v.is_null() {
-            Some(None)
-        } else {
-            Some(v.as_str())
+    /// Returns `Omitted` if the property is absent, `Null` if explicitly
+    /// null, or `Value(tz)` if set to a timezone string.
+    pub fn time_zone(&self) -> Field<&str> {
+        match self.properties.get("timeZone") {
+            None => Field::Omitted,
+            Some(v) if v.is_null() => Field::Null,
+            Some(v) => match v.as_str() {
+                Some(s) => Field::Value(s),
+                None => Field::Null,
+            },
         }
     }
 
@@ -119,25 +121,29 @@ impl CalendarEvent<Get> {
         self.properties.get("priority")?.as_u64()
     }
 
-    /// Returns `None` if absent, `Some(None)` if explicitly null,
-    /// `Some(Some(color))` if set.
-    pub fn color(&self) -> Option<Option<&str>> {
-        let v = self.properties.get("color")?;
-        if v.is_null() {
-            Some(None)
-        } else {
-            Some(v.as_str())
+    /// Returns `Omitted` if absent, `Null` if explicitly null,
+    /// `Value(color)` if set.
+    pub fn color(&self) -> Field<&str> {
+        match self.properties.get("color") {
+            None => Field::Omitted,
+            Some(v) if v.is_null() => Field::Null,
+            Some(v) => match v.as_str() {
+                Some(s) => Field::Value(s),
+                None => Field::Null,
+            },
         }
     }
 
-    /// Returns `None` if absent, `Some(None)` if explicitly null,
-    /// `Some(Some(locale))` if set.
-    pub fn locale(&self) -> Option<Option<&str>> {
-        let v = self.properties.get("locale")?;
-        if v.is_null() {
-            Some(None)
-        } else {
-            Some(v.as_str())
+    /// Returns `Omitted` if absent, `Null` if explicitly null,
+    /// `Value(locale)` if set.
+    pub fn locale(&self) -> Field<&str> {
+        match self.properties.get("locale") {
+            None => Field::Omitted,
+            Some(v) if v.is_null() => Field::Null,
+            Some(v) => match v.as_str() {
+                Some(s) => Field::Value(s),
+                None => Field::Null,
+            },
         }
     }
 
@@ -173,16 +179,18 @@ impl CalendarEvent<Get> {
         self.properties.get("useDefaultAlerts")?.as_bool()
     }
 
-    /// Returns `None` if absent, `Some(None)` if explicitly null (no alerts),
-    /// `Some(Some(map))` if set to an alerts object.
+    /// Returns `Omitted` if absent, `Null` if explicitly null (no alerts),
+    /// `Value(map)` if set to an alerts object.
     pub fn alerts(
         &self,
-    ) -> Option<Option<&serde_json::Map<String, serde_json::Value>>> {
-        let v = self.properties.get("alerts")?;
-        if v.is_null() {
-            Some(None)
-        } else {
-            Some(v.as_object())
+    ) -> Field<&serde_json::Map<String, serde_json::Value>> {
+        match self.properties.get("alerts") {
+            None => Field::Omitted,
+            Some(v) if v.is_null() => Field::Null,
+            Some(v) => match v.as_object() {
+                Some(m) => Field::Value(m),
+                None => Field::Null,
+            },
         }
     }
 

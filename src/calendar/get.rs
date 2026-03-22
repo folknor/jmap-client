@@ -13,6 +13,7 @@ use std::collections::HashMap;
 
 use crate::{
     calendar_event::Alert,
+    core::field::Field,
     core::get::GetObject,
     Get, Set,
 };
@@ -32,14 +33,22 @@ impl Calendar<Get> {
         self.name.as_deref()
     }
 
-    pub fn description(&self) -> Option<Option<&str>> {
-        self.description
-            .as_ref()
-            .map(|d| d.as_deref())
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_value().map(String::as_str)
     }
 
-    pub fn color(&self) -> Option<Option<&str>> {
-        self.color.as_ref().map(|c| c.as_deref())
+    /// Full three-state access to the description field.
+    pub fn description_field(&self) -> &Field<String> {
+        &self.description
+    }
+
+    pub fn color(&self) -> Option<&str> {
+        self.color.as_value().map(String::as_str)
+    }
+
+    /// Full three-state access to the color field.
+    pub fn color_field(&self) -> &Field<String> {
+        &self.color
     }
 
     pub fn sort_order(&self) -> Option<u32> {
@@ -62,24 +71,40 @@ impl Calendar<Get> {
         self.include_in_availability.as_ref()
     }
 
-    pub fn default_alerts_with_time(&self) -> Option<Option<&HashMap<String, Alert>>> {
-        self.default_alerts_with_time
-            .as_ref()
-            .map(|a| a.as_ref())
+    pub fn default_alerts_with_time(&self) -> Option<&HashMap<String, Alert>> {
+        self.default_alerts_with_time.as_value()
     }
 
-    pub fn default_alerts_without_time(&self) -> Option<Option<&HashMap<String, Alert>>> {
-        self.default_alerts_without_time
-            .as_ref()
-            .map(|a| a.as_ref())
+    /// Full three-state access to the default_alerts_with_time field.
+    pub fn default_alerts_with_time_field(&self) -> &Field<HashMap<String, Alert>> {
+        &self.default_alerts_with_time
     }
 
-    pub fn time_zone(&self) -> Option<Option<&str>> {
-        self.time_zone.as_ref().map(|t| t.as_deref())
+    pub fn default_alerts_without_time(&self) -> Option<&HashMap<String, Alert>> {
+        self.default_alerts_without_time.as_value()
     }
 
-    pub fn share_with(&self) -> Option<Option<&HashMap<String, CalendarRights>>> {
-        self.share_with.as_ref().map(|s| s.as_ref())
+    /// Full three-state access to the default_alerts_without_time field.
+    pub fn default_alerts_without_time_field(&self) -> &Field<HashMap<String, Alert>> {
+        &self.default_alerts_without_time
+    }
+
+    pub fn time_zone(&self) -> Option<&str> {
+        self.time_zone.as_value().map(String::as_str)
+    }
+
+    /// Full three-state access to the time_zone field.
+    pub fn time_zone_field(&self) -> &Field<String> {
+        &self.time_zone
+    }
+
+    pub fn share_with(&self) -> Option<&HashMap<String, CalendarRights>> {
+        self.share_with.as_value()
+    }
+
+    /// Full three-state access to the share_with field.
+    pub fn share_with_field(&self) -> &Field<HashMap<String, CalendarRights>> {
+        &self.share_with
     }
 
     pub fn my_rights(&self) -> Option<&CalendarRights> {

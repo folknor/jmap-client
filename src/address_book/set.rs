@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use crate::{core::set::SetObject, Get, Set};
+use crate::{core::field::Field, core::set::SetObject, Get, Set};
 
 use super::{AddressBook, AddressBookRights, AddressBookSetArguments};
 
@@ -22,7 +22,10 @@ impl AddressBook<Set> {
     }
 
     pub fn description(&mut self, description: Option<impl Into<String>>) -> &mut Self {
-        self.description = Some(description.map(std::convert::Into::into));
+        self.description = match description {
+            Some(d) => Field::Value(d.into()),
+            None => Field::Null,
+        };
         self
     }
 
@@ -40,7 +43,10 @@ impl AddressBook<Set> {
         &mut self,
         share_with: Option<HashMap<String, AddressBookRights>>,
     ) -> &mut Self {
-        self.share_with = Some(share_with);
+        self.share_with = match share_with {
+            Some(sw) => Field::Value(sw),
+            None => Field::Null,
+        };
         self
     }
 }
@@ -54,11 +60,11 @@ impl SetObject for AddressBook<Set> {
             _state: Default::default(),
             id: None,
             name: None,
-            description: None,
+            description: Field::Omitted,
             sort_order: None,
             is_default: None,
             is_subscribed: None,
-            share_with: None,
+            share_with: Field::Omitted,
             my_rights: None,
         }
     }

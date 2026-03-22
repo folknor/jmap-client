@@ -17,6 +17,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
+use crate::core::field::Field;
 use crate::Get;
 
 /// A quota object representing a storage or count limit (RFC 9425).
@@ -57,16 +58,19 @@ pub struct Quota<State = Get> {
     pub types: Option<Vec<String>>,
 
     #[serde(rename = "warnLimit")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub warn_limit: Option<Option<u64>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub warn_limit: Field<u64>,
 
     #[serde(rename = "softLimit")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub soft_limit: Option<Option<u64>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub soft_limit: Field<u64>,
 
     #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<Option<String>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub description: Field<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]

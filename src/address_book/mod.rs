@@ -18,6 +18,7 @@ use std::fmt::Display;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
+use crate::core::field::Field;
 use crate::core::set::skip_if_empty_str;
 use crate::Get;
 
@@ -38,8 +39,9 @@ pub struct AddressBook<State = Get> {
     pub name: Option<String>,
 
     #[serde(rename = "description")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<Option<String>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub description: Field<String>,
 
     #[serde(rename = "sortOrder")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -54,8 +56,9 @@ pub struct AddressBook<State = Get> {
     pub is_subscribed: Option<bool>,
 
     #[serde(rename = "shareWith")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub share_with: Option<Option<HashMap<String, AddressBookRights>>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Field::is_omitted")]
+    pub share_with: Field<HashMap<String, AddressBookRights>>,
 
     #[serde(rename = "myRights")]
     #[serde(skip_serializing_if = "Option::is_none")]
