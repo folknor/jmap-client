@@ -329,15 +329,16 @@ pub enum Property {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum HeaderValue {
-    AsDate(DateTime<Utc>),
-    AsDateAll(Vec<DateTime<Utc>>),
-    AsText(String),
-    AsTextAll(Vec<String>),
-    AsTextListAll(Vec<Vec<String>>),
-    AsAddressesAll(Vec<Vec<EmailAddress>>),
-    AsAddresses(Vec<EmailAddress>),
+    // Most-specific (nested) variants first for correct untagged deserialization.
     AsGroupedAddressesAll(Vec<Vec<EmailAddressGroup>>),
     AsGroupedAddresses(Vec<EmailAddressGroup>),
+    AsAddressesAll(Vec<Vec<EmailAddress>>),
+    AsAddresses(Vec<EmailAddress>),
+    AsTextListAll(Vec<Vec<String>>),
+    AsDateAll(Vec<DateTime<Utc>>),
+    AsDate(DateTime<Utc>),
+    AsTextAll(Vec<String>),
+    AsText(String),
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone)]
@@ -745,7 +746,8 @@ pub struct SubmissionCapabilities {
     max_delayed_send: usize,
 
     #[serde(rename = "submissionExtensions")]
-    submission_extensions: Vec<String>,
+    #[serde(default)]
+    submission_extensions: AHashMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -845,7 +847,7 @@ impl SubmissionCapabilities {
         self.max_delayed_send
     }
 
-    pub fn submission_extensions(&self) -> &[String] {
+    pub fn submission_extensions(&self) -> &AHashMap<String, Vec<String>> {
         &self.submission_extensions
     }
 }

@@ -161,7 +161,7 @@ macro_rules! impl_arguments_accessor {
     ($method_name:ident, $variant:ident, $return_type:ty) => {
         pub fn $method_name(&mut self) -> &mut $return_type {
             match self {
-                Arguments::$variant(ref mut r) => r,
+                Arguments::$variant(r) => r.as_mut(),
                 _ => unreachable!(),
             }
         }
@@ -388,7 +388,7 @@ impl Arguments {
 impl<'x> Request<'x> {
     pub fn new(client: &'x Client) -> Self {
         Request {
-            using: vec![URI::Core, URI::Mail],
+            using: vec![URI::Core],
             method_calls: vec![],
             created_ids: None,
             account_id: client.default_account_id().to_string(),

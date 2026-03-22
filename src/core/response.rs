@@ -225,8 +225,12 @@ impl<T> Response<T> {
         self.method_responses
     }
 
-    pub fn method_response_by_pos(&mut self, index: usize) -> T {
-        self.method_responses.remove(index)
+    pub fn method_response_by_pos(&mut self, index: usize) -> Option<T> {
+        if index < self.method_responses.len() {
+            Some(self.method_responses.swap_remove(index))
+        } else {
+            None
+        }
     }
 
     pub fn pop_method_response(&mut self) -> Option<T> {
@@ -257,8 +261,13 @@ impl Response<TaggedMethodResponse> {
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum SingleMethodResponse<T> {
-    Error((Error, MethodError, String)),
+    // Ok must come before Error — with untagged enums, serde tries
+    // variants in order. Ok's first element is a method name String,
+    // while Error's first element is the Error enum (which only
+    // deserializes from "error"). Placing Ok first ensures normal
+    // responses aren't misidentified.
     Ok((String, T, String)),
+    Error((Error, MethodError, String)),
 }
 
 #[derive(Debug, Deserialize)]

@@ -36,6 +36,7 @@ impl Client {
 
 impl Request<'_> {
     pub fn get_thread(&mut self) -> &mut GetRequest<Thread> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::GetThread,
             Arguments::thread_get(self.params(Method::GetThread)),
@@ -49,6 +50,7 @@ impl Request<'_> {
     }
 
     pub fn changes_thread(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::ChangesThread,
             Arguments::changes(self.params(Method::ChangesThread), since_state.into()),

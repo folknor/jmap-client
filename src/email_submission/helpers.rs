@@ -151,6 +151,7 @@ impl Client {
 
 impl Request<'_> {
     pub fn get_email_submission(&mut self) -> &mut GetRequest<EmailSubmission<Set>> {
+        self.add_capability(URI::Mail);
         self.add_capability(URI::Submission);
         self.add_method_call(
             Method::GetEmailSubmission,
@@ -168,6 +169,7 @@ impl Request<'_> {
         &mut self,
         since_state: impl Into<String>,
     ) -> &mut ChangesRequest {
+        self.add_capability(URI::Mail);
         self.add_capability(URI::Submission);
         self.add_method_call(
             Method::ChangesEmailSubmission,
@@ -187,6 +189,7 @@ impl Request<'_> {
     }
 
     pub fn query_email_submission(&mut self) -> &mut QueryRequest<EmailSubmission<Set>> {
+        self.add_capability(URI::Mail);
         self.add_capability(URI::Submission);
         self.add_method_call(
             Method::QueryEmailSubmission,
@@ -204,6 +207,7 @@ impl Request<'_> {
         &mut self,
         since_query_state: impl Into<String>,
     ) -> &mut QueryChangesRequest<EmailSubmission<Set>> {
+        self.add_capability(URI::Mail);
         self.add_capability(URI::Submission);
         self.add_method_call(
             Method::QueryChangesEmailSubmission,
@@ -221,6 +225,7 @@ impl Request<'_> {
     }
 
     pub fn set_email_submission(&mut self) -> &mut SetRequest<EmailSubmission<Set>> {
+        self.add_capability(URI::Mail);
         self.add_capability(URI::Submission);
         self.add_method_call(
             Method::SetEmailSubmission,

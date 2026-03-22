@@ -307,6 +307,7 @@ impl Client {
 
 impl Request<'_> {
     pub fn get_email(&mut self) -> &mut GetRequest<Email<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::GetEmail,
             Arguments::email_get(self.params(Method::GetEmail)),
@@ -320,6 +321,7 @@ impl Request<'_> {
     }
 
     pub fn changes_email(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::ChangesEmail,
             Arguments::changes(self.params(Method::ChangesEmail), since_state.into()),
@@ -333,6 +335,7 @@ impl Request<'_> {
     }
 
     pub fn query_email(&mut self) -> &mut QueryRequest<Email<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::QueryEmail,
             Arguments::email_query(self.params(Method::QueryEmail)),
@@ -349,6 +352,7 @@ impl Request<'_> {
         &mut self,
         since_query_state: impl Into<String>,
     ) -> &mut QueryChangesRequest<Email<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::QueryChangesEmail,
             Arguments::email_query_changes(
@@ -365,6 +369,7 @@ impl Request<'_> {
     }
 
     pub fn set_email(&mut self) -> &mut SetRequest<Email<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::SetEmail,
             Arguments::email_set(self.params(Method::SetEmail)),
@@ -381,6 +386,7 @@ impl Request<'_> {
         &mut self,
         from_account_id: impl Into<String>,
     ) -> &mut CopyRequest<Email<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::CopyEmail,
             Arguments::email_copy(self.params(Method::CopyEmail), from_account_id.into()),
@@ -394,6 +400,7 @@ impl Request<'_> {
     }
 
     pub fn import_email(&mut self) -> &mut EmailImportRequest {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::ImportEmail,
             Arguments::email_import(self.params(Method::ImportEmail)),
@@ -407,6 +414,7 @@ impl Request<'_> {
     }
 
     pub fn parse_email(&mut self) -> &mut EmailParseRequest {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::ParseEmail,
             Arguments::email_parse(self.params(Method::ParseEmail)),
@@ -420,6 +428,7 @@ impl Request<'_> {
     }
 
     pub fn get_search_snippet(&mut self) -> &mut SearchSnippetGetRequest {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::GetSearchSnippet,
             Arguments::search_snippet_get(self.params(Method::GetSearchSnippet)),

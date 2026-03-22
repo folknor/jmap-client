@@ -201,6 +201,7 @@ impl Client {
 
 impl Request<'_> {
     pub fn get_mailbox(&mut self) -> &mut GetRequest<Mailbox<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::GetMailbox,
             Arguments::mailbox_get(self.params(Method::GetMailbox)),
@@ -214,6 +215,7 @@ impl Request<'_> {
     }
 
     pub fn changes_mailbox(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::ChangesMailbox,
             Arguments::changes(self.params(Method::ChangesMailbox), since_state.into()),
@@ -227,6 +229,7 @@ impl Request<'_> {
     }
 
     pub fn query_mailbox(&mut self) -> &mut QueryRequest<Mailbox<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::QueryMailbox,
             Arguments::mailbox_query(self.params(Method::QueryMailbox)),
@@ -243,6 +246,7 @@ impl Request<'_> {
         &mut self,
         since_query_state: impl Into<String>,
     ) -> &mut QueryChangesRequest<Mailbox<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::QueryChangesMailbox,
             Arguments::mailbox_query_changes(
@@ -259,6 +263,7 @@ impl Request<'_> {
     }
 
     pub fn set_mailbox(&mut self) -> &mut SetRequest<Mailbox<Set>> {
+        self.add_capability(crate::URI::Mail);
         self.add_method_call(
             Method::SetMailbox,
             Arguments::mailbox_set(self.params(Method::SetMailbox)),
