@@ -24,7 +24,6 @@ use crate::{
 use super::{AddressBook, Property};
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn address_book_create(
         &self,
         name: impl Into<String>,
@@ -43,7 +42,6 @@ impl Client {
             .created(&id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn address_book_destroy(
         &self,
         id: &str,
@@ -61,7 +59,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn address_book_get(
         &self,
         id: &str,
@@ -78,7 +75,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn address_book_changes(
         &self,
         since_state: impl Into<String>,
@@ -102,7 +98,6 @@ impl Request<'_> {
         .address_book_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_address_book(self) -> crate::Result<AddressBookGetResponse> {
         self.send_single().await
     }
@@ -116,7 +111,6 @@ impl Request<'_> {
         .address_book_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_address_book(self) -> crate::Result<AddressBookSetResponse> {
         self.send_single().await
     }
@@ -133,7 +127,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_address_book(self) -> crate::Result<ChangesResponse<AddressBook<Get>>> {
         self.send_single().await
     }

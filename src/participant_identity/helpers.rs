@@ -24,7 +24,6 @@ use crate::{
 use super::{ParticipantIdentity, Property};
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn participant_identity_get(
         &self,
         id: &str,
@@ -41,7 +40,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn participant_identity_changes(
         &self,
         since_state: impl Into<String>,
@@ -69,7 +67,6 @@ impl Request<'_> {
         .participant_identity_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_participant_identity(
         self,
     ) -> crate::Result<ParticipantIdentityGetResponse> {
@@ -89,7 +86,6 @@ impl Request<'_> {
         .participant_identity_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_participant_identity(
         self,
     ) -> crate::Result<ParticipantIdentitySetResponse> {
@@ -111,7 +107,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_participant_identity(
         self,
     ) -> crate::Result<ChangesResponse<ParticipantIdentity<Get>>> {

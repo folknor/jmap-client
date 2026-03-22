@@ -19,14 +19,11 @@ use std::{
 };
 
 use ahash::AHashSet;
-#[cfg(feature = "blocking")]
-use reqwest::blocking::{Client as HttpClient, Response};
 use reqwest::{
     header::{self},
     redirect,
+    Client as HttpClient, Response,
 };
-#[cfg(feature = "async")]
-use reqwest::{Client as HttpClient, Response};
 
 use serde::de::DeserializeOwned;
 
@@ -58,7 +55,6 @@ pub struct Client {
 
     upload_url: Vec<URLPart<blob::URLParameter>>,
     download_url: Vec<URLPart<blob::URLParameter>>,
-    #[cfg(feature = "async")]
     event_source_url: Vec<URLPart<crate::event_source::URLParameter>>,
 
     headers: header::HeaderMap,
@@ -184,7 +180,6 @@ impl ClientBuilder {
     /// Connects to the JMAP API Session URL.
     ///
     /// Setting up [Credentials](struct.ClientBuilder.html#method.credentials) must be done before calling this function.
-    #[maybe_async::maybe_async]
     pub async fn connect(self, url: &str) -> crate::Result<Client> {
         let authorization = match self.credentials.expect("Missing credentials") {
             Credentials::Basic(s) => format!("Basic {}", s),
@@ -254,7 +249,6 @@ impl ClientBuilder {
         Ok(Client {
             download_url: URLPart::parse(session.download_url())?,
             upload_url: URLPart::parse(session.upload_url())?,
-            #[cfg(feature = "async")]
             event_source_url: URLPart::parse(session.event_source_url())?,
             api_url: session.api_url().to_string(),
             session: parking_lot::Mutex::new(Arc::new(session)),
@@ -326,7 +320,6 @@ impl Client {
         })
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send<R>(
         &self,
         request: &request::Request<'_>,
@@ -359,7 +352,6 @@ impl Client {
         Ok(response)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn refresh_session(&self) -> crate::Result<()> {
         let session: Session = serde_json::from_slice(
             &Client::handle_error(
@@ -407,12 +399,10 @@ impl Client {
         &self.upload_url
     }
 
-    #[cfg(feature = "async")]
     pub fn event_source_url(&self) -> &[URLPart<crate::event_source::URLParameter>] {
         &self.event_source_url
     }
 
-    #[maybe_async::maybe_async]
     pub async fn handle_error(response: Response) -> crate::Result<Response> {
         if response.status().is_success() {
             Ok(response)

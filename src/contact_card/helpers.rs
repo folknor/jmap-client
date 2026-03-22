@@ -30,7 +30,6 @@ use super::{
 };
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn contact_card_get(
         &self,
         id: &str,
@@ -47,7 +46,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn contact_card_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
         request.set_contact_card().destroy([id]);
@@ -57,7 +55,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn contact_card_changes(
         &self,
         since_state: impl Into<String>,
@@ -71,7 +68,6 @@ impl Client {
         request.send_single().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn contact_card_query(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -88,7 +84,6 @@ impl Client {
         request.send_single::<QueryResponse>().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn contact_card_parse(
         &self,
         blob_id: &str,
@@ -116,7 +111,6 @@ impl Request<'_> {
         .contact_card_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_contact_card(self) -> crate::Result<ContactCardGetResponse> {
         self.send_single().await
     }
@@ -130,7 +124,6 @@ impl Request<'_> {
         .contact_card_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_contact_card(self) -> crate::Result<ContactCardSetResponse> {
         self.send_single().await
     }
@@ -150,7 +143,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_contact_card(
         self,
     ) -> crate::Result<ChangesResponse<ContactCard<Get>>> {
@@ -166,7 +158,6 @@ impl Request<'_> {
         .contact_card_query_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_contact_card(self) -> crate::Result<QueryResponse> {
         self.send_single().await
     }
@@ -186,7 +177,6 @@ impl Request<'_> {
         .contact_card_query_changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_contact_card_changes(self) -> crate::Result<QueryChangesResponse> {
         self.send_single().await
     }
@@ -206,7 +196,6 @@ impl Request<'_> {
         .contact_card_copy_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_copy_contact_card(self) -> crate::Result<ContactCardCopyResponse> {
         self.send_single().await
     }
@@ -220,7 +209,6 @@ impl Request<'_> {
         .contact_card_parse_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_parse_contact_card(self) -> crate::Result<ContactCardParseResponse> {
         self.send_single().await
     }

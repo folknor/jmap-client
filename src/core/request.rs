@@ -401,7 +401,6 @@ impl<'x> Request<'x> {
         self
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send(self) -> crate::Result<Response<TaggedMethodResponse>> {
         self.client.send(&self).await
     }
@@ -411,7 +410,6 @@ impl<'x> Request<'x> {
         self.client.send_ws(self).await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_single<T>(self) -> crate::Result<T>
     where
         T: DeserializeOwned,

@@ -32,7 +32,6 @@ use super::{
 };
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn email_import<T, U, V, W>(
         &self,
         raw_message: Vec<u8>,
@@ -56,7 +55,6 @@ impl Client {
         .await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_import_account<T, U, V, W>(
         &self,
         account_id: &str,
@@ -97,7 +95,6 @@ impl Client {
             .created(&id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_set_mailbox(
         &self,
         id: &str,
@@ -109,7 +106,6 @@ impl Client {
         request.send_single::<EmailSetResponse>().await?.updated(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_set_mailboxes<T, U>(
         &self,
         id: &str,
@@ -124,7 +120,6 @@ impl Client {
         request.send_single::<EmailSetResponse>().await?.updated(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_set_keyword(
         &self,
         id: &str,
@@ -136,7 +131,6 @@ impl Client {
         request.send_single::<EmailSetResponse>().await?.updated(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_set_keywords<T, U>(
         &self,
         id: &str,
@@ -151,7 +145,6 @@ impl Client {
         request.send_single::<EmailSetResponse>().await?.updated(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
         request.set_email().destroy([id]);
@@ -161,7 +154,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_get(
         &self,
         id: &str,
@@ -178,7 +170,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_changes(
         &self,
         since_state: impl Into<String>,
@@ -192,7 +183,6 @@ impl Client {
         request.send_single().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_query(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -209,7 +199,6 @@ impl Client {
         request.send_single::<QueryResponse>().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_query_changes(
         &self,
         since_query_state: impl Into<String>,
@@ -223,7 +212,6 @@ impl Client {
         request.send_single::<QueryChangesResponse>().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_parse(
         &self,
         blob_id: &str,
@@ -253,7 +241,6 @@ impl Client {
             .and_then(|mut r| r.parsed(blob_id))
     }
 
-    #[maybe_async::maybe_async]
     pub async fn email_copy<T, U, V, W>(
         &self,
         from_account_id: impl Into<String>,
@@ -289,7 +276,6 @@ impl Client {
             .created(&id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn search_snippet_get(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -315,7 +301,6 @@ impl Request<'_> {
         .email_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_email(self) -> crate::Result<EmailGetResponse> {
         self.send_single().await
     }
@@ -329,7 +314,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_email(self) -> crate::Result<ChangesResponse<Email<Get>>> {
         self.send_single().await
     }
@@ -343,7 +327,6 @@ impl Request<'_> {
         .email_query_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_email(self) -> crate::Result<QueryResponse> {
         self.send_single().await
     }
@@ -363,7 +346,6 @@ impl Request<'_> {
         .email_query_changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_email_changes(self) -> crate::Result<QueryChangesResponse> {
         self.send_single().await
     }
@@ -377,7 +359,6 @@ impl Request<'_> {
         .email_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_email(self) -> crate::Result<EmailSetResponse> {
         self.send_single().await
     }
@@ -394,7 +375,6 @@ impl Request<'_> {
         .email_copy_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_copy_email(self) -> crate::Result<EmailCopyResponse> {
         self.send_single().await
     }
@@ -408,7 +388,6 @@ impl Request<'_> {
         .email_import_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_import_email(self) -> crate::Result<EmailImportResponse> {
         self.send_single().await
     }
@@ -422,7 +401,6 @@ impl Request<'_> {
         .email_parse_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_parse_email(self) -> crate::Result<EmailParseResponse> {
         self.send_single().await
     }
@@ -436,7 +414,6 @@ impl Request<'_> {
         .search_snippet_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_search_snippet(self) -> crate::Result<SearchSnippetGetResponse> {
         self.send_single().await
     }

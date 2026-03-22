@@ -24,7 +24,6 @@ use crate::{
 use super::{Calendar, Property};
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn calendar_create(
         &self,
         name: impl Into<String>,
@@ -44,7 +43,6 @@ impl Client {
             .created(&id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_destroy(
         &self,
         id: &str,
@@ -62,7 +60,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_get(
         &self,
         id: &str,
@@ -79,7 +76,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_changes(
         &self,
         since_state: impl Into<String>,
@@ -103,7 +99,6 @@ impl Request<'_> {
         .calendar_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_calendar(self) -> crate::Result<CalendarGetResponse> {
         self.send_single().await
     }
@@ -117,7 +112,6 @@ impl Request<'_> {
         .calendar_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_calendar(self) -> crate::Result<CalendarSetResponse> {
         self.send_single().await
     }
@@ -134,7 +128,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_calendar(self) -> crate::Result<ChangesResponse<Calendar<Get>>> {
         self.send_single().await
     }

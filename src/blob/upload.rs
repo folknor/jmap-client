@@ -14,9 +14,6 @@ use serde::Deserialize;
 
 use crate::{client::Client, core::session::URLPart};
 
-#[cfg(feature = "blocking")]
-use reqwest::blocking::Client as HttpClient;
-#[cfg(feature = "async")]
 use reqwest::Client as HttpClient;
 
 #[derive(Debug, Deserialize)]
@@ -35,7 +32,6 @@ pub struct UploadResponse {
 }
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn upload(
         &self,
         account_id: Option<&str>,

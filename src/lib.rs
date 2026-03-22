@@ -192,7 +192,6 @@ pub mod contact_card;
 pub mod core;
 pub mod email;
 pub mod email_submission;
-#[cfg(feature = "async")]
 pub mod event_source;
 pub mod identity;
 pub mod mailbox;

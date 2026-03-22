@@ -14,11 +14,11 @@ resolver = "2"
 rust-version = "1.92"
 
 [dependencies]
-reqwest = { version = "0.13.2", default-features = false, features = ["rustls"]}
+reqwest = { version = "0.13.2", default-features = false, features = ["rustls", "stream"]}
 tokio-tungstenite = { version = "0.29.0", features = ["rustls-tls-webpki-roots"], optional = true}
 tokio = { version = "1.47", default-features = false, features = ["io-util"], optional = true }
-futures-util = { version = "0.3", optional = true}
-async-stream = { version = "0.3", optional = true}
+futures-util = "0.3"
+async-stream = "0.3"
 rustls = { version = "0.23", optional = true, default-features = false, features = ["std"]}
 rustls-pki-types = { version = "1" }
 serde = { version = "1.0", features = ["derive"]}
@@ -27,13 +27,10 @@ chrono = { version = "0.4", features = ["serde"]}
 ahash = {version = "0.8", features = ["serde"]}
 parking_lot = "0.12"
 base64 = "0.13"
-maybe-async = "0.2"
 
 [features]
-default = ["async", "websockets", "ring", "mail", "calendars", "contacts", "blob", "quota"]
-async = ["futures-util", "async-stream", "reqwest/stream"]
+default = ["websockets", "ring", "mail", "calendars", "contacts", "blob", "quota"]
 websockets = ["tokio", "tokio-tungstenite", "rustls"]
-blocking = ["reqwest/blocking", "maybe-async/is_sync"]
 ring = ["rustls/ring"]
 aws_lc_rs = ["rustls/aws_lc_rs"]
 aws-lc-rs = ["aws_lc_rs"]

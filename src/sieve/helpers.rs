@@ -27,7 +27,6 @@ use super::{
 };
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_create(
         &self,
         name: impl Into<String>,
@@ -54,7 +53,6 @@ impl Client {
             .created(&id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_replace(
         &self,
         id: &str,
@@ -74,7 +72,6 @@ impl Client {
             .updated(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_rename(
         &self,
         id: &str,
@@ -93,7 +90,6 @@ impl Client {
             .updated(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_activate(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
         request
@@ -106,7 +102,6 @@ impl Client {
             .unwrap_update_errors()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_deactivate(&self) -> crate::Result<()> {
         let mut request = self.build();
         request
@@ -119,7 +114,6 @@ impl Client {
             .unwrap_update_errors()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
         request.set_sieve_script().destroy([id]);
@@ -129,7 +123,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_get(
         &self,
         id: &str,
@@ -146,7 +139,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_query(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -163,7 +155,6 @@ impl Client {
         request.send_single::<QueryResponse>().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn sieve_script_validate(&self, script: impl Into<Vec<u8>>) -> crate::Result<()> {
         let blob_id = self.upload(None, script.into(), None).await?.take_blob_id();
         let mut request = self.build();
@@ -185,7 +176,6 @@ impl Request<'_> {
         .sieve_script_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_sieve_script(self) -> crate::Result<SieveScriptGetResponse> {
         self.send_single().await
     }
@@ -199,7 +189,6 @@ impl Request<'_> {
         .sieve_script_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_sieve_script(self) -> crate::Result<SieveScriptSetResponse> {
         self.send_single().await
     }
@@ -216,7 +205,6 @@ impl Request<'_> {
         .sieve_script_validate_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_validate_sieve_script(self) -> crate::Result<SieveScriptValidateResponse> {
         self.send_single().await
     }
@@ -230,7 +218,6 @@ impl Request<'_> {
         .sieve_script_query_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_sieve_script(self) -> crate::Result<QueryResponse> {
         self.send_single().await
     }

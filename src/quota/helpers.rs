@@ -26,7 +26,6 @@ use super::{Property, Quota};
 
 impl Client {
     /// Fetch all quotas for the default account.
-    #[maybe_async::maybe_async]
     pub async fn quota_get_all(&self) -> crate::Result<Vec<Quota>> {
         let mut request = self.build();
         request.get_quota();
@@ -36,7 +35,6 @@ impl Client {
             .map(|mut r| r.take_list())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn quota_get(
         &self,
         id: &str,
@@ -53,7 +51,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn quota_changes(
         &self,
         since_state: impl Into<String>,
@@ -66,7 +63,6 @@ impl Client {
         request.send_single().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn quota_query(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -83,7 +79,6 @@ impl Client {
         request.send_single::<QueryResponse>().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn quota_query_changes(
         &self,
         since_query_state: impl Into<String>,
@@ -108,7 +103,6 @@ impl Request<'_> {
         .quota_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_quota(self) -> crate::Result<QuotaGetResponse> {
         self.send_single().await
     }
@@ -125,7 +119,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_quota(self) -> crate::Result<ChangesResponse<Quota<Get>>> {
         self.send_single().await
     }
@@ -139,7 +132,6 @@ impl Request<'_> {
         .quota_query_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_quota(self) -> crate::Result<QueryResponse> {
         self.send_single().await
     }
@@ -159,7 +151,6 @@ impl Request<'_> {
         .quota_query_changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_quota_changes(self) -> crate::Result<QueryChangesResponse> {
         self.send_single().await
     }

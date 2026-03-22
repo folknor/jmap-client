@@ -32,7 +32,6 @@ use super::{
 };
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_get(
         &self,
         id: &str,
@@ -49,7 +48,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
         request.set_calendar_event().destroy([id]);
@@ -59,7 +57,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_changes(
         &self,
         since_state: impl Into<String>,
@@ -73,7 +70,6 @@ impl Client {
         request.send_single().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_query(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -90,7 +86,6 @@ impl Client {
         request.send_single::<QueryResponse>().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_parse(
         &self,
         blob_id: &str,
@@ -124,7 +119,6 @@ impl Request<'_> {
         .calendar_event_copy_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_copy_calendar_event(self) -> crate::Result<CalendarEventCopyResponse> {
         self.send_single().await
     }
@@ -138,7 +132,6 @@ impl Request<'_> {
         .calendar_event_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_calendar_event(self) -> crate::Result<CalendarEventGetResponse> {
         self.send_single().await
     }
@@ -152,7 +145,6 @@ impl Request<'_> {
         .calendar_event_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_calendar_event(self) -> crate::Result<CalendarEventSetResponse> {
         self.send_single().await
     }
@@ -172,7 +164,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_calendar_event(
         self,
     ) -> crate::Result<ChangesResponse<CalendarEvent<Get>>> {
@@ -188,7 +179,6 @@ impl Request<'_> {
         .calendar_event_query_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_calendar_event(self) -> crate::Result<QueryResponse> {
         self.send_single().await
     }
@@ -208,7 +198,6 @@ impl Request<'_> {
         .calendar_event_query_changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_calendar_event_changes(self) -> crate::Result<QueryChangesResponse> {
         self.send_single().await
     }
@@ -222,7 +211,6 @@ impl Request<'_> {
         .calendar_event_parse_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_parse_calendar_event(self) -> crate::Result<CalendarEventParseResponse> {
         self.send_single().await
     }

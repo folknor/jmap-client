@@ -13,13 +13,9 @@ use reqwest::header::CONTENT_TYPE;
 
 use crate::{client::Client, core::session::URLPart};
 
-#[cfg(feature = "blocking")]
-use reqwest::blocking::Client as HttpClient;
-#[cfg(feature = "async")]
 use reqwest::Client as HttpClient;
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn download(&self, blob_id: &str) -> crate::Result<Vec<u8>> {
         let account_id = self.default_account_id();
         let mut download_url = String::with_capacity(

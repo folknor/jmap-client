@@ -23,7 +23,6 @@ use crate::{
 use super::Thread;
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn thread_get(&self, id: &str) -> crate::Result<Option<Thread>> {
         let mut request = self.build();
         request.get_thread().ids([id]);
@@ -44,7 +43,6 @@ impl Request<'_> {
         .thread_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_thread(self) -> crate::Result<ThreadGetResponse> {
         self.send_single().await
     }
@@ -58,7 +56,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_thread(self) -> crate::Result<ChangesResponse<Thread>> {
         self.send_single().await
     }

@@ -23,7 +23,6 @@ use crate::{
 use super::{Property, VacationResponse};
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn vacation_response_create(
         &self,
         subject: impl Into<String>,
@@ -47,7 +46,6 @@ impl Client {
             .created(&created_id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn vacation_response_enable(
         &self,
         subject: impl Into<String>,
@@ -69,7 +67,6 @@ impl Client {
             .updated("singleton")
     }
 
-    #[maybe_async::maybe_async]
     pub async fn vacation_response_disable(&self) -> crate::Result<Option<VacationResponse>> {
         let mut request = self.build();
         request
@@ -83,7 +80,6 @@ impl Client {
             .updated("singleton")
     }
 
-    #[maybe_async::maybe_async]
     pub async fn vacation_response_set_dates(
         &self,
         from_date: Option<i64>,
@@ -103,7 +99,6 @@ impl Client {
             .updated("singleton")
     }
 
-    #[maybe_async::maybe_async]
     pub async fn vacation_response_get(
         &self,
         properties: Option<impl IntoIterator<Item = Property>>,
@@ -119,7 +114,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn vacation_response_destroy(&self) -> crate::Result<()> {
         let mut request = self.build();
         request.set_vacation_response().destroy(["singleton"]);
@@ -140,7 +134,6 @@ impl Request<'_> {
         .vacation_response_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_vacation_response(self) -> crate::Result<VacationResponseGetResponse> {
         self.send_single().await
     }
@@ -154,7 +147,6 @@ impl Request<'_> {
         .vacation_response_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_vacation_response(self) -> crate::Result<VacationResponseSetResponse> {
         self.send_single().await
     }

@@ -28,7 +28,6 @@ use crate::{
 use super::{CalendarEventNotification, Property};
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_notification_get(
         &self,
         id: &str,
@@ -45,7 +44,6 @@ impl Client {
             .map(|mut r| r.take_list().pop())
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_notification_destroy(&self, id: &str) -> crate::Result<()> {
         let mut request = self.build();
         request.set_calendar_event_notification().destroy([id]);
@@ -55,7 +53,6 @@ impl Client {
             .destroyed(id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_notification_changes(
         &self,
         since_state: impl Into<String>,
@@ -68,7 +65,6 @@ impl Client {
         request.send_single().await
     }
 
-    #[maybe_async::maybe_async]
     pub async fn calendar_event_notification_query(
         &self,
         filter: Option<impl Into<Filter<super::query::Filter>>>,
@@ -102,7 +98,6 @@ impl Request<'_> {
         .calendar_event_notification_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_calendar_event_notification(
         self,
     ) -> crate::Result<CalendarEventNotificationGetResponse> {
@@ -122,7 +117,6 @@ impl Request<'_> {
         .calendar_event_notification_set_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_set_calendar_event_notification(
         self,
     ) -> crate::Result<CalendarEventNotificationSetResponse> {
@@ -144,7 +138,6 @@ impl Request<'_> {
         .changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_changes_calendar_event_notification(
         self,
     ) -> crate::Result<ChangesResponse<CalendarEventNotification<Get>>> {
@@ -164,7 +157,6 @@ impl Request<'_> {
         .calendar_event_notification_query_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_calendar_event_notification(
         self,
     ) -> crate::Result<QueryResponse> {
@@ -186,7 +178,6 @@ impl Request<'_> {
         .calendar_event_notification_query_changes_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_query_calendar_event_notification_changes(
         self,
     ) -> crate::Result<QueryChangesResponse> {

@@ -24,7 +24,6 @@ use super::{
 };
 
 impl Client {
-    #[maybe_async::maybe_async]
     pub async fn blob_copy(
         &self,
         from_account_id: impl Into<String>,
@@ -39,7 +38,6 @@ impl Client {
             .copied(&blob_id)
     }
 
-    #[maybe_async::maybe_async]
     pub async fn blob_upload_text(
         &self,
         text: impl Into<String>,
@@ -64,7 +62,6 @@ impl Request<'_> {
         .blob_copy_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_copy_blob(self) -> crate::Result<CopyBlobResponse> {
         self.send_single().await
     }
@@ -78,7 +75,6 @@ impl Request<'_> {
         .blob_upload_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_upload_blob(self) -> crate::Result<BlobUploadResponse> {
         self.send_single().await
     }
@@ -92,7 +88,6 @@ impl Request<'_> {
         .blob_get_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_get_blob(self) -> crate::Result<BlobGetResponse> {
         self.send_single().await
     }
@@ -124,7 +119,6 @@ impl Request<'_> {
         .blob_lookup_mut()
     }
 
-    #[maybe_async::maybe_async]
     pub async fn send_lookup_blob(self) -> crate::Result<BlobLookupResponse> {
         self.send_single().await
     }
