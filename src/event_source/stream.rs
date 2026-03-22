@@ -62,7 +62,7 @@ impl Client {
         }
 
         // Add headers
-        let mut headers = self.headers().clone();
+        let mut headers = self.reqwest_headers();
         headers.remove(CONTENT_TYPE);
         headers.insert(ACCEPT, HeaderValue::from_static("text/event-stream"));
         if let Some(last_event_id) = last_event_id {

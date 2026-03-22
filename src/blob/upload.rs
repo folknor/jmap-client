@@ -9,12 +9,12 @@
  * except according to those terms.
  */
 
-use reqwest::header::CONTENT_TYPE;
 use serde::Deserialize;
 
-use crate::{client::Client, core::session::URLPart};
-
-use reqwest::Client as HttpClient;
+use crate::{
+    client::Client,
+    core::{session::URLPart, transport::HttpTransport},
+};
 
 #[derive(Debug, Deserialize)]
 pub struct UploadResponse {
@@ -44,9 +44,7 @@ impl Client {
 
         for part in self.upload_url() {
             match part {
-                URLPart::Value(value) => {
-                    upload_url.push_str(value);
-                }
+                URLPart::Value(value) => upload_url.push_str(value),
                 URLPart::Parameter(param) => {
                     if let super::URLParameter::AccountId = param {
                         upload_url.push_str(account_id);
@@ -55,28 +53,12 @@ impl Client {
             }
         }
 
-        serde_json::from_slice::<UploadResponse>(
-            &Client::handle_error(
-                HttpClient::builder()
-                    .timeout(self.timeout())
-                    .danger_accept_invalid_certs(self.accept_invalid_certs)
-                    .redirect(self.redirect_policy())
-                    .default_headers(self.headers().clone())
-                    .build()?
-                    .post(upload_url)
-                    .header(
-                        CONTENT_TYPE,
-                        content_type.unwrap_or("application/octet-stream"),
-                    )
-                    .body(blob)
-                    .send()
-                    .await?,
-            )
-            .await?
-            .bytes()
-            .await?,
-        )
-        .map_err(std::convert::Into::into)
+        let bytes = self
+            .transport()
+            .upload(&upload_url, blob, content_type)
+            .await
+            .map_err(crate::Error::from)?;
+        serde_json::from_slice::<UploadResponse>(&bytes).map_err(std::convert::Into::into)
     }
 }
 

@@ -31,6 +31,7 @@ pub mod push_subscription;
 pub mod quota;
 pub mod sieve;
 pub mod thread;
+pub mod transport_reqwest;
 pub mod vacation_response;
 
 use crate::core::error::MethodError;

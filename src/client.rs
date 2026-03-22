@@ -10,6 +10,7 @@
  */
 
 use std::{
+    collections::HashSet,
     net::IpAddr,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -18,13 +19,7 @@ use std::{
     time::Duration,
 };
 
-use std::collections::HashSet;
-use reqwest::{
-    header::{self},
-    redirect,
-    Client as HttpClient, Response,
-};
-
+use reqwest::header;
 use serde::de::DeserializeOwned;
 
 use crate::{
@@ -33,12 +28,13 @@ use crate::{
         request::{self, Request},
         response,
         session::{Session, URLPart},
+        transport::HttpTransport,
     },
+    transport_reqwest::ReqwestTransport,
     Error,
 };
 
 const DEFAULT_TIMEOUT_MS: u64 = 10 * 1000;
-static USER_AGENT: &str = concat!("jmap-client/", env!("CARGO_PKG_VERSION"));
 
 #[derive(Debug, PartialEq, Eq)]
 #[non_exhaustive]
@@ -48,17 +44,16 @@ pub enum Credentials {
 }
 
 pub struct Client {
+    transport: ReqwestTransport,
     session: std::sync::Mutex<Arc<Session>>,
     session_url: String,
     api_url: String,
     session_updated: AtomicBool,
-    trusted_hosts: Arc<HashSet<String>>,
 
     upload_url: Vec<URLPart<blob::URLParameter>>,
     download_url: Vec<URLPart<blob::URLParameter>>,
     event_source_url: Vec<URLPart<crate::event_source::URLParameter>>,
 
-    headers: header::HeaderMap,
     default_account_id: String,
     timeout: Duration,
     pub(crate) accept_invalid_certs: bool,
@@ -66,7 +61,11 @@ pub struct Client {
     #[cfg(feature = "websockets")]
     pub(crate) authorization: String,
     #[cfg(feature = "websockets")]
+    pub(crate) headers: header::HeaderMap,
+    #[cfg(feature = "websockets")]
     pub(crate) ws: tokio::sync::Mutex<Option<crate::client_ws::WsStream>>,
+    #[cfg(feature = "websockets")]
+    pub(crate) trusted_hosts: Arc<HashSet<String>>,
 }
 
 pub struct ClientBuilder {
@@ -84,9 +83,6 @@ impl Default for ClientBuilder {
 }
 
 impl ClientBuilder {
-    /// Creates a new `ClientBuilder`.
-    ///
-    /// Setting the credentials is required to connect to the JMAP API.
     pub fn new() -> Self {
         Self {
             credentials: None,
@@ -97,90 +93,38 @@ impl ClientBuilder {
         }
     }
 
-    /// Set up client credentials to connect to the JMAP API.
-    ///
-    /// The JMAP API URL is set using the [ClientBuilder.connect()](struct.ClientBuilder.html#method.connect) method.
-    ///
-    /// # Bearer authentication
-    /// Pass a `&str` with the API Token.
-    ///
-    /// ```rust
-    /// Client::new().credentials("some-api-token");
-    /// ```
-    ///
-    /// Or use the longer form by using [Credentials::bearer()](enum.Credentials.html#method.bearer).
-    /// ```rust
-    /// let credentials = Credentials::bearer("some-api-token");
-    /// Client::new().credentials(credentials);
-    /// ```
-    ///
-    /// # Basic authentication
-    /// Pass a `(&str, &str)` tuple, with the first position containing a username and the second containing a password.
-    ///
-    /// **It is not suggested to use this approach in production;** instead, if possible, use [Bearer authentication](struct.ClientBuilder.html#bearer-authentication).
-    ///
-    /// ```rust
-    /// Client::new().credentials(("user@domain.com", "password"));
-    /// ```
-    ///
-    /// Or use the longer form by using [Credentials::basic()](enum.Credentials.html#method.basic).
-    /// ```rust
-    /// let credentials = Credentials::basic("user@domain.com", "password");
-    /// Client::new().credentials(credentials);
-    /// ```
     pub fn credentials(mut self, credentials: impl Into<Credentials>) -> Self {
         self.credentials = Some(credentials.into());
         self
     }
 
-    /// Set a timeout for all the requests to the JMAP API.
-    ///
-    /// The timeout can be changed after the `Client` has been created by using [Client.set_timeout()](struct.Client.html#method.set_timeout).
-    ///
-    /// By default the timeout is 10 seconds.
-    pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.timeout = timeout;
-        self
-    }
-
-    /// Accepts invalid certificates for all the requests to the JMAP API.
-    ///
-    /// By default certificates are validated.
-    ///
-    /// # Warning
-    /// **It is not suggested to use this approach in production;** this method should be used only for testing and as a last resort.
-    ///
-    /// [Read more in the reqwest docs](https://docs.rs/reqwest/latest/reqwest/struct.ClientBuilder.html#method.danger_accept_invalid_certs)
     pub fn accept_invalid_certs(mut self, accept_invalid_certs: bool) -> Self {
         self.accept_invalid_certs = accept_invalid_certs;
         self
     }
 
-    /// Set a list of trusted hosts that will be checked when a redirect is required.
-    ///
-    /// The list can be changed after the `Client` has been created by using [Client.set_follow_redirects()](struct.Client.html#method.set_follow_redirects).
-    ///
-    /// The client will follow at most 5 redirects.
+    pub fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
     pub fn follow_redirects(
         mut self,
         trusted_hosts: impl IntoIterator<Item = impl Into<String>>,
     ) -> Self {
-        self.trusted_hosts = trusted_hosts.into_iter().map(std::convert::Into::into).collect();
+        self.trusted_hosts
+            .extend(trusted_hosts.into_iter().map(std::convert::Into::into));
         self
     }
 
-    /// Set the originating IP address of the client connecting to the JMAP API.
-    pub fn forwarded_for(mut self, forwarded_for: IpAddr) -> Self {
-        self.forwarded_for = Some(match forwarded_for {
+    pub fn forwarded_for(mut self, ip: IpAddr) -> Self {
+        self.forwarded_for = Some(match ip {
             IpAddr::V4(addr) => format!("for={addr}"),
             IpAddr::V6(addr) => format!("for=\"{addr}\""),
         });
         self
     }
 
-    /// Connects to the JMAP API Session URL.
-    ///
-    /// Setting up [Credentials](struct.ClientBuilder.html#method.credentials) must be done before calling this function.
     pub async fn connect(self, url: &str) -> crate::Result<Client> {
         let authorization = match self.credentials.expect("Missing credentials") {
             Credentials::Basic(s) => format!("Basic {s}"),
@@ -189,7 +133,10 @@ impl ClientBuilder {
         let mut headers = header::HeaderMap::new();
         headers.insert(
             header::USER_AGENT,
-            header::HeaderValue::from_static(USER_AGENT),
+            header::HeaderValue::from_static(concat!(
+                "jmap-client/",
+                env!("CARGO_PKG_VERSION")
+            )),
         );
         headers.insert(
             header::AUTHORIZATION,
@@ -204,37 +151,20 @@ impl ClientBuilder {
 
         let trusted_hosts = Arc::new(self.trusted_hosts);
 
-        let trusted_hosts_ = Arc::clone(&trusted_hosts);
+        // Build transport for session fetch
+        let transport = ReqwestTransport::new(
+            headers.clone(),
+            self.timeout,
+            self.accept_invalid_certs,
+            Arc::clone(&trusted_hosts),
+        );
+
         let session_url = format!("{url}/.well-known/jmap");
-        let session: Session = serde_json::from_slice(
-            &Client::handle_error(
-                HttpClient::builder()
-                    .timeout(self.timeout)
-                    .danger_accept_invalid_certs(self.accept_invalid_certs)
-                    .redirect(redirect::Policy::custom(move |attempt| {
-                        if attempt.previous().len() > 5 {
-                            attempt.error("Too many redirects.")
-                        } else if matches!( attempt.url().host_str(), Some(host) if trusted_hosts_.contains(host) )
-                        {
-                                attempt.follow()
-                        } else {
-                            let message = format!(
-                                "Aborting redirect request to unknown host '{}'.",
-                                attempt.url().host_str().unwrap_or("")
-                            );
-                            attempt.error(message)
-                        }
-                    }))
-                    .default_headers(headers.clone())
-                    .build()?
-                    .get(&session_url)
-                    .send()
-                    .await?,
-            )
-            .await?
-            .bytes()
-            .await?,
-        )?;
+        let session_bytes = transport
+            .get_session(&session_url)
+            .await
+            .map_err(crate::Error::from)?;
+        let session: Session = serde_json::from_slice(&session_bytes)?;
 
         let default_account_id = session
             .primary_accounts()
@@ -242,9 +172,18 @@ impl ClientBuilder {
             .map(|a| a.1.clone())
             .unwrap_or_default();
 
+        // Add JSON content type for API requests
         headers.insert(
             header::CONTENT_TYPE,
             header::HeaderValue::from_static("application/json"),
+        );
+
+        // Rebuild transport with content-type header
+        let transport = ReqwestTransport::new(
+            headers.clone(),
+            self.timeout,
+            self.accept_invalid_certs,
+            Arc::clone(&trusted_hosts),
         );
 
         Ok(Client {
@@ -256,12 +195,15 @@ impl ClientBuilder {
             session_url,
             session_updated: true.into(),
             accept_invalid_certs: self.accept_invalid_certs,
-            trusted_hosts,
+            timeout: self.timeout,
+            transport,
+            default_account_id,
             #[cfg(feature = "websockets")]
             authorization,
-            timeout: self.timeout,
+            #[cfg(feature = "websockets")]
             headers,
-            default_account_id,
+            #[cfg(feature = "websockets")]
+            trusted_hosts,
             #[cfg(feature = "websockets")]
             ws: None.into(),
         })
@@ -274,17 +216,8 @@ impl Client {
         ClientBuilder::new()
     }
 
-    pub fn set_timeout(&mut self, timeout: Duration) -> &mut Self {
-        self.timeout = timeout;
-        self
-    }
-
-    pub fn set_follow_redirects(
-        &mut self,
-        trusted_hosts: impl IntoIterator<Item = impl Into<String>>,
-    ) -> &mut Self {
-        self.trusted_hosts = Arc::new(trusted_hosts.into_iter().map(std::convert::Into::into).collect());
-        self
+    pub fn build(&self) -> Request<'_> {
+        Request::new(self)
     }
 
     pub fn timeout(&self) -> Duration {
@@ -299,34 +232,33 @@ impl Client {
         &self.session_url
     }
 
-    pub fn headers(&self) -> &header::HeaderMap {
-        &self.headers
+    pub fn default_account_id(&self) -> &str {
+        &self.default_account_id
     }
 
-    pub(crate) fn redirect_policy(&self) -> redirect::Policy {
-        let trusted_hosts = Arc::clone(&self.trusted_hosts);
-        redirect::Policy::custom(move |attempt| {
-            if attempt.previous().len() > 5 {
-                attempt.error("Too many redirects.")
-            } else if matches!( attempt.url().host_str(), Some(host) if trusted_hosts.contains(host) )
-            {
-                attempt.follow()
-            } else {
-                let message = format!(
-                    "Aborting redirect request to unknown host '{}'.",
-                    attempt.url().host_str().unwrap_or("")
-                );
-                attempt.error(message)
-            }
-        })
+    pub fn download_url(&self) -> &[URLPart<blob::URLParameter>] {
+        &self.download_url
     }
 
-    /// Send a JMAP request and get a typed Response for extraction via CallHandle.
+    pub fn upload_url(&self) -> &[URLPart<blob::URLParameter>] {
+        &self.upload_url
+    }
+
+    pub fn event_source_url(&self) -> &[URLPart<crate::event_source::URLParameter>] {
+        &self.event_source_url
+    }
+
+    /// Send a JMAP request and get a typed Response.
     pub async fn send_request(
         &self,
         request: &request::Request<'_>,
     ) -> crate::Result<response::Response> {
-        let bytes = self.send_bytes(request).await?;
+        let body = serde_json::to_vec(request)?;
+        let bytes = self
+            .transport
+            .api_request(&self.api_url, body)
+            .await
+            .map_err(crate::Error::from)?;
         let response: response::Response = serde_json::from_slice(&bytes)?;
         if response.session_state()
             != self
@@ -348,7 +280,12 @@ impl Client {
     where
         R: DeserializeOwned,
     {
-        let bytes = self.send_bytes(request).await?;
+        let body = serde_json::to_vec(request)?;
+        let bytes = self
+            .transport
+            .api_request(&self.api_url, body)
+            .await
+            .map_err(crate::Error::from)?;
         let response: response::RawResponse<R> = serde_json::from_slice(&bytes)?;
         if response.session_state()
             != self
@@ -362,46 +299,13 @@ impl Client {
         Ok(response)
     }
 
-    async fn send_bytes(
-        &self,
-        request: &request::Request<'_>,
-    ) -> crate::Result<Vec<u8>> {
-        Ok(Client::handle_error(
-            HttpClient::builder()
-                .redirect(self.redirect_policy())
-                .danger_accept_invalid_certs(self.accept_invalid_certs)
-                .timeout(self.timeout)
-                .default_headers(self.headers.clone())
-                .build()?
-                .post(&self.api_url)
-                .body(serde_json::to_string(request)?)
-                .send()
-                .await?,
-        )
-        .await?
-        .bytes()
-        .await?
-        .to_vec())
-    }
-
-
     pub async fn refresh_session(&self) -> crate::Result<()> {
-        let session: Session = serde_json::from_slice(
-            &Client::handle_error(
-                HttpClient::builder()
-                    .timeout(Duration::from_millis(DEFAULT_TIMEOUT_MS))
-                    .danger_accept_invalid_certs(self.accept_invalid_certs)
-                    .redirect(self.redirect_policy())
-                    .default_headers(self.headers.clone())
-                    .build()?
-                    .get(&self.session_url)
-                    .send()
-                    .await?,
-            )
-            .await?
-            .bytes()
-            .await?,
-        )?;
+        let bytes = self
+            .transport
+            .get_session(&self.session_url)
+            .await
+            .map_err(crate::Error::from)?;
+        let session: Session = serde_json::from_slice(&bytes)?;
         *self.session.lock().expect("session mutex poisoned") = Arc::new(session);
         self.session_updated.store(true, Ordering::Relaxed);
         Ok(())
@@ -411,42 +315,43 @@ impl Client {
         self.session_updated.load(Ordering::Relaxed)
     }
 
-    pub fn set_default_account_id(&mut self, defaul_account_id: impl Into<String>) -> &mut Self {
-        self.default_account_id = defaul_account_id.into();
-        self
+    /// Access the transport for direct HTTP operations.
+    pub fn transport(&self) -> &ReqwestTransport {
+        &self.transport
     }
 
-    pub fn default_account_id(&self) -> &str {
-        &self.default_account_id
+    // -- reqwest-specific helpers for EventSource/WebSocket --
+
+    #[cfg(feature = "websockets")]
+    pub(crate) fn headers(&self) -> &header::HeaderMap {
+        &self.headers
     }
 
-    pub fn build(&self) -> Request<'_> {
-        Request::new(self)
+    pub(crate) fn reqwest_headers(&self) -> header::HeaderMap {
+        // Reconstruct headers from the transport for EventSource
+        self.transport.headers().clone()
     }
 
-    pub fn download_url(&self) -> &[URLPart<blob::URLParameter>] {
-        &self.download_url
+    pub(crate) fn redirect_policy(&self) -> reqwest::redirect::Policy {
+        self.transport.redirect_policy()
     }
 
-    pub fn upload_url(&self) -> &[URLPart<blob::URLParameter>] {
-        &self.upload_url
-    }
-
-    pub fn event_source_url(&self) -> &[URLPart<crate::event_source::URLParameter>] {
-        &self.event_source_url
-    }
-
-    pub async fn handle_error(response: Response) -> crate::Result<Response> {
+    pub(crate) async fn handle_error(
+        response: reqwest::Response,
+    ) -> crate::Result<reqwest::Response> {
         if response.status().is_success() {
             Ok(response)
-        } else if let Some(b"application/problem+json") = response
+        } else if response
             .headers()
             .get(header::CONTENT_TYPE)
-            .map(reqwest::header::HeaderValue::as_bytes)
+            .is_some_and(|h| h.as_bytes().starts_with(b"application/problem+json"))
         {
-            Err(Error::Problem(serde_json::from_slice(
-                &response.bytes().await?,
-            )?))
+            Err(crate::core::error::ProblemDetails::from(
+                serde_json::from_slice::<crate::core::error::ProblemDetails>(
+                    &response.bytes().await?,
+                )?,
+            )
+            .into())
         } else {
             Err(Error::Internal(format!("{}", response.status())))
         }
@@ -455,7 +360,7 @@ impl Client {
 
 impl Credentials {
     pub fn basic(username: &str, password: &str) -> Self {
-        use base64::{Engine, engine::general_purpose::STANDARD};
+        use base64::{engine::general_purpose::STANDARD, Engine};
         Credentials::Basic(STANDARD.encode(format!("{username}:{password}")))
     }
 
@@ -464,27 +369,15 @@ impl Credentials {
     }
 }
 
-impl From<&str> for Credentials {
-    fn from(s: &str) -> Self {
-        Credentials::bearer(s.to_string())
-    }
-}
-
-impl From<String> for Credentials {
-    fn from(s: String) -> Self {
-        Credentials::bearer(s)
-    }
-}
-
 impl From<(&str, &str)> for Credentials {
-    fn from((username, password): (&str, &str)) -> Self {
-        Credentials::basic(username, password)
+    fn from(credentials: (&str, &str)) -> Self {
+        Credentials::basic(credentials.0, credentials.1)
     }
 }
 
 impl From<(String, String)> for Credentials {
-    fn from((username, password): (String, String)) -> Self {
-        Credentials::basic(&username, &password)
+    fn from(credentials: (String, String)) -> Self {
+        Credentials::basic(&credentials.0, &credentials.1)
     }
 }
 
