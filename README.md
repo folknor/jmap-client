@@ -90,7 +90,7 @@ let email = client
 assert_eq!(email.preview().unwrap(), "test");
 
 // Account-scoped request batching.
-let account = client.account(client.default_account());
+let account = client.account_scope(client.default_account());
 let mut request = account.build();
 let handle = request.call(quota::QuotaGet::new(account.id_str())).unwrap();
 let mut response = request.send().await.unwrap();

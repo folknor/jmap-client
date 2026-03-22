@@ -24,7 +24,7 @@ use crate::{
 /// this account, avoiding the need to thread account IDs manually.
 ///
 /// ```ignore
-/// let account = client.account(client.default_account());
+/// let account = client.account_scope(client.default_account());
 /// let mut request = account.build();
 /// let handle = request.call(EmailGet::new(account.id_str()))?;
 /// let mut response = request.send().await?;
@@ -34,12 +34,12 @@ use crate::{
 /// This is an unchecked view — the account ID is not validated
 /// against the session. Use [`Client::session()`] to check
 /// available accounts.
-pub struct Account<'a, Tr: HttpTransport> {
+pub struct AccountScope<'a, Tr: HttpTransport> {
     client: &'a Client<Tr>,
     account_id: AccountId,
 }
 
-impl<'a, Tr: HttpTransport> Account<'a, Tr> {
+impl<'a, Tr: HttpTransport> AccountScope<'a, Tr> {
     pub fn new(client: &'a Client<Tr>, account_id: impl Into<AccountId>) -> Self {
         Self {
             client,
@@ -74,9 +74,9 @@ impl<Tr: HttpTransport> Client<Tr> {
     /// Create an account-scoped view of this client.
     ///
     /// ```ignore
-    /// let account = client.account(client.default_account());
+    /// let account = client.account_scope(client.default_account());
     /// ```
-    pub fn account(&self, account_id: impl Into<AccountId>) -> Account<'_, Tr> {
-        Account::new(self, account_id)
+    pub fn account_scope(&self, account_id: impl Into<AccountId>) -> AccountScope<'_, Tr> {
+        AccountScope::new(self, account_id)
     }
 }

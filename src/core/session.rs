@@ -276,11 +276,11 @@ impl Session {
     ///
     /// ```ignore
     /// use jmap_client::core::capability::{Capability, Mail};
-    /// if let Some(mail) = session.capability::<Mail>() {
+    /// if let Some(mail) = session.capability_config::<Mail>() {
     ///     println!("max mailbox depth: {}", mail.max_mailbox_depth());
     /// }
     /// ```
-    pub fn typed_capability<C: super::capability::Capability>(&self) -> Option<C::Config> {
+    pub fn capability_config<C: super::capability::Capability>(&self) -> Option<C::Config> {
         let cap = self.capabilities.get(C::URI)?;
         // Serialize the enum variant to Value, then deserialize into Config.
         // This is a one-time cost per access (session parsing is infrequent).

@@ -55,7 +55,7 @@ struct WebSocketRequest {
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
-pub struct WebSocketResponse {
+pub(crate) struct WebSocketResponse {
     #[serde(rename = "requestId")]
     request_id: Option<String>,
 
@@ -105,7 +105,8 @@ enum WebSocketPushDisableType {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct WebSocketPushObject {
+#[allow(dead_code)]
+pub(crate) struct WebSocketPushObject {
     #[serde(flatten)]
     pub push: PushObject,
 
@@ -115,7 +116,7 @@ pub struct WebSocketPushObject {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct WebSocketError {
+pub(crate) struct WebSocketError {
     #[serde(rename = "requestId")]
     pub request_id: Option<String>,
 
@@ -145,7 +146,7 @@ pub enum WebSocketMessage {
     PushNotification(PushObject),
 }
 
-pub struct WsStream {
+pub(crate) struct WsStream {
     tx: SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>,
     req_id: usize,
 }
