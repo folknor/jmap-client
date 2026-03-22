@@ -21,6 +21,12 @@ use super::{CalendarEvent, QueryArguments};
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
 pub enum Filter {
+    /// Filter by calendar ID (singular). Used by Stalwart.
+    InCalendar {
+        #[serde(rename = "inCalendar")]
+        value: String,
+    },
+    /// Filter by calendar IDs (plural, spec draft).
     InCalendars {
         #[serde(rename = "inCalendars")]
         value: Vec<String>,
@@ -79,6 +85,14 @@ pub enum Comparator {
 }
 
 impl Filter {
+    /// Filter by a single calendar ID. Used by Stalwart.
+    pub fn in_calendar(value: impl Into<String>) -> Self {
+        Filter::InCalendar {
+            value: value.into(),
+        }
+    }
+
+    /// Filter by multiple calendar IDs (spec draft).
     pub fn in_calendars<U, V>(value: U) -> Self
     where
         U: IntoIterator<Item = V>,
