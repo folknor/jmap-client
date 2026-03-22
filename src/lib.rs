@@ -198,6 +198,7 @@ pub mod mailbox;
 pub mod participant_identity;
 pub mod principal;
 pub mod push_subscription;
+pub mod quota;
 pub mod sieve;
 pub mod thread;
 pub mod vacation_response;
@@ -232,6 +233,8 @@ pub enum URI {
     ContactsParse,
     #[serde(rename = "urn:ietf:params:jmap:blob")]
     Blob,
+    #[serde(rename = "urn:ietf:params:jmap:quota")]
+    Quota,
     #[serde(rename = "urn:ietf:params:jmap:websocket")]
     WebSocket,
     #[serde(rename = "urn:ietf:params:jmap:sieve")]
@@ -250,6 +253,7 @@ impl AsRef<str> for URI {
             URI::Submission => "urn:ietf:params:jmap:submission",
             URI::VacationResponse => "urn:ietf:params:jmap:vacationresponse",
             URI::Contacts => "urn:ietf:params:jmap:contacts",
+            URI::Quota => "urn:ietf:params:jmap:quota",
             URI::Blob => "urn:ietf:params:jmap:blob",
             URI::Calendars => "urn:ietf:params:jmap:calendars",
             URI::CalendarsParse => "urn:ietf:params:jmap:calendars:parse",
@@ -350,6 +354,14 @@ pub enum Method {
     SetPrincipal,
     #[serde(rename = "Principal/getAvailability")]
     GetAvailabilityPrincipal,
+    #[serde(rename = "Quota/get")]
+    GetQuota,
+    #[serde(rename = "Quota/changes")]
+    ChangesQuota,
+    #[serde(rename = "Quota/query")]
+    QueryQuota,
+    #[serde(rename = "Quota/queryChanges")]
+    QueryChangesQuota,
     #[serde(rename = "Calendar/get")]
     GetCalendar,
     #[serde(rename = "Calendar/changes")]

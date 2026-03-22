@@ -32,6 +32,7 @@ use crate::{
     mailbox::Mailbox,
     participant_identity::ParticipantIdentity,
     principal::{availability::PrincipalGetAvailabilityResponse, Principal},
+    quota::Quota,
     push_subscription::PushSubscription,
     sieve::{validate::SieveScriptValidateResponse, SieveScript},
     thread::Thread,
@@ -147,6 +148,8 @@ pub type SieveScriptSetResponse = SetResponse<SieveScript<Get>>;
 pub type PrincipalChangesResponse = ChangesResponse<Principal<Get>>;
 pub type PrincipalSetResponse = SetResponse<Principal<Get>>;
 pub type PrincipalGetResponse = GetResponse<Principal<Get>>;
+pub type QuotaGetResponse = GetResponse<Quota<Get>>;
+pub type QuotaChangesResponse = ChangesResponse<Quota<Get>>;
 pub type CalendarGetResponse = GetResponse<Calendar<Get>>;
 pub type CalendarSetResponse = SetResponse<Calendar<Get>>;
 pub type CalendarChangesResponse = ChangesResponse<Calendar<Get>>;
@@ -220,6 +223,11 @@ pub enum MethodResponse {
     QueryChangesPrincipal(QueryChangesResponse),
     SetPrincipal(PrincipalSetResponse),
     GetAvailabilityPrincipal(PrincipalGetAvailabilityResponse),
+
+    GetQuota(QuotaGetResponse),
+    ChangesQuota(QuotaChangesResponse),
+    QueryQuota(QueryResponse),
+    QueryChangesQuota(QueryChangesResponse),
 
     GetCalendar(CalendarGetResponse),
     ChangesCalendar(CalendarChangesResponse),
@@ -355,6 +363,13 @@ impl TaggedMethodResponse {
                 | (
                     MethodResponse::GetAvailabilityPrincipal(_),
                     Method::GetAvailabilityPrincipal
+                )
+                | (MethodResponse::GetQuota(_), Method::GetQuota)
+                | (MethodResponse::ChangesQuota(_), Method::ChangesQuota)
+                | (MethodResponse::QueryQuota(_), Method::QueryQuota)
+                | (
+                    MethodResponse::QueryChangesQuota(_),
+                    Method::QueryChangesQuota
                 )
                 | (MethodResponse::GetCalendar(_), Method::GetCalendar)
                 | (MethodResponse::ChangesCalendar(_), Method::ChangesCalendar)
@@ -783,6 +798,38 @@ impl TaggedMethodResponse {
     ) -> crate::Result<PrincipalGetAvailabilityResponse> {
         match self.response {
             MethodResponse::GetAvailabilityPrincipal(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_get_quota(self) -> crate::Result<QuotaGetResponse> {
+        match self.response {
+            MethodResponse::GetQuota(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_changes_quota(self) -> crate::Result<QuotaChangesResponse> {
+        match self.response {
+            MethodResponse::ChangesQuota(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_query_quota(self) -> crate::Result<QueryResponse> {
+        match self.response {
+            MethodResponse::QueryQuota(response) => Ok(response),
+            MethodResponse::Error(err) => Err(err.into()),
+            _ => Err("Response type mismatch".into()),
+        }
+    }
+
+    pub fn unwrap_query_changes_quota(self) -> crate::Result<QueryChangesResponse> {
+        match self.response {
+            MethodResponse::QueryChangesQuota(response) => Ok(response),
             MethodResponse::Error(err) => Err(err.into()),
             _ => Err("Response type mismatch".into()),
         }
@@ -1234,6 +1281,22 @@ impl<'de> Visitor<'de> for TaggedMethodResponseVisitor {
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),
             Method::GetAvailabilityPrincipal => MethodResponse::GetAvailabilityPrincipal(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::GetQuota => MethodResponse::GetQuota(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::ChangesQuota => MethodResponse::ChangesQuota(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::QueryQuota => MethodResponse::QueryQuota(
+                seq.next_element()?
+                    .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
+            ),
+            Method::QueryChangesQuota => MethodResponse::QueryChangesQuota(
                 seq.next_element()?
                     .ok_or_else(|| serde::de::Error::custom("Expected a method response"))?,
             ),

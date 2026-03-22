@@ -29,6 +29,7 @@ use crate::{
     mailbox::Mailbox,
     participant_identity::ParticipantIdentity,
     principal::{availability::PrincipalGetAvailabilityRequest, Principal},
+    quota::Quota,
     push_subscription::PushSubscription,
     sieve::{validate::SieveScriptValidateRequest, SieveScript},
     thread::Thread,
@@ -114,6 +115,9 @@ pub enum Arguments {
     PrincipalQueryChanges(QueryChangesRequest<Principal<Set>>),
     PrincipalSet(SetRequest<Principal<Set>>),
     PrincipalGetAvailability(PrincipalGetAvailabilityRequest),
+    QuotaGet(GetRequest<Quota<Set>>),
+    QuotaQuery(QueryRequest<Quota<Set>>),
+    QuotaQueryChanges(QueryChangesRequest<Quota<Set>>),
     CalendarGet(GetRequest<Calendar<Set>>),
     CalendarSet(SetRequest<Calendar<Set>>),
     CalendarEventGet(GetRequest<CalendarEvent<Set>>),
@@ -295,6 +299,18 @@ impl Arguments {
         Arguments::PrincipalGetAvailability(PrincipalGetAvailabilityRequest::new(
             params, id, utc_start, utc_end,
         ))
+    }
+
+    pub fn quota_get(params: RequestParams) -> Self {
+        Arguments::QuotaGet(GetRequest::new(params))
+    }
+
+    pub fn quota_query(params: RequestParams) -> Self {
+        Arguments::QuotaQuery(QueryRequest::new(params))
+    }
+
+    pub fn quota_query_changes(params: RequestParams, since_query_state: String) -> Self {
+        Arguments::QuotaQueryChanges(QueryChangesRequest::new(params, since_query_state))
     }
 
     pub fn calendar_get(params: RequestParams) -> Self {
@@ -662,6 +678,27 @@ impl Arguments {
     ) -> &mut PrincipalGetAvailabilityRequest {
         match self {
             Arguments::PrincipalGetAvailability(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn quota_get_mut(&mut self) -> &mut GetRequest<Quota<Set>> {
+        match self {
+            Arguments::QuotaGet(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn quota_query_mut(&mut self) -> &mut QueryRequest<Quota<Set>> {
+        match self {
+            Arguments::QuotaQuery(ref mut r) => r,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn quota_query_changes_mut(&mut self) -> &mut QueryChangesRequest<Quota<Set>> {
+        match self {
+            Arguments::QuotaQueryChanges(ref mut r) => r,
             _ => unreachable!(),
         }
     }

@@ -110,6 +110,7 @@ where
             "urn:ietf:params:jmap:sieve" => serde_json::from_value(value)
                 .map(Capabilities::Sieve)
                 .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:quota" => Capabilities::Other(value),
             "urn:ietf:params:jmap:blob" => serde_json::from_value(value)
                 .map(Capabilities::Blob)
                 .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
