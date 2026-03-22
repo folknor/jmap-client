@@ -94,3 +94,20 @@ pub trait HttpTransport: Send + Sync + 'static {
         url: &str,
     ) -> impl Future<Output = Result<Vec<u8>, TransportError>> + Send;
 }
+
+/// Streaming transport for Server-Sent Events (EventSource).
+///
+/// Implement this to provide EventSource support with a custom HTTP client.
+/// The default implementation uses reqwest's byte streaming.
+pub trait SseTransport: Send + Sync + 'static {
+    /// The byte stream type returned by the SSE connection.
+    type ByteStream: futures_util::Stream<Item = Result<Vec<u8>, TransportError>>
+        + Send
+        + Unpin;
+
+    /// Open an SSE connection to the given URL.
+    fn open_sse(
+        &self,
+        url: &str,
+    ) -> impl Future<Output = Result<Self::ByteStream, TransportError>> + Send;
+}

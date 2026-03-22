@@ -11,14 +11,21 @@
 
 use crate::{
     client::Client,
-    core::session::URLPart,
-    event_source::{parser::EventParser, PushNotification},
-    DataType,
+    core::{
+        session::URLPart,
+        transport::{HttpTransport, SseTransport},
+    },
+    event_source::{
+        parser::{EventParser, EventType},
+        Changes, PushNotification,
+    },
+    DataType, PushObject,
 };
+#[cfg(feature = "calendars")]
+use crate::event_source::CalendarAlert;
 use futures_util::{Stream, StreamExt};
-use reqwest::header::{ACCEPT, CONTENT_TYPE};
 
-impl Client {
+impl<T: HttpTransport + SseTransport> Client<T> {
     pub async fn event_source(
         &self,
         mut types: Option<impl IntoIterator<Item = DataType>>,
@@ -35,11 +42,11 @@ impl Client {
                 }
                 URLPart::Parameter(param) => match param {
                     super::URLParameter::Types => {
-                        if let Some(types) = Option::take(&mut types) {
+                        if let Some(types) = types.take() {
                             event_source_url.push_str(
                                 &types
                                     .into_iter()
-                                    .map(|state| state.to_string())
+                                    .map(|t| t.to_string())
                                     .collect::<Vec<_>>()
                                     .join(","),
                             );
@@ -48,7 +55,8 @@ impl Client {
                         }
                     }
                     super::URLParameter::CloseAfter => {
-                        event_source_url.push_str(if close_after_state { "state" } else { "no" });
+                        event_source_url
+                            .push_str(if close_after_state { "state" } else { "no" });
                     }
                     super::URLParameter::Ping => {
                         if let Some(ping) = ping {
@@ -61,43 +69,52 @@ impl Client {
             }
         }
 
-        // Use the transport's reqwest client for SSE streaming
-        let response = self
-            .reqwest_client()
-            .get(event_source_url)
-            .header(ACCEPT, "text/event-stream")
-            .header(CONTENT_TYPE, "")
-            .send()
+        let mut stream = self
+            .transport()
+            .open_sse(&event_source_url)
             .await
-            .map_err(|e| crate::Error::Transport(
-                crate::core::transport::TransportError::with_source("EventSource connection failed", e),
-            ))?;
+            .map_err(crate::Error::from)?;
 
-        if !response.status().is_success() {
-            return Err(crate::Error::Transport(crate::core::transport::TransportError::new(
-                format!("EventSource: HTTP {}", response.status()),
-            )));
-        }
-
-        let mut stream = response.bytes_stream();
         let mut parser = EventParser::default();
 
         Ok(Box::pin(async_stream::stream! {
             loop {
-                if let Some(notification) = parser.filter_notification() {
-                    yield notification;
+                while let Some(event_result) = parser.next() {
+                    match event_result {
+                        Ok(event) => match event.event {
+                            EventType::State => {
+                                match serde_json::from_slice::<PushObject>(&event.data) {
+                                    Ok(PushObject::StateChange { changed }) => {
+                                        yield Ok(PushNotification::StateChange(Changes::new(
+                                            if event.id.is_empty() { None } else { Some(String::from_utf8_lossy(&event.id).into_owned()) },
+                                            changed,
+                                        )));
+                                    }
+                                    Ok(_) => {}
+                                    Err(err) => { yield Err(err.into()); break; }
+                                }
+                            }
+                            #[cfg(feature = "calendars")]
+                            EventType::CalendarAlert => {
+                                match serde_json::from_slice::<CalendarAlert>(&event.data) {
+                                    Ok(alert) => { yield Ok(PushNotification::CalendarAlert(alert)); }
+                                    Err(err) => { yield Err(err.into()); break; }
+                                }
+                            }
+                            EventType::Ping => {}
+                        },
+                        Err(err) => { yield Err(err); break; }
+                    }
                     continue;
                 }
                 if let Some(result) = stream.next().await {
                     match result {
                         Ok(bytes) => {
-                            parser.push_bytes(bytes.to_vec());
+                            parser.push_bytes(bytes);
                             continue;
                         }
                         Err(err) => {
-                            yield Err(crate::Error::Transport(
-                                crate::core::transport::TransportError::with_source("EventSource stream error", err),
-                            ));
+                            yield Err(crate::Error::from(err));
                             break;
                         }
                     }

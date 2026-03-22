@@ -17,7 +17,8 @@ use reqwest::header;
 use reqwest::redirect;
 use reqwest::Client as HttpClient;
 
-use crate::core::transport::{HttpTransport, TransportError};
+use crate::core::transport::{HttpTransport, SseTransport, TransportError};
+use futures_util::{Stream, StreamExt};
 
 /// Default HTTP transport implementation using `reqwest`.
 ///
@@ -167,3 +168,52 @@ impl HttpTransport for ReqwestTransport {
         Self::handle_response(response).await
     }
 }
+
+impl SseTransport for ReqwestTransport {
+    type ByteStream = ReqwestByteStream;
+
+    async fn open_sse(&self, url: &str) -> Result<Self::ByteStream, TransportError> {
+        let response = self
+            .client
+            .get(url)
+            .header(header::ACCEPT, "text/event-stream")
+            .send()
+            .await
+            .map_err(|e| TransportError::with_source("SSE connection failed", e))?;
+
+        if !response.status().is_success() {
+            return Err(TransportError::new(format!(
+                "SSE: HTTP {}",
+                response.status()
+            )));
+        }
+
+        Ok(ReqwestByteStream {
+            inner: Box::pin(response.bytes_stream()),
+        })
+    }
+}
+
+/// Adapter that converts reqwest's `Bytes` stream into `Vec<u8>` chunks.
+pub struct ReqwestByteStream {
+    inner: std::pin::Pin<Box<dyn Stream<Item = Result<bytes::Bytes, reqwest::Error>> + Send>>,
+}
+
+impl Stream for ReqwestByteStream {
+    type Item = Result<Vec<u8>, TransportError>;
+
+    fn poll_next(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Option<Self::Item>> {
+        self.inner.as_mut().poll_next(cx).map(|opt| {
+            opt.map(|result| {
+                result
+                    .map(|bytes| bytes.to_vec())
+                    .map_err(|e| TransportError::with_source("SSE stream error", e))
+            })
+        })
+    }
+}
+
+impl Unpin for ReqwestByteStream {}
