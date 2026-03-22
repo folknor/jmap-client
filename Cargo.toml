@@ -27,8 +27,13 @@ chrono = { version = "0.4", features = ["serde"]}
 base64 = "0.22"
 
 [features]
-default = ["websockets"]
+default = ["websockets", "mail", "calendars", "contacts", "blob", "quota"]
 websockets = ["tokio", "tokio-tungstenite", "rustls"]
+mail = []
+calendars = []
+contacts = []
+blob = []
+quota = []
 debug = []
 
 [lints.clippy]

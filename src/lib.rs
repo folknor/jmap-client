@@ -12,26 +12,40 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!("../README.md")]
 
+#[cfg(feature = "contacts")]
 pub mod address_book;
 pub mod blob;
+#[cfg(feature = "calendars")]
 pub mod calendar;
+#[cfg(feature = "calendars")]
 pub mod calendar_event;
+#[cfg(feature = "calendars")]
 pub mod calendar_event_notification;
 pub mod client;
+#[cfg(feature = "contacts")]
 pub mod contact_card;
 pub mod core;
+#[cfg(feature = "mail")]
 pub mod email;
+#[cfg(feature = "mail")]
 pub mod email_submission;
 pub mod event_source;
+#[cfg(feature = "mail")]
 pub mod identity;
+#[cfg(feature = "mail")]
 pub mod mailbox;
+#[cfg(feature = "calendars")]
 pub mod participant_identity;
 pub mod principal;
 pub mod push_subscription;
+#[cfg(feature = "quota")]
 pub mod quota;
+#[cfg(feature = "mail")]
 pub mod sieve;
+#[cfg(feature = "mail")]
 pub mod thread;
 pub mod transport_reqwest;
+#[cfg(feature = "mail")]
 pub mod vacation_response;
 
 use crate::core::error::MethodError;

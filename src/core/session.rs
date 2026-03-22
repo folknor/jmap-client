@@ -10,6 +10,7 @@
  */
 
 use crate::core::capability::Capability;
+#[cfg(feature = "mail")]
 use crate::email::{MailCapabilities, SubmissionCapabilities};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
@@ -69,13 +70,20 @@ pub struct Account {
 #[non_exhaustive]
 pub enum Capabilities {
     Core(CoreCapabilities),
+    #[cfg(feature = "mail")]
     Mail(MailCapabilities),
+    #[cfg(feature = "mail")]
     Submission(SubmissionCapabilities),
     WebSocket(WebSocketCapabilities),
+    #[cfg(feature = "mail")]
     Sieve(SieveCapabilities),
+    #[cfg(feature = "quota")]
     Quota(QuotaCapabilities),
+    #[cfg(feature = "blob")]
     Blob(BlobCapabilities),
+    #[cfg(feature = "calendars")]
     Calendars(CalendarsCapabilities),
+    #[cfg(feature = "contacts")]
     Contacts(ContactsCapabilities),
     Principals(PrincipalsCapabilities),
     Other(serde_json::Value),
@@ -107,13 +115,20 @@ where
     for (key, value) in raw {
         let cap = match key.as_str() {
             "urn:ietf:params:jmap:core" => try_cap!(value, Core),
+            #[cfg(feature = "mail")]
             "urn:ietf:params:jmap:mail" => try_cap!(value, Mail),
+            #[cfg(feature = "mail")]
             "urn:ietf:params:jmap:submission" => try_cap!(value, Submission),
             "urn:ietf:params:jmap:websocket" => try_cap!(value, WebSocket),
+            #[cfg(feature = "mail")]
             "urn:ietf:params:jmap:sieve" => try_cap!(value, Sieve),
+            #[cfg(feature = "quota")]
             "urn:ietf:params:jmap:quota" => try_cap!(value, Quota),
+            #[cfg(feature = "blob")]
             "urn:ietf:params:jmap:blob" => try_cap!(value, Blob),
+            #[cfg(feature = "calendars")]
             "urn:ietf:params:jmap:calendars" => try_cap!(value, Calendars),
+            #[cfg(feature = "contacts")]
             "urn:ietf:params:jmap:contacts" => try_cap!(value, Contacts),
             "urn:ietf:params:jmap:principals" => try_cap!(value, Principals),
             _ => Capabilities::Other(value),
@@ -273,6 +288,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "mail")]
     pub fn mail_capabilities(&self) -> Option<&MailCapabilities> {
         self.capabilities
             .get(crate::core::capability::Mail::URI)
@@ -282,6 +298,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "mail")]
     pub fn submission_capabilities(&self) -> Option<&SubmissionCapabilities> {
         self.capabilities
             .get(crate::core::capability::Submission::URI)
@@ -291,6 +308,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "mail")]
     pub fn sieve_capabilities(&self) -> Option<&SieveCapabilities> {
         self.capabilities
             .get(crate::core::capability::Sieve::URI)
@@ -300,6 +318,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "quota")]
     pub fn quota_capabilities(&self) -> Option<&QuotaCapabilities> {
         self.capabilities
             .get(crate::core::capability::Quota::URI)
@@ -309,6 +328,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "blob")]
     pub fn blob_capabilities(&self) -> Option<&BlobCapabilities> {
         self.capabilities
             .get(crate::core::capability::Blob::URI)
@@ -318,6 +338,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "calendars")]
     pub fn calendars_capabilities(&self) -> Option<&CalendarsCapabilities> {
         self.capabilities
             .get(crate::core::capability::Calendars::URI)
@@ -327,6 +348,7 @@ impl Session {
             })
     }
 
+    #[cfg(feature = "contacts")]
     pub fn contacts_capabilities(&self) -> Option<&ContactsCapabilities> {
         self.capabilities
             .get(crate::core::capability::Contacts::URI)

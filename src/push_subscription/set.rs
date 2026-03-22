@@ -11,7 +11,6 @@
 
 use crate::{
     core::set::{from_timestamp, SetObject},
-    email_submission::SetArguments,
     Get, Set, DataType,
 };
 
@@ -50,7 +49,7 @@ impl PushSubscription<Set> {
 }
 
 impl SetObject for PushSubscription<Set> {
-    type SetArguments = SetArguments;
+    type SetArguments = ();
 
     fn new(_create_id: Option<usize>) -> Self {
         PushSubscription {
@@ -72,7 +71,7 @@ impl SetObject for PushSubscription<Set> {
 }
 
 impl SetObject for PushSubscription<Get> {
-    type SetArguments = SetArguments;
+    type SetArguments = ();
 
     fn new(_create_id: Option<usize>) -> Self {
         unimplemented!()
