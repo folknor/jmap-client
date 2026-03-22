@@ -62,6 +62,6 @@ impl Client {
         .bytes()
         .await
         .map(|bytes| bytes.to_vec())
-        .map_err(|err| err.into())
+        .map_err(std::convert::Into::into)
     }
 }

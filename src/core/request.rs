@@ -461,7 +461,7 @@ impl<'x> Request<'x> {
 impl ResultReference {
     pub fn new(method: Method, call_id: usize, path: impl Into<String>) -> Self {
         ResultReference {
-            result_of: format!("s{}", call_id),
+            result_of: format!("s{call_id}"),
             name: method,
             path: path.into(),
         }

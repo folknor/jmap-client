@@ -29,7 +29,7 @@ impl Identity<Set> {
         T: Iterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.bcc = bcc.map(|s| s.map(|s| s.into()).collect());
+        self.bcc = bcc.map(|s| s.map(std::convert::Into::into).collect());
         self
     }
 
@@ -38,7 +38,7 @@ impl Identity<Set> {
         T: Iterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.reply_to = reply_to.map(|s| s.map(|s| s.into()).collect());
+        self.reply_to = reply_to.map(|s| s.map(std::convert::Into::into).collect());
         self
     }
 
@@ -72,7 +72,7 @@ impl SetObject for Identity<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

@@ -132,7 +132,7 @@ impl BlobUploadRequest {
                 data: vec![DataSource::Text(DataSourceText {
                     value: text.into(),
                 })],
-                type_: type_.map(|t| t.into()),
+                type_: type_.map(std::convert::Into::into),
             },
         );
         create_id
@@ -151,7 +151,7 @@ impl BlobUploadRequest {
                 data: vec![DataSource::Base64(DataSourceBase64 {
                     value: base64.into(),
                 })],
-                type_: type_.map(|t| t.into()),
+                type_: type_.map(std::convert::Into::into),
             },
         );
         create_id
@@ -175,7 +175,7 @@ impl BlobUploadRequest {
                     offset,
                     length,
                 })],
-                type_: type_.map(|t| t.into()),
+                type_: type_.map(std::convert::Into::into),
             },
         );
         create_id
@@ -193,7 +193,7 @@ impl BlobUploadRequest {
             create_id.clone(),
             BlobUploadCreate {
                 data,
-                type_: type_.map(|t| t.into()),
+                type_: type_.map(std::convert::Into::into),
             },
         );
         create_id
@@ -210,11 +210,10 @@ impl BlobUploadResponse {
             Ok(result)
         } else if let Some(error) = self.not_created.as_ref().and_then(|r| r.get(id)) {
             Err(Error::Internal(format!(
-                "Blob {} not created: {:?}",
-                id, error
+                "Blob {id} not created: {error:?}"
             )))
         } else {
-            Err(Error::Internal(format!("Id {} not found.", id)))
+            Err(Error::Internal(format!("Id {id} not found.")))
         }
     }
 
@@ -306,7 +305,7 @@ impl BlobGetResult {
     /// For example, `digest("sha-256")` reads the `digest:sha-256` property.
     pub fn digest(&self, algorithm: &str) -> Option<&str> {
         self.properties
-            .get(&format!("digest:{}", algorithm))?
+            .get(&format!("digest:{algorithm}"))?
             .as_str()
     }
 }
@@ -328,7 +327,7 @@ impl BlobGetRequest {
         U: IntoIterator<Item = V>,
         V: Into<String>,
     {
-        self.ids.extend(ids.into_iter().map(|i| i.into()));
+        self.ids.extend(ids.into_iter().map(std::convert::Into::into));
         self
     }
 
@@ -340,7 +339,7 @@ impl BlobGetRequest {
         U: IntoIterator<Item = V>,
         V: Into<String>,
     {
-        self.properties = Some(properties.into_iter().map(|p| p.into()).collect());
+        self.properties = Some(properties.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -439,7 +438,7 @@ impl BlobLookupRequest {
         U: IntoIterator<Item = V>,
         V: Into<String>,
     {
-        self.type_names = type_names.into_iter().map(|t| t.into()).collect();
+        self.type_names = type_names.into_iter().map(std::convert::Into::into).collect();
         self
     }
 
@@ -449,7 +448,7 @@ impl BlobLookupRequest {
         U: IntoIterator<Item = V>,
         V: Into<String>,
     {
-        self.ids = ids.into_iter().map(|i| i.into()).collect();
+        self.ids = ids.into_iter().map(std::convert::Into::into).collect();
         self
     }
 }

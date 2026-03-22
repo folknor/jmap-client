@@ -131,7 +131,7 @@ impl Client {
         let mut request = self.build();
         let get_request = request.get_sieve_script().ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties.into_iter());
+            get_request.properties(properties);
         }
         request
             .send_single::<SieveScriptGetResponse>()
@@ -150,7 +150,7 @@ impl Client {
             query_request.filter(filter);
         }
         if let Some(sort) = sort {
-            query_request.sort(sort.into_iter());
+            query_request.sort(sort);
         }
         request.send_single::<QueryResponse>().await
     }

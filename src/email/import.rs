@@ -99,7 +99,7 @@ impl EmailImportRequest {
 
     pub fn email(&mut self, blob_id: impl Into<String>) -> &mut EmailImport {
         let create_id = self.emails.len();
-        let create_id_str = format!("i{}", create_id);
+        let create_id_str = format!("i{create_id}");
         self.emails.insert(
             create_id_str.clone(),
             EmailImport::new(blob_id.into(), create_id),
@@ -178,7 +178,7 @@ impl EmailImportResponse {
         } else if let Some(error) = self.not_created.as_mut().and_then(|r| r.remove(id)) {
             Err(error.to_string_error().into())
         } else {
-            Err(Error::Internal(format!("Id {} not found.", id)))
+            Err(Error::Internal(format!("Id {id} not found.")))
         }
     }
 

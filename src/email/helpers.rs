@@ -194,7 +194,7 @@ impl Client {
             query_request.filter(filter);
         }
         if let Some(sort) = sort {
-            query_request.sort(sort.into_iter());
+            query_request.sort(sort);
         }
         request.send_single::<QueryResponse>().await
     }

@@ -20,12 +20,12 @@ impl Mailbox<Set> {
     }
 
     pub fn parent_id(&mut self, parent_id: Option<impl Into<String>>) -> &mut Self {
-        self.parent_id = parent_id.map(|s| s.into());
+        self.parent_id = parent_id.map(std::convert::Into::into);
         self
     }
 
     pub fn parent_id_ref(&mut self, parent_id_ref: &str) -> &mut Self {
-        self.parent_id = format!("#{}", parent_id_ref).into();
+        self.parent_id = format!("#{parent_id_ref}").into();
         self
     }
 
@@ -64,7 +64,7 @@ impl Mailbox<Set> {
 
     pub fn acl(&mut self, id: &str, acl: impl IntoIterator<Item = ACL>) -> &mut Self {
         self.acl_patch.get_or_insert_with(AHashMap::new).insert(
-            format!("shareWith/{}", id),
+            format!("shareWith/{id}"),
             ACLPatch::Replace(acl.into_iter().map(|acl| (acl, true)).collect()),
         );
         self
@@ -73,7 +73,7 @@ impl Mailbox<Set> {
     pub fn acl_set(&mut self, id: &str, acl: ACL, set: bool) -> &mut Self {
         self.acl_patch
             .get_or_insert_with(AHashMap::new)
-            .insert(format!("shareWith/{}/{}", id, acl), ACLPatch::Set(set));
+            .insert(format!("shareWith/{id}/{acl}"), ACLPatch::Set(set));
         self
     }
 }
@@ -91,7 +91,7 @@ impl SetObject for Mailbox<Set> {
             _state: Default::default(),
             id: None,
             name: None,
-            parent_id: "".to_string().into(),
+            parent_id: String::new().into(),
             role: Role::None.into(),
             sort_order: None,
             total_emails: None,
@@ -106,7 +106,7 @@ impl SetObject for Mailbox<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

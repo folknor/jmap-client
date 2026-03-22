@@ -323,12 +323,12 @@ impl Client {
                 serde_json::to_string(&WebSocketPushEnable {
                     _type: WebSocketPushEnableType::WebSocketPushEnable,
                     data_types: data_types.map(|it| it.into_iter().collect()),
-                    push_state: push_state.map(|it| it.into()),
+                    push_state: push_state.map(std::convert::Into::into),
                 })
                 .unwrap_or_default(),
             ))
             .await
-            .map_err(|err| err.into())
+            .map_err(std::convert::Into::into)
     }
 
     pub async fn disable_push_ws(&self) -> crate::Result<()> {
@@ -345,7 +345,7 @@ impl Client {
                 .unwrap_or_default(),
             ))
             .await
-            .map_err(|err| err.into())
+            .map_err(std::convert::Into::into)
     }
 
     pub async fn ws_ping(&self) -> crate::Result<()> {
@@ -357,7 +357,7 @@ impl Client {
             .tx
             .send(Message::Ping(vec![].into()))
             .await
-            .map_err(|err| err.into())
+            .map_err(std::convert::Into::into)
     }
 }
 

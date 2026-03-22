@@ -44,7 +44,7 @@ impl Email<Set> {
         self.patch
             .get_or_insert_with(AHashMap::new)
             .insert(
-                format!("mailboxIds/{}", mailbox_id),
+                format!("mailboxIds/{mailbox_id}"),
                 if set {
                     serde_json::Value::Bool(true)
                 } else {
@@ -68,7 +68,7 @@ impl Email<Set> {
         self.patch
             .get_or_insert_with(AHashMap::new)
             .insert(
-                format!("keywords/{}", keyword),
+                format!("keywords/{keyword}"),
                 if set {
                     serde_json::Value::Bool(true)
                 } else {
@@ -83,7 +83,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.message_id = Some(message_id.into_iter().map(|v| v.into()).collect());
+        self.message_id = Some(message_id.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -92,7 +92,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.in_reply_to = Some(in_reply_to.into_iter().map(|v| v.into()).collect());
+        self.in_reply_to = Some(in_reply_to.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -101,7 +101,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.references = Some(references.into_iter().map(|v| v.into()).collect());
+        self.references = Some(references.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -110,7 +110,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.sender = Some(sender.into_iter().map(|s| s.into()).collect());
+        self.sender = Some(sender.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -119,7 +119,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.from = Some(from.into_iter().map(|s| s.into()).collect());
+        self.from = Some(from.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -128,7 +128,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.to = Some(to.into_iter().map(|s| s.into()).collect());
+        self.to = Some(to.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -137,7 +137,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.cc = Some(cc.into_iter().map(|s| s.into()).collect());
+        self.cc = Some(cc.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -146,7 +146,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.bcc = Some(bcc.into_iter().map(|s| s.into()).collect());
+        self.bcc = Some(bcc.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -155,7 +155,7 @@ impl Email<Set> {
         T: IntoIterator<Item = U>,
         U: Into<EmailAddress>,
     {
-        self.reply_to = Some(reply_to.into_iter().map(|s| s.into()).collect());
+        self.reply_to = Some(reply_to.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -252,7 +252,7 @@ impl SetObject for Email<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 
@@ -341,7 +341,7 @@ impl EmailBodyPart<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.language = Some(content_language.into_iter().map(|v| v.into()).collect());
+        self.language = Some(content_language.into_iter().map(std::convert::Into::into).collect());
         self
     }
 

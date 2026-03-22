@@ -164,15 +164,15 @@ impl ClientBuilder {
         mut self,
         trusted_hosts: impl IntoIterator<Item = impl Into<String>>,
     ) -> Self {
-        self.trusted_hosts = trusted_hosts.into_iter().map(|h| h.into()).collect();
+        self.trusted_hosts = trusted_hosts.into_iter().map(std::convert::Into::into).collect();
         self
     }
 
     /// Set the originating IP address of the client connecting to the JMAP API.
     pub fn forwarded_for(mut self, forwarded_for: IpAddr) -> Self {
         self.forwarded_for = Some(match forwarded_for {
-            IpAddr::V4(addr) => format!("for={}", addr),
-            IpAddr::V6(addr) => format!("for=\"{}\"", addr),
+            IpAddr::V4(addr) => format!("for={addr}"),
+            IpAddr::V6(addr) => format!("for=\"{addr}\""),
         });
         self
     }
@@ -182,8 +182,8 @@ impl ClientBuilder {
     /// Setting up [Credentials](struct.ClientBuilder.html#method.credentials) must be done before calling this function.
     pub async fn connect(self, url: &str) -> crate::Result<Client> {
         let authorization = match self.credentials.expect("Missing credentials") {
-            Credentials::Basic(s) => format!("Basic {}", s),
-            Credentials::Bearer(s) => format!("Bearer {}", s),
+            Credentials::Basic(s) => format!("Basic {s}"),
+            Credentials::Bearer(s) => format!("Bearer {s}"),
         };
         let mut headers = header::HeaderMap::new();
         headers.insert(
@@ -203,8 +203,8 @@ impl ClientBuilder {
 
         let trusted_hosts = Arc::new(self.trusted_hosts);
 
-        let trusted_hosts_ = trusted_hosts.clone();
-        let session_url = format!("{}/.well-known/jmap", url);
+        let trusted_hosts_ = Arc::clone(&trusted_hosts);
+        let session_url = format!("{url}/.well-known/jmap");
         let session: Session = serde_json::from_slice(
             &Client::handle_error(
                 HttpClient::builder()
@@ -238,7 +238,7 @@ impl ClientBuilder {
         let default_account_id = session
             .primary_accounts()
             .next()
-            .map(|a| a.1.to_string())
+            .map(|a| a.1.clone())
             .unwrap_or_default();
 
         headers.insert(
@@ -282,7 +282,7 @@ impl Client {
         &mut self,
         trusted_hosts: impl IntoIterator<Item = impl Into<String>>,
     ) -> &mut Self {
-        self.trusted_hosts = Arc::new(trusted_hosts.into_iter().map(|h| h.into()).collect());
+        self.trusted_hosts = Arc::new(trusted_hosts.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -303,7 +303,7 @@ impl Client {
     }
 
     pub(crate) fn redirect_policy(&self) -> redirect::Policy {
-        let trusted_hosts = self.trusted_hosts.clone();
+        let trusted_hosts = Arc::clone(&self.trusted_hosts);
         redirect::Policy::custom(move |attempt| {
             if attempt.previous().len() > 5 {
                 attempt.error("Too many redirects.")
@@ -409,7 +409,7 @@ impl Client {
         } else if let Some(b"application/problem+json") = response
             .headers()
             .get(header::CONTENT_TYPE)
-            .map(|h| h.as_bytes())
+            .map(reqwest::header::HeaderValue::as_bytes)
         {
             Err(Error::Problem(serde_json::from_slice(
                 &response.bytes().await?,
@@ -422,7 +422,7 @@ impl Client {
 
 impl Credentials {
     pub fn basic(username: &str, password: &str) -> Self {
-        Credentials::Basic(base64::encode(format!("{}:{}", username, password)))
+        Credentials::Basic(base64::encode(format!("{username}:{password}")))
     }
 
     pub fn bearer(token: impl Into<String>) -> Self {

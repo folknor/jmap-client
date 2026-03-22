@@ -165,7 +165,7 @@ impl Filter {
         V: Into<String>,
     {
         Filter::InMailboxOtherThan {
-            value: value.into_iter().map(|v| v.into()).collect(),
+            value: value.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 
@@ -281,7 +281,7 @@ impl Filter {
         V: Into<String>,
     {
         Filter::Id {
-            value: value.into_iter().map(|v| v.into()).collect(),
+            value: value.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 

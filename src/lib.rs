@@ -10,6 +10,41 @@
  */
 
 #![forbid(unsafe_code)]
+// Style: modern idiomatic Rust
+#![deny(clippy::uninlined_format_args)]
+#![deny(clippy::cloned_instead_of_copied)]
+#![deny(clippy::redundant_closure_for_method_calls)]
+#![deny(clippy::semicolon_if_nothing_returned)]
+#![deny(clippy::manual_string_new)]
+#![deny(clippy::explicit_iter_loop)]
+#![deny(clippy::implicit_clone)]
+#![warn(clippy::needless_pass_by_value)]
+#![deny(clippy::unnecessary_sort_by)]
+#![deny(clippy::collapsible_match)]
+#![deny(clippy::if_same_then_else)]
+#![deny(clippy::needless_borrow)]
+#![deny(clippy::ptr_arg)]
+#![deny(clippy::redundant_locals)]
+#![deny(clippy::regex_creation_in_loops)]
+#![deny(clippy::unnecessary_unwrap)]
+#![deny(clippy::wrong_self_convention)]
+// Safety: strict error handling
+#![deny(clippy::unwrap_in_result)]
+#![deny(clippy::ok_expect)]
+#![warn(clippy::unwrap_used)]
+// Async safety
+#![deny(clippy::await_holding_lock)]
+#![deny(clippy::await_holding_refcell_ref)]
+// Type safety
+#![deny(clippy::large_enum_variant)]
+#![deny(clippy::clone_on_ref_ptr)]
+#![deny(clippy::float_cmp)]
+#![deny(clippy::cast_sign_loss)]
+#![deny(clippy::cast_possible_truncation)]
+#![deny(clippy::cast_possible_wrap)]
+// Safety: no debug/placeholder code
+#![deny(clippy::dbg_macro)]
+#![deny(clippy::todo)]
 
 //! # jmap-client
 //!
@@ -570,15 +605,15 @@ impl From<tokio_tungstenite::tungstenite::error::Error> for Error {
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Transport(e) => write!(f, "Transport error: {}", e),
-            Error::Parse(e) => write!(f, "Parse error: {}", e),
-            Error::Internal(e) => write!(f, "Internal error: {}", e),
-            Error::Problem(e) => write!(f, "Request failed: {}", e),
-            Error::Server(e) => write!(f, "Server failed: {}", e),
-            Error::Method(e) => write!(f, "Request failed: {}", e),
-            Error::Set(e) => write!(f, "Set failed: {}", e),
+            Error::Transport(e) => write!(f, "Transport error: {e}"),
+            Error::Parse(e) => write!(f, "Parse error: {e}"),
+            Error::Internal(e) => write!(f, "Internal error: {e}"),
+            Error::Problem(e) => write!(f, "Request failed: {e}"),
+            Error::Server(e) => write!(f, "Server failed: {e}"),
+            Error::Method(e) => write!(f, "Request failed: {e}"),
+            Error::Set(e) => write!(f, "Set failed: {e}"),
             #[cfg(feature = "websockets")]
-            Error::WebSocket(e) => write!(f, "WebSockets error: {}", e),
+            Error::WebSocket(e) => write!(f, "WebSockets error: {e}"),
         }
     }
 }

@@ -22,7 +22,7 @@ impl AddressBook<Set> {
     }
 
     pub fn description(&mut self, description: Option<impl Into<String>>) -> &mut Self {
-        self.description = Some(description.map(|d| d.into()));
+        self.description = Some(description.map(std::convert::Into::into));
         self
     }
 
@@ -64,7 +64,7 @@ impl SetObject for AddressBook<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

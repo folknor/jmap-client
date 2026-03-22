@@ -47,7 +47,7 @@ impl SetObject for ParticipantIdentity<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

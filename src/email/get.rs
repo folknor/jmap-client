@@ -70,7 +70,7 @@ impl Email<Get> {
     }
 
     pub fn received_at(&self) -> Option<i64> {
-        self.received_at.as_ref().map(|r| r.timestamp())
+        self.received_at.as_ref().map(chrono::DateTime::timestamp)
     }
 
     pub fn message_id(&self) -> Option<&[String]> {
@@ -142,7 +142,7 @@ impl Email<Get> {
     }
 
     pub fn sent_at(&self) -> Option<i64> {
-        self.sent_at.as_ref().map(|v| v.timestamp())
+        self.sent_at.as_ref().map(chrono::DateTime::timestamp)
     }
 
     pub fn body_structure(&self) -> Option<&EmailBodyPart> {

@@ -187,15 +187,15 @@ impl Display for ProblemDetails {
         }
 
         if let Some(status) = self.status {
-            write!(f, " (status {})", status)?
+            write!(f, " (status {status})")?;
         }
 
         if let Some(title) = &self.title {
-            write!(f, ": {}", title)?
+            write!(f, ": {title}")?;
         }
 
         if let Some(detail) = &self.detail {
-            write!(f, ". Details: {}", detail)?
+            write!(f, ". Details: {detail}")?;
         }
 
         Ok(())

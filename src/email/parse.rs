@@ -82,7 +82,7 @@ impl EmailParseRequest {
         U: IntoIterator<Item = V>,
         V: Into<String>,
     {
-        self.blob_ids = blob_ids.into_iter().map(|v| v.into()).collect();
+        self.blob_ids = blob_ids.into_iter().map(std::convert::Into::into).collect();
         self
     }
 
@@ -135,11 +135,10 @@ impl EmailParseResponse {
             .unwrap_or(false)
         {
             Err(Error::Internal(format!(
-                "blobId {} is not parsable.",
-                blob_id
+                "blobId {blob_id} is not parsable."
             )))
         } else {
-            Err(Error::Internal(format!("blobId {} not found.", blob_id)))
+            Err(Error::Internal(format!("blobId {blob_id} not found.")))
         }
     }
 

@@ -284,7 +284,7 @@ impl<T> Filter<T> {
     {
         Filter::FilterOperator(FilterOperator {
             operator: Operator::And,
-            conditions: conditions.into_iter().map(|t| t.into()).collect(),
+            conditions: conditions.into_iter().map(std::convert::Into::into).collect(),
         })
     }
 
@@ -295,7 +295,7 @@ impl<T> Filter<T> {
     {
         Filter::FilterOperator(FilterOperator {
             operator: Operator::Or,
-            conditions: conditions.into_iter().map(|t| t.into()).collect(),
+            conditions: conditions.into_iter().map(std::convert::Into::into).collect(),
         })
     }
 
@@ -306,7 +306,7 @@ impl<T> Filter<T> {
     {
         Filter::FilterOperator(FilterOperator {
             operator: Operator::Not,
-            conditions: conditions.into_iter().map(|t| t.into()).collect(),
+            conditions: conditions.into_iter().map(std::convert::Into::into).collect(),
         })
     }
 }

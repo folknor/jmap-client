@@ -76,7 +76,7 @@ impl Client {
             .bytes()
             .await?,
         )
-        .map_err(|err| err.into())
+        .map_err(std::convert::Into::into)
     }
 }
 

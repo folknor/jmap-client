@@ -178,7 +178,7 @@ impl<O: SetObject> SetRequest<O> {
 
     pub fn create(&mut self) -> &mut O {
         let create_id = self.create.as_ref().map_or(0, |c| c.len());
-        let create_id_str = format!("c{}", create_id);
+        let create_id_str = format!("c{create_id}");
         self.create
             .get_or_insert_with(AHashMap::new)
             .entry(create_id_str)
@@ -195,7 +195,7 @@ impl<O: SetObject> SetRequest<O> {
 
     pub fn create_item(&mut self, item: O) -> String {
         let create_id = self.create.as_ref().map_or(0, |c| c.len());
-        let create_id_str = format!("c{}", create_id);
+        let create_id_str = format!("c{create_id}");
         self.create
             .get_or_insert_with(AHashMap::new)
             .insert(create_id_str.clone(), item);
@@ -223,7 +223,7 @@ impl<O: SetObject> SetRequest<O> {
     {
         self.destroy
             .get_or_insert_with(Vec::new)
-            .extend(ids.into_iter().map(|id| id.into()));
+            .extend(ids.into_iter().map(std::convert::Into::into));
         self.destroy_ref = None;
         self
     }
@@ -262,7 +262,7 @@ impl<O: SetObject> SetResponse<O> {
         } else if let Some(error) = self.not_created.as_mut().and_then(|r| r.remove(id)) {
             Err(error.to_string_error().into())
         } else {
-            Err(Error::Internal(format!("Id {} not found.", id)))
+            Err(Error::Internal(format!("Id {id} not found.")))
         }
     }
 
@@ -272,7 +272,7 @@ impl<O: SetObject> SetResponse<O> {
         } else if let Some(error) = self.not_updated.as_mut().and_then(|r| r.remove(id)) {
             Err(error.to_string_error().into())
         } else {
-            Err(Error::Internal(format!("Id {} not found.", id)))
+            Err(Error::Internal(format!("Id {id} not found.")))
         }
     }
 
@@ -286,7 +286,7 @@ impl<O: SetObject> SetResponse<O> {
         } else if let Some(error) = self.not_destroyed.as_mut().and_then(|r| r.remove(id)) {
             Err(error.to_string_error().into())
         } else {
-            Err(Error::Internal(format!("Id {} not found.", id)))
+            Err(Error::Internal(format!("Id {id} not found.")))
         }
     }
 
@@ -337,20 +337,18 @@ impl<O: SetObject> SetResponse<O> {
     }
 
     pub fn unwrap_update_errors(&self) -> crate::Result<()> {
-        if let Some(errors) = &self.not_updated {
-            if let Some(err) = errors.values().next() {
+        if let Some(errors) = &self.not_updated
+            && let Some(err) = errors.values().next() {
                 return Err(err.to_string_error().into());
             }
-        }
         Ok(())
     }
 
     pub fn unwrap_create_errors(&self) -> crate::Result<()> {
-        if let Some(errors) = &self.not_created {
-            if let Some(err) = errors.values().next() {
+        if let Some(errors) = &self.not_created
+            && let Some(err) = errors.values().next() {
                 return Err(err.to_string_error().into());
             }
-        }
         Ok(())
     }
 }
@@ -371,11 +369,11 @@ impl<U: Display> SetError<U> {
     pub fn to_string_error(&self) -> SetError<String> {
         SetError {
             type_: self.type_.clone(),
-            description: self.description.as_ref().map(|s| s.to_string()),
+            description: self.description.clone(),
             properties: self
                 .properties
                 .as_ref()
-                .map(|s| s.iter().map(|s| s.to_string()).collect()),
+                .map(|s| s.iter().map(std::string::ToString::to_string).collect()),
         }
     }
 }
@@ -384,7 +382,7 @@ impl<U: Display> Display for SetError<U> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.type_.fmt(f)?;
         if let Some(description) = &self.description {
-            write!(f, ": {}", description)?;
+            write!(f, ": {description}")?;
         }
         if let Some(properties) = &self.properties {
             write!(
@@ -392,7 +390,7 @@ impl<U: Display> Display for SetError<U> {
                 " (properties: {})",
                 properties
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(", ")
             )?;

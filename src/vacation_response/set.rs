@@ -33,17 +33,17 @@ impl VacationResponse<Set> {
     }
 
     pub fn subject(&mut self, subject: Option<impl Into<String>>) -> &mut Self {
-        self.subject = subject.map(|s| s.into());
+        self.subject = subject.map(std::convert::Into::into);
         self
     }
 
     pub fn text_body(&mut self, text_body: Option<impl Into<String>>) -> &mut Self {
-        self.text_body = text_body.map(|s| s.into());
+        self.text_body = text_body.map(std::convert::Into::into);
         self
     }
 
     pub fn html_body(&mut self, html_body: Option<impl Into<String>>) -> &mut Self {
-        self.html_body = html_body.map(|s| s.into());
+        self.html_body = html_body.map(std::convert::Into::into);
         self
     }
 }
@@ -59,14 +59,14 @@ impl SetObject for VacationResponse<Set> {
             is_enabled: None,
             from_date: from_timestamp(0).into(),
             to_date: from_timestamp(0).into(),
-            subject: "".to_string().into(),
-            text_body: "".to_string().into(),
-            html_body: "".to_string().into(),
+            subject: String::new().into(),
+            text_body: String::new().into(),
+            html_body: String::new().into(),
         }
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

@@ -43,7 +43,7 @@ impl EmailSubmission<Get> {
     }
 
     pub fn send_at(&self) -> Option<i64> {
-        self.send_at.as_ref().map(|t| t.timestamp())
+        self.send_at.as_ref().map(chrono::DateTime::timestamp)
     }
 
     pub fn undo_status(&self) -> Option<&UndoStatus> {

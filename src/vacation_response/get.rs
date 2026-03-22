@@ -23,11 +23,11 @@ impl VacationResponse<Get> {
     }
 
     pub fn from_date(&self) -> Option<i64> {
-        self.from_date.as_ref().map(|dt| dt.timestamp())
+        self.from_date.as_ref().map(chrono::DateTime::timestamp)
     }
 
     pub fn to_date(&self) -> Option<i64> {
-        self.to_date.as_ref().map(|dt| dt.timestamp())
+        self.to_date.as_ref().map(chrono::DateTime::timestamp)
     }
 
     pub fn subject(&self) -> Option<&str> {

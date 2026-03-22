@@ -18,17 +18,14 @@ use crate::{
 const MAX_EVENT_SIZE: usize = 1024 * 1024;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Default)]
 pub enum EventType {
     Ping,
+    #[default]
     State,
     CalendarAlert,
 }
 
-impl Default for EventType {
-    fn default() -> Self {
-        Self::State
-    }
-}
 
 #[derive(Default, Debug)]
 pub struct Event {
@@ -38,18 +35,15 @@ pub struct Event {
 }
 
 #[derive(Debug, Copy, Clone)]
+#[derive(Default)]
 enum EventParserState {
+    #[default]
     Init,
     Comment,
     Field,
     Value,
 }
 
-impl Default for EventParserState {
-    fn default() -> Self {
-        Self::Init
-    }
-}
 
 #[derive(Default, Debug)]
 pub struct EventParser {
@@ -93,8 +87,7 @@ impl EventParser {
                             })))
                         }
                         Ok(unexpected) => Some(Err(crate::Error::Internal(format!(
-                            "Unexpected PushObject variant: {:?}",
-                            unexpected
+                            "Unexpected PushObject variant: {unexpected:?}"
                         )))),
                         Err(err) => Some(Err(err.into())),
                     };

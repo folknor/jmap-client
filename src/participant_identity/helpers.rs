@@ -32,7 +32,7 @@ impl Client {
         let mut request = self.build();
         let get_request = request.get_participant_identity().ids([id]);
         if let Some(properties) = properties {
-            get_request.properties(properties.into_iter());
+            get_request.properties(properties);
         }
         request
             .send_single::<ParticipantIdentityGetResponse>()

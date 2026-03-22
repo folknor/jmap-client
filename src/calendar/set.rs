@@ -22,12 +22,12 @@ impl Calendar<Set> {
     }
 
     pub fn description(&mut self, description: Option<impl Into<String>>) -> &mut Self {
-        self.description = Some(description.map(|d| d.into()));
+        self.description = Some(description.map(std::convert::Into::into));
         self
     }
 
     pub fn color(&mut self, color: Option<impl Into<String>>) -> &mut Self {
-        self.color = Some(color.map(|c| c.into()));
+        self.color = Some(color.map(std::convert::Into::into));
         self
     }
 
@@ -71,7 +71,7 @@ impl Calendar<Set> {
     }
 
     pub fn time_zone(&mut self, time_zone: Option<impl Into<String>>) -> &mut Self {
-        self.time_zone = Some(time_zone.map(|t| t.into()));
+        self.time_zone = Some(time_zone.map(std::convert::Into::into));
         self
     }
 
@@ -109,7 +109,7 @@ impl SetObject for Calendar<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

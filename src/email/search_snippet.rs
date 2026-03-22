@@ -79,7 +79,7 @@ impl SearchSnippetGetRequest {
     ) -> &mut Self {
         self.email_ids
             .get_or_insert_with(Vec::new)
-            .extend(email_ids.into_iter().map(|id| id.into()));
+            .extend(email_ids.into_iter().map(std::convert::Into::into));
         self
     }
 

@@ -400,7 +400,7 @@ impl Display for Property {
             Property::HasAttachment => write!(f, "hasAttachment"),
             Property::Preview => write!(f, "preview"),
             Property::Header(header) => header.fmt(f),
-            Property::Other(other) => write!(f, "{}", other),
+            Property::Other(other) => write!(f, "{other}"),
         }
     }
 }
@@ -428,7 +428,7 @@ impl<'de> Visitor<'de> for PropertyVisitor {
         E: serde::de::Error,
     {
         Property::parse(v).ok_or_else(|| {
-            serde::de::Error::custom(format!("Failed to parse JMAP property '{}'", v))
+            serde::de::Error::custom(format!("Failed to parse JMAP property '{v}'"))
         })
     }
 }
@@ -465,7 +465,7 @@ impl<'de> Visitor<'de> for HeaderVisitor {
         E: serde::de::Error,
     {
         Header::parse(v)
-            .ok_or_else(|| serde::de::Error::custom(format!("Failed to parse JMAP header '{}'", v)))
+            .ok_or_else(|| serde::de::Error::custom(format!("Failed to parse JMAP header '{v}'")))
     }
 }
 
@@ -683,7 +683,7 @@ impl<'de> Visitor<'de> for BodyPropertyVisitor {
         E: serde::de::Error,
     {
         BodyProperty::parse(v).ok_or_else(|| {
-            serde::de::Error::custom(format!("Failed to parse JMAP body property '{}'", v))
+            serde::de::Error::custom(format!("Failed to parse JMAP body property '{v}'"))
         })
     }
 }

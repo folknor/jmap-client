@@ -69,7 +69,7 @@ impl Filter {
         V: Into<String>,
     {
         Filter::IdentityIds {
-            value: value.into_iter().map(|v| v.into()).collect(),
+            value: value.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 
@@ -79,7 +79,7 @@ impl Filter {
         V: Into<String>,
     {
         Filter::EmailIds {
-            value: value.into_iter().map(|v| v.into()).collect(),
+            value: value.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 
@@ -89,7 +89,7 @@ impl Filter {
         V: Into<String>,
     {
         Filter::ThreadIds {
-            value: value.into_iter().map(|v| v.into()).collect(),
+            value: value.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 

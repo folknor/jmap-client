@@ -20,7 +20,7 @@ impl Principal<Set> {
     }
 
     pub fn description(&mut self, description: Option<impl Into<String>>) -> &mut Self {
-        self.description = description.map(|s| s.into());
+        self.description = description.map(std::convert::Into::into);
         self
     }
 
@@ -35,12 +35,12 @@ impl Principal<Set> {
     }
 
     pub fn timezone(&mut self, timezone: Option<impl Into<String>>) -> &mut Self {
-        self.timezone = timezone.map(|s| s.into());
+        self.timezone = timezone.map(std::convert::Into::into);
         self
     }
 
     pub fn picture(&mut self, picture: Option<impl Into<String>>) -> &mut Self {
-        self.picture = picture.map(|s| s.into());
+        self.picture = picture.map(std::convert::Into::into);
         self
     }
 
@@ -69,7 +69,7 @@ impl Principal<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.aliases = aliases.map(|l| l.into_iter().map(|v| v.into()).collect());
+        self.aliases = aliases.map(|l| l.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -85,7 +85,7 @@ impl Principal<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.capabilities = capabilities.map(|l| l.into_iter().map(|v| v.into()).collect());
+        self.capabilities = capabilities.map(|l| l.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -94,7 +94,7 @@ impl Principal<Set> {
         T: IntoIterator<Item = U>,
         U: Into<String>,
     {
-        self.members = members.map(|l| l.into_iter().map(|v| v.into()).collect());
+        self.members = members.map(|l| l.into_iter().map(std::convert::Into::into).collect());
         self
     }
 
@@ -115,16 +115,16 @@ impl SetObject for Principal<Set> {
             _state: Default::default(),
             id: None,
             ptype: None,
-            name: "".to_string().into(),
-            description: "".to_string().into(),
-            email: "".to_string().into(),
-            timezone: "".to_string().into(),
+            name: String::new().into(),
+            description: String::new().into(),
+            email: String::new().into(),
+            timezone: String::new().into(),
             capabilities: Vec::with_capacity(0).into(),
             aliases: Vec::with_capacity(0).into(),
-            secret: "".to_string().into(),
+            secret: String::new().into(),
             dkim: None,
             quota: None,
-            picture: "".to_string().into(),
+            picture: String::new().into(),
             members: Vec::with_capacity(0).into(),
             acl: AHashMap::with_capacity(0).into(),
             property_patch: None,
@@ -132,7 +132,7 @@ impl SetObject for Principal<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 

@@ -61,7 +61,7 @@ impl SetObject for EmailSubmission<Set> {
     }
 
     fn create_id(&self) -> Option<String> {
-        self._create_id.map(|id| format!("c{}", id))
+        self._create_id.map(|id| format!("c{id}"))
     }
 }
 
@@ -86,7 +86,7 @@ impl Envelope {
     {
         Envelope {
             mail_from: mail_from.into(),
-            rcpt_to: rcpt_to.into_iter().map(|s| s.into()).collect(),
+            rcpt_to: rcpt_to.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 }
@@ -107,7 +107,7 @@ impl Address<Set> {
     ) -> Self {
         self.parameters
             .get_or_insert_with(AHashMap::new)
-            .insert(parameter.into(), value.map(|s| s.into()));
+            .insert(parameter.into(), value.map(std::convert::Into::into));
         self
     }
 }

@@ -90,7 +90,7 @@ impl<O: GetObject> GetRequest<O> {
         U: IntoIterator<Item = V>,
         V: Into<String>,
     {
-        self.ids = Some(ids.into_iter().map(|v| v.into()).collect());
+        self.ids = Some(ids.into_iter().map(std::convert::Into::into).collect());
         self.ids_ref = None;
         self
     }
@@ -121,7 +121,7 @@ impl<O: GetObject> GetRequest<O> {
         ResultReference::new(
             self.method.0,
             self.method.1,
-            format!("/list/*/{}", property),
+            format!("/list/*/{property}"),
         )
     }
 }

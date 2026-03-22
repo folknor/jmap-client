@@ -99,7 +99,7 @@ impl Filter {
         V: Into<String>,
     {
         Filter::InCalendars {
-            value: value.into_iter().map(|v| v.into()).collect(),
+            value: value.into_iter().map(std::convert::Into::into).collect(),
         }
     }
 
