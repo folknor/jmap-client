@@ -21,6 +21,7 @@ pub mod copy;
 pub mod error;
 pub mod get;
 pub mod method;
+pub mod parse;
 pub mod query;
 pub mod query_changes;
 pub mod request;
@@ -43,6 +44,29 @@ pub trait Object: Sized {
 /// or `impl_jmap_object!(MyType, MyProperty, false)` for non-account-scoped.
 #[macro_export]
 macro_rules! impl_jmap_object {
+    ($name:ident < $s:ident >, $property:ty, $requires_account:expr, changes_response = $cr:ty) => {
+        impl $crate::core::Object for $name<$crate::Set> {
+            type Property = $property;
+            fn requires_account_id() -> bool {
+                $requires_account
+            }
+        }
+
+        impl $crate::core::Object for $name<$crate::Get> {
+            type Property = $property;
+            fn requires_account_id() -> bool {
+                $requires_account
+            }
+        }
+
+        impl $crate::core::changes::ChangesObject for $name<$crate::Set> {
+            type ChangesResponse = $cr;
+        }
+
+        impl $crate::core::changes::ChangesObject for $name<$crate::Get> {
+            type ChangesResponse = $cr;
+        }
+    };
     ($name:ident < $s:ident >, $property:ty, $requires_account:expr) => {
         impl $crate::core::Object for $name<$crate::Set> {
             type Property = $property;

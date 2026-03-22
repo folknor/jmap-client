@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 
 use super::{CalendarEventNotification, ChangedBy, NotificationType};
 
@@ -51,10 +51,4 @@ impl CalendarEventNotification<Get> {
     }
 }
 
-impl GetObject for CalendarEventNotification<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for CalendarEventNotification<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(CalendarEventNotification, ());

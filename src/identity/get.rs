@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, email::EmailAddress, Get, Set};
+use crate::{email::EmailAddress, Get};
 
 use super::Identity;
 
@@ -51,10 +51,4 @@ impl Identity<Get> {
     }
 }
 
-impl GetObject for Identity<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for Identity<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(Identity, ());

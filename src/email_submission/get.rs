@@ -10,7 +10,7 @@
  */
 
 use super::{Address, Delivered, DeliveryStatus, Displayed, EmailSubmission, UndoStatus};
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 use std::collections::HashMap;
 
 impl EmailSubmission<Get> {
@@ -107,10 +107,4 @@ impl DeliveryStatus {
     }
 }
 
-impl GetObject for EmailSubmission<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for EmailSubmission<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(EmailSubmission, ());

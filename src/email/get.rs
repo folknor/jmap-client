@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 
 use super::{
     Email, EmailAddress, EmailAddressGroup, EmailBodyPart, EmailBodyValue, EmailHeader,
@@ -293,10 +293,4 @@ impl EmailHeader<Get> {
     }
 }
 
-impl GetObject for Email<Set> {
-    type GetArguments = GetArguments;
-}
-
-impl GetObject for Email<Get> {
-    type GetArguments = GetArguments;
-}
+crate::impl_get_object!(Email, GetArguments);

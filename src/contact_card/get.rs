@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 
 use super::ContactCard;
 
@@ -116,10 +116,4 @@ impl ContactCard<Get> {
     }
 }
 
-impl GetObject for ContactCard<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for ContactCard<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(ContactCard, ());

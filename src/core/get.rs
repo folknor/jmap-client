@@ -18,6 +18,19 @@ pub trait GetObject: Object {
     type GetArguments: Default;
 }
 
+/// Generates dual `GetObject` impls for `$type<Set>` and `$type<Get>`.
+#[macro_export]
+macro_rules! impl_get_object {
+    ($type:ident, $args:ty) => {
+        impl $crate::core::get::GetObject for $type<$crate::Set> {
+            type GetArguments = $args;
+        }
+        impl $crate::core::get::GetObject for $type<$crate::Get> {
+            type GetArguments = $args;
+        }
+    };
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct GetRequest<O: GetObject> {
     #[serde(rename = "accountId")]

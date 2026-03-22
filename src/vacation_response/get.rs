@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 
 use super::VacationResponse;
 
@@ -43,10 +43,4 @@ impl VacationResponse<Get> {
     }
 }
 
-impl GetObject for VacationResponse<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for VacationResponse<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(VacationResponse, ());

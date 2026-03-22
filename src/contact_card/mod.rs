@@ -29,117 +29,34 @@ pub mod parse;
 pub mod query;
 pub mod set;
 
-use std::fmt::{self, Display};
-
-use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
 crate::json_object_struct!(ContactCard, "a JSContact object", Property, ());
 
 // ---- Property enum ----
 
-/// Property names for ContactCard/get `properties` lists.
-///
-/// Common JSContact properties have typed variants. Extension or
-/// less-common properties use `Other(String)`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[non_exhaustive]
-pub enum Property {
-    Id,
-    Uid,
-    AddressBookIds,
-    Kind,
-    Name,
-    Nicknames,
-    Emails,
-    Phones,
-    Addresses,
-    Organizations,
-    OnlineServices,
-    Notes,
-    Media,
-    Created,
-    Updated,
-    /// Any JSContact property not covered by the typed variants,
-    /// including vendor extension properties.
-    Other(String),
-}
-
-impl Property {
-    fn as_str(&self) -> &str {
-        match self {
-            Property::Id => "id",
-            Property::Uid => "uid",
-            Property::AddressBookIds => "addressBookIds",
-            Property::Kind => "kind",
-            Property::Name => "name",
-            Property::Nicknames => "nicknames",
-            Property::Emails => "emails",
-            Property::Phones => "phones",
-            Property::Addresses => "addresses",
-            Property::Organizations => "organizations",
-            Property::OnlineServices => "onlineServices",
-            Property::Notes => "notes",
-            Property::Media => "media",
-            Property::Created => "created",
-            Property::Updated => "updated",
-            Property::Other(s) => s.as_str(),
-        }
-    }
-}
-
-impl Display for Property {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-
-impl Serialize for Property {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.as_str())
-    }
-}
-
-impl<'de> Deserialize<'de> for Property {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct PropertyVisitor;
-
-        impl<'de> Visitor<'de> for PropertyVisitor {
-            type Value = Property;
-
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                f.write_str("a JSContact property name")
-            }
-
-            fn visit_str<E: de::Error>(self, v: &str) -> Result<Property, E> {
-                Ok(Property::from(v))
-            }
-        }
-
-        deserializer.deserialize_str(PropertyVisitor)
-    }
-}
-
-impl From<&str> for Property {
-    fn from(s: &str) -> Self {
-        match s {
-            "id" => Property::Id,
-            "uid" => Property::Uid,
-            "addressBookIds" => Property::AddressBookIds,
-            "kind" => Property::Kind,
-            "name" => Property::Name,
-            "nicknames" => Property::Nicknames,
-            "emails" => Property::Emails,
-            "phones" => Property::Phones,
-            "addresses" => Property::Addresses,
-            "organizations" => Property::Organizations,
-            "onlineServices" => Property::OnlineServices,
-            "notes" => Property::Notes,
-            "media" => Property::Media,
-            "created" => Property::Created,
-            "updated" => Property::Updated,
-            other => Property::Other(other.to_string()),
-        }
+crate::define_open_property_enum! {
+    /// Property names for ContactCard/get `properties` lists.
+    ///
+    /// Common JSContact properties have typed variants. Extension or
+    /// less-common properties use `Other(String)`.
+    #[non_exhaustive]
+    pub enum Property {
+        Id => "id",
+        Uid => "uid",
+        AddressBookIds => "addressBookIds",
+        Kind => "kind",
+        Name => "name",
+        Nicknames => "nicknames",
+        Emails => "emails",
+        Phones => "phones",
+        Addresses => "addresses",
+        Organizations => "organizations",
+        OnlineServices => "onlineServices",
+        Notes => "notes",
+        Media => "media",
+        Created => "created",
+        /// Any JSContact property not covered by the typed variants,
+        /// including vendor extension properties.
+        Updated => "updated",
     }
 }
 

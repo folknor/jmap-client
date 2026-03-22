@@ -29,10 +29,7 @@ pub mod parse;
 pub mod query;
 pub mod set;
 
-use std::fmt::{self, Display};
-
-use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 crate::json_object_struct!(CalendarEvent, "a JSCalendar object", Property, SetArguments);
 
@@ -199,177 +196,53 @@ impl QueryArguments {
 
 // ---- Property enum ----
 
-/// Property names for CalendarEvent/get `properties` lists.
-///
-/// Common JSCalendar properties have typed variants. Extension or
-/// less-common properties use `Other(String)`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[non_exhaustive]
-pub enum Property {
-    Id,
-    Uid,
-    CalendarIds,
-    IsDraft,
-    Title,
-    Description,
-    DescriptionContentType,
-    Created,
-    Updated,
-    Start,
-    Duration,
-    TimeZone,
-    ShowWithoutTime,
-    Status,
-    FreeBusyStatus,
-    RecurrenceId,
-    RecurrenceIdTimeZone,
-    RecurrenceRules,
-    RecurrenceOverrides,
-    ExcludedRecurrenceRules,
-    Priority,
-    Color,
-    Locale,
-    Keywords,
-    Categories,
-    ProdId,
-    ReplyTo,
-    Participants,
-    UseDefaultAlerts,
-    Alerts,
-    Locations,
-    VirtualLocations,
-    Links,
-    RelatedTo,
-    ExcludedDates,
-    Localizations,
-    Method,
-    Sequence,
-    /// Any JSCalendar property not covered by the typed variants,
-    /// including vendor extension properties.
-    Other(String),
-}
-
-impl Property {
-    fn as_str(&self) -> &str {
-        match self {
-            Property::Id => "id",
-            Property::Uid => "uid",
-            Property::CalendarIds => "calendarIds",
-            Property::IsDraft => "isDraft",
-            Property::Title => "title",
-            Property::Description => "description",
-            Property::DescriptionContentType => "descriptionContentType",
-            Property::Created => "created",
-            Property::Updated => "updated",
-            Property::Start => "start",
-            Property::Duration => "duration",
-            Property::TimeZone => "timeZone",
-            Property::ShowWithoutTime => "showWithoutTime",
-            Property::Status => "status",
-            Property::FreeBusyStatus => "freeBusyStatus",
-            Property::RecurrenceId => "recurrenceId",
-            Property::RecurrenceIdTimeZone => "recurrenceIdTimeZone",
-            Property::RecurrenceRules => "recurrenceRules",
-            Property::RecurrenceOverrides => "recurrenceOverrides",
-            Property::ExcludedRecurrenceRules => "excludedRecurrenceRules",
-            Property::Priority => "priority",
-            Property::Color => "color",
-            Property::Locale => "locale",
-            Property::Keywords => "keywords",
-            Property::Categories => "categories",
-            Property::ProdId => "prodId",
-            Property::ReplyTo => "replyTo",
-            Property::Participants => "participants",
-            Property::UseDefaultAlerts => "useDefaultAlerts",
-            Property::Alerts => "alerts",
-            Property::Locations => "locations",
-            Property::VirtualLocations => "virtualLocations",
-            Property::Links => "links",
-            Property::RelatedTo => "relatedTo",
-            Property::ExcludedDates => "excludedDates",
-            Property::Localizations => "localizations",
-            Property::Method => "method",
-            Property::Sequence => "sequence",
-            Property::Other(s) => s.as_str(),
-        }
-    }
-}
-
-impl Display for Property {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-
-impl Serialize for Property {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.as_str())
-    }
-}
-
-impl<'de> Deserialize<'de> for Property {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct PropertyVisitor;
-
-        impl<'de> Visitor<'de> for PropertyVisitor {
-            type Value = Property;
-
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                f.write_str("a JSCalendar property name")
-            }
-
-            fn visit_str<E: de::Error>(self, v: &str) -> Result<Property, E> {
-                Ok(Property::from(v))
-            }
-        }
-
-        deserializer.deserialize_str(PropertyVisitor)
-    }
-}
-
-impl From<&str> for Property {
-    fn from(s: &str) -> Self {
-        match s {
-            "id" => Property::Id,
-            "uid" => Property::Uid,
-            "calendarIds" => Property::CalendarIds,
-            "isDraft" => Property::IsDraft,
-            "title" => Property::Title,
-            "description" => Property::Description,
-            "descriptionContentType" => Property::DescriptionContentType,
-            "created" => Property::Created,
-            "updated" => Property::Updated,
-            "start" => Property::Start,
-            "duration" => Property::Duration,
-            "timeZone" => Property::TimeZone,
-            "showWithoutTime" => Property::ShowWithoutTime,
-            "status" => Property::Status,
-            "freeBusyStatus" => Property::FreeBusyStatus,
-            "recurrenceId" => Property::RecurrenceId,
-            "recurrenceIdTimeZone" => Property::RecurrenceIdTimeZone,
-            "recurrenceRules" => Property::RecurrenceRules,
-            "recurrenceOverrides" => Property::RecurrenceOverrides,
-            "excludedRecurrenceRules" => Property::ExcludedRecurrenceRules,
-            "priority" => Property::Priority,
-            "color" => Property::Color,
-            "locale" => Property::Locale,
-            "keywords" => Property::Keywords,
-            "categories" => Property::Categories,
-            "prodId" => Property::ProdId,
-            "replyTo" => Property::ReplyTo,
-            "participants" => Property::Participants,
-            "useDefaultAlerts" => Property::UseDefaultAlerts,
-            "alerts" => Property::Alerts,
-            "locations" => Property::Locations,
-            "virtualLocations" => Property::VirtualLocations,
-            "links" => Property::Links,
-            "relatedTo" => Property::RelatedTo,
-            "excludedDates" => Property::ExcludedDates,
-            "localizations" => Property::Localizations,
-            "method" => Property::Method,
-            "sequence" => Property::Sequence,
-            other => Property::Other(other.to_string()),
-        }
+crate::define_open_property_enum! {
+    /// Property names for CalendarEvent/get `properties` lists.
+    ///
+    /// Common JSCalendar properties have typed variants. Extension or
+    /// less-common properties use `Other(String)`.
+    #[non_exhaustive]
+    pub enum Property {
+        Id => "id",
+        Uid => "uid",
+        CalendarIds => "calendarIds",
+        IsDraft => "isDraft",
+        Title => "title",
+        Description => "description",
+        DescriptionContentType => "descriptionContentType",
+        Created => "created",
+        Updated => "updated",
+        Start => "start",
+        Duration => "duration",
+        TimeZone => "timeZone",
+        ShowWithoutTime => "showWithoutTime",
+        Status => "status",
+        FreeBusyStatus => "freeBusyStatus",
+        RecurrenceId => "recurrenceId",
+        RecurrenceIdTimeZone => "recurrenceIdTimeZone",
+        RecurrenceRules => "recurrenceRules",
+        RecurrenceOverrides => "recurrenceOverrides",
+        ExcludedRecurrenceRules => "excludedRecurrenceRules",
+        Priority => "priority",
+        Color => "color",
+        Locale => "locale",
+        Keywords => "keywords",
+        Categories => "categories",
+        ProdId => "prodId",
+        ReplyTo => "replyTo",
+        Participants => "participants",
+        UseDefaultAlerts => "useDefaultAlerts",
+        Alerts => "alerts",
+        Locations => "locations",
+        VirtualLocations => "virtualLocations",
+        Links => "links",
+        RelatedTo => "relatedTo",
+        ExcludedDates => "excludedDates",
+        Localizations => "localizations",
+        Method => "method",
+        /// Any JSCalendar property not covered by the typed variants,
+        /// including vendor extension properties.
+        Sequence => "sequence",
     }
 }
 

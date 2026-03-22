@@ -10,7 +10,7 @@
  */
 
 use super::{Principal, Type, ACL, DKIM};
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 use std::collections::HashMap;
 
 impl Principal<Get> {
@@ -75,10 +75,4 @@ impl Principal<Get> {
     }
 }
 
-impl GetObject for Principal<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for Principal<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(Principal, ());

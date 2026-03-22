@@ -232,23 +232,7 @@ impl ChangesResponse {
     }
 }
 
-impl crate::core::Object for Mailbox<crate::Set> {
-    type Property = Property;
-    fn requires_account_id() -> bool { true }
-}
-
-impl crate::core::Object for Mailbox<crate::Get> {
-    type Property = Property;
-    fn requires_account_id() -> bool { true }
-}
-
-impl crate::core::changes::ChangesObject for Mailbox<crate::Set> {
-    type ChangesResponse = ChangesResponse;
-}
-
-impl crate::core::changes::ChangesObject for Mailbox<crate::Get> {
-    type ChangesResponse = ChangesResponse;
-}
+crate::impl_jmap_object!(Mailbox<State>, Property, true, changes_response = ChangesResponse);
 
 use crate::Set;
 

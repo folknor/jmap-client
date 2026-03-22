@@ -14,8 +14,7 @@ use std::collections::HashMap;
 use crate::{
     calendar_event::Alert,
     core::field::Field,
-    core::get::GetObject,
-    Get, Set,
+    Get,
 };
 
 use super::{Calendar, CalendarRights, IncludeInAvailability};
@@ -112,10 +111,4 @@ impl Calendar<Get> {
     }
 }
 
-impl GetObject for Calendar<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for Calendar<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(Calendar, ());

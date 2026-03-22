@@ -285,3 +285,120 @@ macro_rules! define_copy_method {
         }
     };
 }
+
+/// Generates a Property enum with `as_str()`, `Display`, `Serialize`,
+/// `Deserialize`, and `From<&str>` impls, plus an `Other(String)` catch-all.
+#[macro_export]
+macro_rules! define_open_property_enum {
+    (
+        $(#[$meta:meta])*
+        $vis:vis enum $name:ident {
+            $( $(#[$variant_meta:meta])* $variant:ident => $wire:expr ),* $(,)?
+        }
+    ) => {
+        $(#[$meta])*
+        #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+        $vis enum $name {
+            $( $(#[$variant_meta])* $variant, )*
+            Other(String),
+        }
+
+        impl $name {
+            pub fn as_str(&self) -> &str {
+                match self {
+                    $( Self::$variant => $wire, )*
+                    Self::Other(s) => s.as_str(),
+                }
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(self.as_str())
+            }
+        }
+
+        impl serde::Serialize for $name {
+            fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                serializer.serialize_str(self.as_str())
+            }
+        }
+
+        impl<'de> serde::Deserialize<'de> for $name {
+            fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+                struct PropertyVisitor;
+                impl serde::de::Visitor<'_> for PropertyVisitor {
+                    type Value = $name;
+                    fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                        f.write_str("a property name")
+                    }
+                    fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<$name, E> {
+                        Ok($name::from(v))
+                    }
+                }
+                deserializer.deserialize_str(PropertyVisitor)
+            }
+        }
+
+        impl From<&str> for $name {
+            fn from(s: &str) -> Self {
+                match s {
+                    $( $wire => Self::$variant, )*
+                    other => Self::Other(other.to_string()),
+                }
+            }
+        }
+    };
+}
+
+/// Generates a JMAP /parse method struct with `JmapMethod` impl and builders.
+#[macro_export]
+macro_rules! define_parse_method {
+    ($name:ident, $property:ty, $method_name:expr, $cap:ty, $response:ty) => {
+        #[derive(Debug, Clone, serde::Serialize)]
+        pub struct $name {
+            #[serde(rename = "accountId")]
+            account_id: String,
+
+            #[serde(rename = "blobIds")]
+            blob_ids: Vec<String>,
+
+            #[serde(rename = "properties")]
+            #[serde(skip_serializing_if = "Option::is_none")]
+            properties: Option<Vec<$property>>,
+        }
+
+        impl $crate::core::method::JmapMethod for $name {
+            const NAME: &'static str = $method_name;
+            type Cap = $cap;
+            type Response = $response;
+        }
+
+        impl $name {
+            pub fn new(account_id: impl Into<String>) -> Self {
+                Self {
+                    account_id: account_id.into(),
+                    blob_ids: Vec::new(),
+                    properties: None,
+                }
+            }
+
+            pub fn blob_ids<U, V>(&mut self, blob_ids: U) -> &mut Self
+            where
+                U: IntoIterator<Item = V>,
+                V: Into<String>,
+            {
+                self.blob_ids = blob_ids.into_iter().map(std::convert::Into::into).collect();
+                self
+            }
+
+            pub fn properties(
+                &mut self,
+                properties: impl IntoIterator<Item = $property>,
+            ) -> &mut Self {
+                self.properties = Some(properties.into_iter().collect());
+                self
+            }
+        }
+    };
+}

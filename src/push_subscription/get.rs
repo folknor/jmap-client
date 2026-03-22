@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set, DataType};
+use crate::{Get, DataType};
 
 use super::{Keys, PushSubscription};
 
@@ -59,10 +59,4 @@ impl Keys {
     }
 }
 
-impl GetObject for PushSubscription<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for PushSubscription<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(PushSubscription, ());

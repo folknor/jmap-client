@@ -9,7 +9,6 @@
  * except according to those terms.
  */
 
-use crate::core::capability::Capability;
 #[cfg(feature = "mail")]
 use crate::email::{MailCapabilities, SubmissionCapabilities};
 use std::collections::HashMap;
@@ -254,6 +253,20 @@ pub struct PrincipalsCapabilities {
     account_id_for_principal: Option<String>,
 }
 
+macro_rules! session_cap_accessor {
+    ($(#[$meta:meta])* $method:ident, $cap_marker:ty, $variant:ident, $return_type:ty) => {
+        $(#[$meta])*
+        pub fn $method(&self) -> Option<&$return_type> {
+            self.capabilities
+                .get(<$cap_marker as crate::core::capability::Capability>::URI)
+                .and_then(|v| match v {
+                    Capabilities::$variant(c) => Some(c),
+                    _ => None,
+                })
+        }
+    };
+}
+
 impl Session {
     pub fn capabilities(&self) -> impl Iterator<Item = &String> {
         self.capabilities.keys()
@@ -285,102 +298,16 @@ impl Session {
         serde_json::from_value(value).ok()
     }
 
-    pub fn websocket_capabilities(&self) -> Option<&WebSocketCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::WebSocket::URI)
-            .and_then(|v| match v {
-                Capabilities::WebSocket(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    pub fn core_capabilities(&self) -> Option<&CoreCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Core::URI)
-            .and_then(|v| match v {
-                Capabilities::Core(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "mail")]
-    pub fn mail_capabilities(&self) -> Option<&MailCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Mail::URI)
-            .and_then(|v| match v {
-                Capabilities::Mail(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "mail")]
-    pub fn submission_capabilities(&self) -> Option<&SubmissionCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Submission::URI)
-            .and_then(|v| match v {
-                Capabilities::Submission(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "mail")]
-    pub fn sieve_capabilities(&self) -> Option<&SieveCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Sieve::URI)
-            .and_then(|v| match v {
-                Capabilities::Sieve(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "quota")]
-    pub fn quota_capabilities(&self) -> Option<&QuotaCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Quota::URI)
-            .and_then(|v| match v {
-                Capabilities::Quota(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "blob")]
-    pub fn blob_capabilities(&self) -> Option<&BlobCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Blob::URI)
-            .and_then(|v| match v {
-                Capabilities::Blob(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "calendars")]
-    pub fn calendars_capabilities(&self) -> Option<&CalendarsCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Calendars::URI)
-            .and_then(|v| match v {
-                Capabilities::Calendars(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    #[cfg(feature = "contacts")]
-    pub fn contacts_capabilities(&self) -> Option<&ContactsCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Contacts::URI)
-            .and_then(|v| match v {
-                Capabilities::Contacts(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
-
-    pub fn principals_capabilities(&self) -> Option<&PrincipalsCapabilities> {
-        self.capabilities
-            .get(crate::core::capability::Principals::URI)
-            .and_then(|v| match v {
-                Capabilities::Principals(capabilities) => Some(capabilities),
-                _ => None,
-            })
-    }
+    session_cap_accessor!(websocket_capabilities, crate::core::capability::WebSocket, WebSocket, WebSocketCapabilities);
+    session_cap_accessor!(core_capabilities, crate::core::capability::Core, Core, CoreCapabilities);
+    session_cap_accessor!(#[cfg(feature = "mail")] mail_capabilities, crate::core::capability::Mail, Mail, MailCapabilities);
+    session_cap_accessor!(#[cfg(feature = "mail")] submission_capabilities, crate::core::capability::Submission, Submission, SubmissionCapabilities);
+    session_cap_accessor!(#[cfg(feature = "mail")] sieve_capabilities, crate::core::capability::Sieve, Sieve, SieveCapabilities);
+    session_cap_accessor!(#[cfg(feature = "quota")] quota_capabilities, crate::core::capability::Quota, Quota, QuotaCapabilities);
+    session_cap_accessor!(#[cfg(feature = "blob")] blob_capabilities, crate::core::capability::Blob, Blob, BlobCapabilities);
+    session_cap_accessor!(#[cfg(feature = "calendars")] calendars_capabilities, crate::core::capability::Calendars, Calendars, CalendarsCapabilities);
+    session_cap_accessor!(#[cfg(feature = "contacts")] contacts_capabilities, crate::core::capability::Contacts, Contacts, ContactsCapabilities);
+    session_cap_accessor!(principals_capabilities, crate::core::capability::Principals, Principals, PrincipalsCapabilities);
 
     pub fn accounts(&self) -> impl Iterator<Item = &String> {
         self.accounts.keys()

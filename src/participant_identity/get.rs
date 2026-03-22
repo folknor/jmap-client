@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 
 use super::ParticipantIdentity;
 
@@ -37,10 +37,4 @@ impl ParticipantIdentity<Get> {
     }
 }
 
-impl GetObject for ParticipantIdentity<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for ParticipantIdentity<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(ParticipantIdentity, ());

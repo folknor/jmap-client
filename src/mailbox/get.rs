@@ -10,7 +10,7 @@
  */
 
 use super::{Mailbox, MailboxRights, Role};
-use crate::{core::get::GetObject, principal::ACL, Get, Set};
+use crate::{principal::ACL, Get};
 use std::collections::HashMap;
 
 impl Mailbox<Get> {
@@ -129,10 +129,4 @@ impl MailboxRights {
     }
 }
 
-impl GetObject for Mailbox<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for Mailbox<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(Mailbox, ());

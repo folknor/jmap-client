@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::field::Field, core::get::GetObject, Get, Set};
+use crate::{core::field::Field, Get};
 
 use super::{CalendarEvent, GetArguments};
 
@@ -238,10 +238,4 @@ impl CalendarEvent<Get> {
     }
 }
 
-impl GetObject for CalendarEvent<Set> {
-    type GetArguments = GetArguments;
-}
-
-impl GetObject for CalendarEvent<Get> {
-    type GetArguments = GetArguments;
-}
+crate::impl_get_object!(CalendarEvent, GetArguments);

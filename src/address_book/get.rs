@@ -13,8 +13,7 @@ use std::collections::HashMap;
 
 use crate::{
     core::field::Field,
-    core::get::GetObject,
-    Get, Set,
+    Get,
 };
 
 use super::{AddressBook, AddressBookRights};
@@ -67,10 +66,4 @@ impl AddressBook<Get> {
     }
 }
 
-impl GetObject for AddressBook<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for AddressBook<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(AddressBook, ());

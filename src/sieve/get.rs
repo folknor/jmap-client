@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::get::GetObject, Get, Set};
+use crate::Get;
 
 use super::SieveScript;
 
@@ -35,10 +35,4 @@ impl SieveScript<Get> {
     }
 }
 
-impl GetObject for SieveScript<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for SieveScript<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(SieveScript, ());

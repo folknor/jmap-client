@@ -9,7 +9,7 @@
  * except according to those terms.
  */
 
-use crate::{core::field::Field, core::get::GetObject, core::set::SetObject, Get, Set};
+use crate::{core::field::Field, core::set::SetObject, Get, Set};
 
 use super::Quota;
 
@@ -74,13 +74,7 @@ impl Quota<Get> {
     }
 }
 
-impl GetObject for Quota<Set> {
-    type GetArguments = ();
-}
-
-impl GetObject for Quota<Get> {
-    type GetArguments = ();
-}
+crate::impl_get_object!(Quota, ());
 
 /// Quota is read-only — SetObject is implemented only to satisfy trait
 /// bounds required by the framework (GetResponse, ChangesResponse).
