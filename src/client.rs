@@ -277,14 +277,11 @@ impl<T: HttpTransport> Client<T> {
             .await
             .map_err(crate::Error::from)?;
         let response: response::Response = serde_json::from_slice(&bytes)?;
-        if response.session_state()
-            != self
-                .session
-                .lock()
-                .expect("session mutex poisoned")
-                .state()
         {
-            self.session_updated.store(false, Ordering::Release);
+            let session = self.session.lock().expect("session mutex poisoned");
+            if response.session_state() != session.state() {
+                self.session_updated.store(false, Ordering::Release);
+            }
         }
         Ok(response)
     }
@@ -296,8 +293,10 @@ impl<T: HttpTransport> Client<T> {
             .await
             .map_err(crate::Error::from)?;
         let session: Session = serde_json::from_slice(&bytes)?;
-        *self.session.lock().expect("session mutex poisoned") = Arc::new(session);
-        self.session_updated.store(true, Ordering::Release);
+        {
+            *self.session.lock().expect("session mutex poisoned") = Arc::new(session);
+            self.session_updated.store(true, Ordering::Release);
+        }
         Ok(())
     }
 

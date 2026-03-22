@@ -72,9 +72,8 @@ impl ReqwestTransport {
     }
 
     /// (EventSource, WebSocket) that can't use the HttpTransport trait.
-
     #[cfg(feature = "websockets")]
-        #[allow(dead_code)]
+    #[allow(dead_code)]
     pub(crate) fn headers(&self) -> &header::HeaderMap {
         &self.headers
     }

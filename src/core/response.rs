@@ -21,7 +21,6 @@ use super::request::CallHandle;
 /// Raw deserialized JMAP response envelope (used internally).
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
-#[allow(dead_code)]
 pub(crate) struct RawResponse<T> {
     #[serde(rename = "methodResponses")]
     method_responses: Vec<T>,

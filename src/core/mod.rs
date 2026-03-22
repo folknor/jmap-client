@@ -201,7 +201,7 @@ macro_rules! json_object_struct {
             type SetArguments = $set_args;
 
             fn create_id(&self) -> Option<String> {
-                self._create_id.map(|id| format!("c{}", id))
+                self._create_id.map(|id| format!("c{id}"))
             }
         }
 
