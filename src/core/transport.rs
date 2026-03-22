@@ -16,6 +16,8 @@ use std::future::Future;
 #[derive(Debug)]
 pub struct TransportError {
     pub message: String,
+    /// HTTP response body, if available (for parsing ProblemDetails).
+    pub body: Option<Vec<u8>>,
     source: Option<Box<dyn std::error::Error + Send + Sync>>,
 }
 
@@ -37,6 +39,7 @@ impl TransportError {
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
+            body: None,
             source: None,
         }
     }
@@ -47,7 +50,16 @@ impl TransportError {
     ) -> Self {
         Self {
             message: message.into(),
+            body: None,
             source: Some(Box::new(source)),
+        }
+    }
+
+    pub fn with_body(message: impl Into<String>, body: Vec<u8>) -> Self {
+        Self {
+            message: message.into(),
+            body: Some(body),
+            source: None,
         }
     }
 }

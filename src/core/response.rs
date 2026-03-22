@@ -20,6 +20,7 @@ use super::request::CallHandle;
 
 /// Raw deserialized JMAP response envelope (used internally).
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct RawResponse<T> {
     #[serde(rename = "methodResponses")]
     method_responses: Vec<T>,
@@ -39,23 +40,6 @@ impl<T> RawResponse<T> {
     pub fn session_state(&self) -> &str {
         &self.session_state
     }
-}
-
-/// A single method response — success or error.
-/// Used for `send_single` which expects exactly one response.
-#[derive(Debug, Deserialize)]
-#[serde(untagged)]
-#[non_exhaustive]
-pub enum SingleMethodResponse {
-    Ok((String, serde_json::Value, String)),
-    Error((ErrorTag, MethodError, String)),
-}
-
-#[derive(Debug, Deserialize)]
-#[non_exhaustive]
-pub enum ErrorTag {
-    #[serde(rename = "error")]
-    Error,
 }
 
 /// A parsed JMAP response with typed method result extraction.

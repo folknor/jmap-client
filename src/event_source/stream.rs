@@ -16,7 +16,7 @@ use crate::{
     DataType,
 };
 use futures_util::{Stream, StreamExt};
-use reqwest::header::{HeaderValue, ACCEPT, CONTENT_TYPE};
+use reqwest::header::{ACCEPT, CONTENT_TYPE};
 
 impl Client {
     pub async fn event_source(
@@ -24,7 +24,7 @@ impl Client {
         mut types: Option<impl IntoIterator<Item = DataType>>,
         close_after_state: bool,
         ping: Option<u32>,
-        last_event_id: Option<&str>,
+        _last_event_id: Option<&str>,
     ) -> crate::Result<impl Stream<Item = crate::Result<PushNotification>> + Unpin> {
         let mut event_source_url = String::with_capacity(self.session().event_source_url().len());
 
@@ -61,30 +61,22 @@ impl Client {
             }
         }
 
-        // Add headers
-        let mut headers = self.reqwest_headers();
-        headers.remove(CONTENT_TYPE);
-        headers.insert(ACCEPT, HeaderValue::from_static("text/event-stream"));
-        if let Some(last_event_id) = last_event_id {
-            headers.insert(
-                "Last-Event-ID",
-                HeaderValue::from_str(last_event_id).unwrap(),
-            );
+        // Use the transport's reqwest client for SSE streaming
+        let response = self
+            .reqwest_client()
+            .get(event_source_url)
+            .header(ACCEPT, "text/event-stream")
+            .header(CONTENT_TYPE, "")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(crate::Error::Internal(
+                format!("EventSource: HTTP {}", response.status()),
+            ));
         }
 
-        let mut stream = Client::handle_error(
-            reqwest::Client::builder()
-                .connect_timeout(self.timeout())
-                .danger_accept_invalid_certs(self.accept_invalid_certs)
-                .redirect(self.redirect_policy())
-                .default_headers(headers)
-                .build()?
-                .get(event_source_url)
-                .send()
-                .await?,
-        )
-        .await?
-        .bytes_stream();
+        let mut stream = response.bytes_stream();
         let mut parser = EventParser::default();
 
         Ok(Box::pin(async_stream::stream! {

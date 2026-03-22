@@ -18,7 +18,7 @@ use crate::client::Client;
 
 use super::capability::Capability;
 use super::method::JmapMethod;
-use super::response::{Response, SingleMethodResponse};
+use super::response::Response;
 
 /// A typed handle to a method call in a request batch.
 ///
@@ -161,17 +161,18 @@ impl<'x> Request<'x> {
         self,
         _handle: &CallHandle<M>,
     ) -> crate::Result<M::Response> {
-        let response: super::response::RawResponse<SingleMethodResponse> =
+        let response: super::response::RawResponse<(String, serde_json::Value, String)> =
             self.client.send_raw(&self).await?;
-        match response
+        let (method_name, data, _call_id) = response
             .unwrap_method_responses()
             .pop()
-            .ok_or_else(|| crate::Error::Internal("Server returned no results".to_string()))?
-        {
-            SingleMethodResponse::Ok((_, response, _)) => {
-                serde_json::from_value(response).map_err(crate::Error::from)
-            }
-            SingleMethodResponse::Error((_, err, _)) => Err(err.into()),
+            .ok_or_else(|| crate::Error::Internal("Server returned no results".to_string()))?;
+
+        if method_name == "error" {
+            let err: super::error::MethodError = serde_json::from_value(data)?;
+            Err(err.into())
+        } else {
+            serde_json::from_value(data).map_err(crate::Error::from)
         }
     }
 

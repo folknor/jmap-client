@@ -19,89 +19,96 @@ use reqwest::Client as HttpClient;
 
 use crate::core::transport::{HttpTransport, TransportError};
 
-static USER_AGENT: &str = concat!("jmap-client/", env!("CARGO_PKG_VERSION"));
-
 /// Default HTTP transport implementation using `reqwest`.
+///
+/// Reuses a single `reqwest::Client` for connection pooling, DNS cache,
+/// and TLS session reuse.
+#[allow(dead_code)]
 pub struct ReqwestTransport {
+    client: HttpClient,
+    #[cfg(feature = "websockets")]
     headers: header::HeaderMap,
-    timeout: Duration,
-    accept_invalid_certs: bool,
+    #[cfg(feature = "websockets")]
     trusted_hosts: Arc<HashSet<String>>,
 }
 
 impl ReqwestTransport {
     pub fn new(
-        headers: header::HeaderMap,
+        mut headers: header::HeaderMap,
         timeout: Duration,
         accept_invalid_certs: bool,
         trusted_hosts: Arc<HashSet<String>>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, TransportError> {
+        // Add JSON content type for API requests
+        headers.insert(
+            header::CONTENT_TYPE,
+            header::HeaderValue::from_static("application/json"),
+        );
+
+        let trusted_hosts_ = Arc::clone(&trusted_hosts);
+        let client = HttpClient::builder()
+            .redirect(redirect::Policy::custom(move |attempt| {
+                if attempt.previous().len() > 5 {
+                    attempt.error("Too many redirects.")
+                } else if matches!(attempt.url().host_str(), Some(host) if trusted_hosts_.contains(host))
+                {
+                    attempt.follow()
+                } else {
+                    let msg = format!(
+                        "Aborting redirect to unknown host '{}'.",
+                        attempt.url().host_str().unwrap_or("")
+                    );
+                    attempt.error(msg)
+                }
+            }))
+            .danger_accept_invalid_certs(accept_invalid_certs)
+            .timeout(timeout)
+            .default_headers(headers.clone())
+            .build()
+            .map_err(|e| TransportError::with_source("Failed to build HTTP client", e))?;
+
+        Ok(Self {
+            client,
+            #[cfg(feature = "websockets")]
             headers,
-            timeout,
-            accept_invalid_certs,
+            #[cfg(feature = "websockets")]
             trusted_hosts,
-        }
+        })
     }
 
+    /// Access the underlying reqwest::Client for streaming operations
+    /// (EventSource, WebSocket) that can't use the HttpTransport trait.
+    pub(crate) fn reqwest_client(&self) -> &HttpClient {
+        &self.client
+    }
+
+    #[cfg(feature = "websockets")]
+        #[allow(dead_code)]
     pub(crate) fn headers(&self) -> &header::HeaderMap {
         &self.headers
     }
 
-    pub(crate) fn redirect_policy(&self) -> redirect::Policy {
-        let trusted_hosts = Arc::clone(&self.trusted_hosts);
-        redirect::Policy::custom(move |attempt| {
-            if attempt.previous().len() > 5 {
-                attempt.error("Too many redirects.")
-            } else if matches!(attempt.url().host_str(), Some(host) if trusted_hosts.contains(host))
-            {
-                attempt.follow()
-            } else {
-                let message = format!(
-                    "Aborting redirect request to unknown host '{}'.",
-                    attempt.url().host_str().unwrap_or("")
-                );
-                attempt.error(message)
-            }
-        })
+    #[cfg(feature = "websockets")]
+        #[allow(dead_code)]
+    pub(crate) fn trusted_hosts(&self) -> &Arc<HashSet<String>> {
+        &self.trusted_hosts
     }
 
-    fn build_client(&self) -> Result<HttpClient, TransportError> {
-        HttpClient::builder()
-            .redirect(self.redirect_policy())
-            .danger_accept_invalid_certs(self.accept_invalid_certs)
-            .timeout(self.timeout)
-            .default_headers(self.headers.clone())
-            .build()
-            .map_err(|e| TransportError::with_source("Failed to build HTTP client", e))
-    }
+    async fn handle_response(response: reqwest::Response) -> Result<Vec<u8>, TransportError> {
+        let status = response.status();
+        let body = response
+            .bytes()
+            .await
+            .map_err(|e| TransportError::with_source("Failed to read response body", e))?;
 
-    async fn handle_response(
-        response: reqwest::Response,
-    ) -> Result<Vec<u8>, TransportError> {
-        if response.status().is_success() {
-            response
-                .bytes()
-                .await
-                .map(|b| b.to_vec())
-                .map_err(|e| TransportError::with_source("Failed to read response body", e))
-        } else if response
-            .headers()
-            .get(header::CONTENT_TYPE)
-            .is_some_and(|ct| ct.as_bytes().starts_with(b"application/problem+json"))
-        {
-            let body = response.bytes().await.map_err(|e| {
-                TransportError::with_source("Failed to read error response", e)
-            })?;
-            // Return the problem details body so the caller can parse it
-            Err(TransportError::new(
-                String::from_utf8_lossy(&body).to_string(),
-            ))
+        if status.is_success() {
+            Ok(body.to_vec())
         } else {
-            Err(TransportError::new(format!(
-                "HTTP {}",
-                response.status()
-            )))
+            // Return the full body so the caller can parse ProblemDetails
+            Err(TransportError::with_body(
+                format!("HTTP {status}"),
+                body.to_vec(),
+            ))
         }
     }
 }
@@ -112,8 +119,8 @@ impl HttpTransport for ReqwestTransport {
         url: &str,
         body: Vec<u8>,
     ) -> Result<Vec<u8>, TransportError> {
-        let client = self.build_client()?;
-        let response = client
+        let response = self
+            .client
             .post(url)
             .body(body)
             .send()
@@ -128,8 +135,7 @@ impl HttpTransport for ReqwestTransport {
         body: Vec<u8>,
         content_type: Option<&str>,
     ) -> Result<Vec<u8>, TransportError> {
-        let client = self.build_client()?;
-        let mut req = client.post(url);
+        let mut req = self.client.post(url);
         if let Some(ct) = content_type {
             req = req.header(header::CONTENT_TYPE, ct);
         }
@@ -142,9 +148,10 @@ impl HttpTransport for ReqwestTransport {
     }
 
     async fn download(&self, url: &str) -> Result<Vec<u8>, TransportError> {
-        let client = self.build_client()?;
-        let response = client
+        let response = self
+            .client
             .get(url)
+            .header(header::CONTENT_TYPE, "")  // override JSON content-type
             .send()
             .await
             .map_err(|e| TransportError::with_source("Download failed", e))?;
@@ -152,8 +159,8 @@ impl HttpTransport for ReqwestTransport {
     }
 
     async fn get_session(&self, url: &str) -> Result<Vec<u8>, TransportError> {
-        let client = self.build_client()?;
-        let response = client
+        let response = self
+            .client
             .get(url)
             .send()
             .await

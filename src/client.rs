@@ -31,7 +31,6 @@ use crate::{
         transport::HttpTransport,
     },
     transport_reqwest::ReqwestTransport,
-    Error,
 };
 
 const DEFAULT_TIMEOUT_MS: u64 = 10 * 1000;
@@ -61,11 +60,7 @@ pub struct Client {
     #[cfg(feature = "websockets")]
     pub(crate) authorization: String,
     #[cfg(feature = "websockets")]
-    pub(crate) headers: header::HeaderMap,
-    #[cfg(feature = "websockets")]
     pub(crate) ws: tokio::sync::Mutex<Option<crate::client_ws::WsStream>>,
-    #[cfg(feature = "websockets")]
-    pub(crate) trusted_hosts: Arc<HashSet<String>>,
 }
 
 pub struct ClientBuilder {
@@ -151,13 +146,13 @@ impl ClientBuilder {
 
         let trusted_hosts = Arc::new(self.trusted_hosts);
 
-        // Build transport for session fetch
         let transport = ReqwestTransport::new(
             headers.clone(),
             self.timeout,
             self.accept_invalid_certs,
             Arc::clone(&trusted_hosts),
-        );
+        )
+        .map_err(crate::Error::from)?;
 
         let session_url = format!("{url}/.well-known/jmap");
         let session_bytes = transport
@@ -171,20 +166,6 @@ impl ClientBuilder {
             .next()
             .map(|a| a.1.clone())
             .unwrap_or_default();
-
-        // Add JSON content type for API requests
-        headers.insert(
-            header::CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
-
-        // Rebuild transport with content-type header
-        let transport = ReqwestTransport::new(
-            headers.clone(),
-            self.timeout,
-            self.accept_invalid_certs,
-            Arc::clone(&trusted_hosts),
-        );
 
         Ok(Client {
             download_url: URLPart::parse(session.download_url())?,
@@ -200,10 +181,6 @@ impl ClientBuilder {
             default_account_id,
             #[cfg(feature = "websockets")]
             authorization,
-            #[cfg(feature = "websockets")]
-            headers,
-            #[cfg(feature = "websockets")]
-            trusted_hosts,
             #[cfg(feature = "websockets")]
             ws: None.into(),
         })
@@ -320,39 +297,12 @@ impl Client {
         &self.transport
     }
 
-    // -- reqwest-specific helpers for EventSource/WebSocket --
+    // -- reqwest-specific helpers for EventSource/WebSocket streaming --
+    // These are inherently tied to reqwest's streaming API and cannot be
+    // abstracted behind HttpTransport.
 
-    #[cfg(feature = "websockets")]
-    pub(crate) fn headers(&self) -> &header::HeaderMap {
-        &self.headers
-    }
-
-    pub(crate) fn reqwest_headers(&self) -> header::HeaderMap {
-        // Reconstruct headers from the transport for EventSource
-        self.transport.headers().clone()
-    }
-
-    pub(crate) fn redirect_policy(&self) -> reqwest::redirect::Policy {
-        self.transport.redirect_policy()
-    }
-
-    pub(crate) async fn handle_error(
-        response: reqwest::Response,
-    ) -> crate::Result<reqwest::Response> {
-        if response.status().is_success() {
-            Ok(response)
-        } else if response
-            .headers()
-            .get(header::CONTENT_TYPE)
-            .is_some_and(|h| h.as_bytes().starts_with(b"application/problem+json"))
-        {
-            Err(serde_json::from_slice::<crate::core::error::ProblemDetails>(
-                    &response.bytes().await?,
-                )?
-            .into())
-        } else {
-            Err(Error::Internal(format!("{}", response.status())))
-        }
+    pub(crate) fn reqwest_client(&self) -> &reqwest::Client {
+        self.transport.reqwest_client()
     }
 }
 

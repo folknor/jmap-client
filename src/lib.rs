@@ -164,6 +164,12 @@ impl std::error::Error for Error {}
 
 impl From<core::transport::TransportError> for Error {
     fn from(e: core::transport::TransportError) -> Self {
+        // Try to parse ProblemDetails from the response body
+        if let Some(ref body) = e.body {
+            if let Ok(problem) = serde_json::from_slice::<ProblemDetails>(body) {
+                return Error::Problem(Box::new(problem));
+            }
+        }
         Error::Transport(e)
     }
 }
