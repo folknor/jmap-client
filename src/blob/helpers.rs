@@ -56,7 +56,6 @@ impl Client {
 }
 
 impl Request<'_> {
-    #[maybe_async::maybe_async]
     pub fn copy_blob(&mut self, from_account_id: impl Into<String>) -> &mut CopyBlobRequest {
         self.add_method_call(
             Method::CopyBlob,

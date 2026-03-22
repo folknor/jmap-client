@@ -121,9 +121,9 @@ pub enum Property {
     Other(String),
 }
 
-impl Display for Property {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
+impl Property {
+    fn as_str(&self) -> &str {
+        match self {
             Property::Id => "id",
             Property::Uid => "uid",
             Property::AddressBookIds => "addressBookIds",
@@ -140,13 +140,19 @@ impl Display for Property {
             Property::Created => "created",
             Property::Updated => "updated",
             Property::Other(s) => s.as_str(),
-        })
+        }
+    }
+}
+
+impl Display for Property {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
 impl Serialize for Property {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&self.to_string())
+        serializer.serialize_str(self.as_str())
     }
 }
 

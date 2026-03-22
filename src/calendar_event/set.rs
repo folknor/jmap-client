@@ -46,7 +46,14 @@ impl CalendarEvent<Set> {
             .entry("calendarIds")
             .or_insert_with(|| json!({}));
         if let Some(map) = entry.as_object_mut() {
-            map.insert(calendar_id.into(), json!(set));
+            map.insert(
+                calendar_id.into(),
+                if set {
+                    serde_json::Value::Bool(true)
+                } else {
+                    serde_json::Value::Null
+                },
+            );
         }
         self
     }

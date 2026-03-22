@@ -295,6 +295,7 @@ impl Client {
 
 impl Request<'_> {
     pub fn get_principal(&mut self) -> &mut GetRequest<Principal<Set>> {
+        self.add_capability(crate::URI::Principals);
         self.add_method_call(
             Method::GetPrincipal,
             Arguments::principal_get(self.params(Method::GetPrincipal)),
@@ -308,6 +309,7 @@ impl Request<'_> {
     }
 
     pub fn changes_principal(&mut self, since_state: impl Into<String>) -> &mut ChangesRequest {
+        self.add_capability(crate::URI::Principals);
         self.add_method_call(
             Method::ChangesPrincipal,
             Arguments::changes(self.params(Method::ChangesPrincipal), since_state.into()),
@@ -321,6 +323,7 @@ impl Request<'_> {
     }
 
     pub fn query_principal(&mut self) -> &mut QueryRequest<Principal<Set>> {
+        self.add_capability(crate::URI::Principals);
         self.add_method_call(
             Method::QueryPrincipal,
             Arguments::principal_query(self.params(Method::QueryPrincipal)),
@@ -337,6 +340,7 @@ impl Request<'_> {
         &mut self,
         since_query_state: impl Into<String>,
     ) -> &mut QueryChangesRequest<Principal<Set>> {
+        self.add_capability(crate::URI::Principals);
         self.add_method_call(
             Method::QueryChangesPrincipal,
             Arguments::principal_query_changes(
@@ -353,6 +357,7 @@ impl Request<'_> {
     }
 
     pub fn set_principal(&mut self) -> &mut SetRequest<Principal<Set>> {
+        self.add_capability(crate::URI::Principals);
         self.add_method_call(
             Method::SetPrincipal,
             Arguments::principal_set(self.params(Method::SetPrincipal)),

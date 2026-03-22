@@ -181,20 +181,16 @@ impl<O: SetObject> SetRequest<O> {
         let create_id_str = format!("c{}", create_id);
         self.create
             .get_or_insert_with(AHashMap::new)
-            .insert(create_id_str.clone(), O::new(create_id.into()));
-        self.create
-            .as_mut()
-            .unwrap()
-            .get_mut(&create_id_str)
-            .unwrap()
+            .entry(create_id_str)
+            .or_insert_with(|| O::new(create_id.into()))
     }
 
     pub fn create_with_id(&mut self, create_id: impl Into<String>) -> &mut O {
         let create_id = create_id.into();
         self.create
             .get_or_insert_with(AHashMap::new)
-            .insert(create_id.clone(), O::new(0.into()));
-        self.create.as_mut().unwrap().get_mut(&create_id).unwrap()
+            .entry(create_id)
+            .or_insert_with(|| O::new(0.into()))
     }
 
     pub fn create_item(&mut self, item: O) -> String {
@@ -210,8 +206,8 @@ impl<O: SetObject> SetRequest<O> {
         let id: String = id.into();
         self.update
             .get_or_insert_with(AHashMap::new)
-            .insert(id.clone(), O::new(None));
-        self.update.as_mut().unwrap().get_mut(&id).unwrap()
+            .entry(id)
+            .or_insert_with(|| O::new(None))
     }
 
     pub fn update_item(&mut self, id: impl Into<String>, item: O) {

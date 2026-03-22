@@ -9,6 +9,8 @@
  * except according to those terms.
  */
 
+#![forbid(unsafe_code)]
+
 //! # jmap-client
 //!
 //! [![crates.io](https://img.shields.io/crates/v/jmap-client)](https://crates.io/crates/jmap-client)
@@ -180,7 +182,6 @@
 //! Copyright (C) 2022, Stalwart Labs LLC
 //!
 
-#[forbid(unsafe_code)]
 pub mod address_book;
 pub mod blob;
 pub mod calendar;

@@ -94,38 +94,29 @@ where
     let raw: AHashMap<String, JsonValue> = AHashMap::deserialize(deserializer)?;
     let mut result = AHashMap::with_capacity(raw.len());
 
+    /// Try to deserialize a capability value as a typed struct,
+    /// falling back to `Other(original_value)` on parse failure.
+    macro_rules! try_cap {
+        ($value:expr, $variant:ident) => {
+            match serde_json::from_value::<_>($value.clone()) {
+                Ok(v) => Capabilities::$variant(v),
+                Err(_) => Capabilities::Other($value),
+            }
+        };
+    }
+
     for (key, value) in raw {
         let cap = match key.as_str() {
-            "urn:ietf:params:jmap:core" => serde_json::from_value(value)
-                .map(Capabilities::Core)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:mail" => serde_json::from_value(value)
-                .map(Capabilities::Mail)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:submission" => serde_json::from_value(value)
-                .map(Capabilities::Submission)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:websocket" => serde_json::from_value(value)
-                .map(Capabilities::WebSocket)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:sieve" => serde_json::from_value(value)
-                .map(Capabilities::Sieve)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:quota" => serde_json::from_value(value)
-                .map(Capabilities::Quota)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:blob" => serde_json::from_value(value)
-                .map(Capabilities::Blob)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:calendars" => serde_json::from_value(value)
-                .map(Capabilities::Calendars)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:contacts" => serde_json::from_value(value)
-                .map(Capabilities::Contacts)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
-            "urn:ietf:params:jmap:principals" => serde_json::from_value(value)
-                .map(Capabilities::Principals)
-                .unwrap_or_else(|_| Capabilities::Other(JsonValue::Null)),
+            "urn:ietf:params:jmap:core" => try_cap!(value, Core),
+            "urn:ietf:params:jmap:mail" => try_cap!(value, Mail),
+            "urn:ietf:params:jmap:submission" => try_cap!(value, Submission),
+            "urn:ietf:params:jmap:websocket" => try_cap!(value, WebSocket),
+            "urn:ietf:params:jmap:sieve" => try_cap!(value, Sieve),
+            "urn:ietf:params:jmap:quota" => try_cap!(value, Quota),
+            "urn:ietf:params:jmap:blob" => try_cap!(value, Blob),
+            "urn:ietf:params:jmap:calendars" => try_cap!(value, Calendars),
+            "urn:ietf:params:jmap:contacts" => try_cap!(value, Contacts),
+            "urn:ietf:params:jmap:principals" => try_cap!(value, Principals),
             _ => Capabilities::Other(value),
         };
         result.insert(key, cap);
@@ -134,7 +125,8 @@ where
     Ok(result)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct CoreCapabilities {
     #[serde(rename = "maxSizeUpload")]
     max_size_upload: usize,
@@ -169,7 +161,8 @@ pub struct WebSocketCapabilities {
     supports_push: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct SieveCapabilities {
     #[serde(rename = "implementation")]
     implementation: Option<String>,

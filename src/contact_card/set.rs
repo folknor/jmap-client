@@ -46,7 +46,14 @@ impl ContactCard<Set> {
             .entry("addressBookIds")
             .or_insert_with(|| json!({}));
         if let Some(map) = entry.as_object_mut() {
-            map.insert(address_book_id.into(), json!(set));
+            map.insert(
+                address_book_id.into(),
+                if set {
+                    serde_json::Value::Bool(true)
+                } else {
+                    serde_json::Value::Null
+                },
+            );
         }
         self
     }
