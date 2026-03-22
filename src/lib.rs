@@ -164,6 +164,7 @@ pub enum PushObject {
 
 #[cfg(feature = "calendars")]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CalendarAlert {
     #[serde(rename = "accountId")]
     pub account_id: String,

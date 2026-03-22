@@ -58,7 +58,6 @@ macro_rules! define_get_method {
             }
         }
 
-        // Deref for backward compatibility — will be removed in a future version.
         impl std::ops::Deref for $name {
             type Target = $crate::core::get::GetRequest<$obj>;
             fn deref(&self) -> &Self::Target {

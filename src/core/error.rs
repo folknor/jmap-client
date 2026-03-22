@@ -14,10 +14,11 @@ use std::fmt::Display;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct ProblemDetails {
     #[serde(rename = "type")]
     p_type: ProblemType,
-    pub status: Option<u32>,
+    status: Option<u32>,
     title: Option<String>,
     detail: Option<String>,
     limit: Option<String>,
@@ -46,9 +47,10 @@ pub enum ProblemType {
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct MethodError {
     #[serde(rename = "type")]
-    pub p_type: MethodErrorType,
+    p_type: MethodErrorType,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
@@ -141,7 +143,7 @@ impl ProblemDetails {
 }
 
 impl MethodError {
-    pub fn error(&self) -> &MethodErrorType {
+    pub fn error_type(&self) -> &MethodErrorType {
         &self.p_type
     }
 }

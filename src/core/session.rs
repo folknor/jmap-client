@@ -254,9 +254,6 @@ pub struct PrincipalsCapabilities {
     account_id_for_principal: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EmptyCapabilities {}
-
 impl Session {
     pub fn capabilities(&self) -> impl Iterator<Item = &String> {
         self.capabilities.keys()

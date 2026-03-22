@@ -250,15 +250,15 @@ impl<T: HttpTransport> Client<T> {
         crate::core::id::AccountId::new(&self.default_account_id)
     }
 
-    pub fn download_url(&self) -> &[URLPart<blob::URLParameter>] {
+    pub(crate) fn download_url(&self) -> &[URLPart<blob::URLParameter>] {
         &self.download_url
     }
 
-    pub fn upload_url(&self) -> &[URLPart<blob::URLParameter>] {
+    pub(crate) fn upload_url(&self) -> &[URLPart<blob::URLParameter>] {
         &self.upload_url
     }
 
-    pub fn event_source_url(&self) -> &[URLPart<crate::event_source::URLParameter>] {
+    pub(crate) fn event_source_url(&self) -> &[URLPart<crate::event_source::URLParameter>] {
         &self.event_source_url
     }
 

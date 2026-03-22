@@ -83,12 +83,13 @@ pub struct SetResponse<O: SetObject> {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[non_exhaustive]
 pub struct SetError<U>
 where
     U: Display,
 {
     #[serde(rename = "type")]
-    pub type_: SetErrorType,
+    type_: SetErrorType,
     description: Option<String>,
     properties: Option<Vec<U>>,
 }
@@ -356,7 +357,7 @@ impl<O: SetObject> SetResponse<O> {
 }
 
 impl<U: Display> SetError<U> {
-    pub fn error(&self) -> &SetErrorType {
+    pub fn error_type(&self) -> &SetErrorType {
         &self.type_
     }
 
