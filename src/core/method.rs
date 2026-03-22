@@ -51,8 +51,14 @@ macro_rules! define_get_method {
                     inner: $crate::core::get::GetRequest::new(account_id),
                 }
             }
+
+            /// Access the underlying GetRequest for builder methods.
+            pub fn request(&mut self) -> &mut $crate::core::get::GetRequest<$obj> {
+                &mut self.inner
+            }
         }
 
+        // Deref for backward compatibility — will be removed in a future version.
         impl std::ops::Deref for $name {
             type Target = $crate::core::get::GetRequest<$obj>;
             fn deref(&self) -> &Self::Target {

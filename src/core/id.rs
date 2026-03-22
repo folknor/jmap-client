@@ -59,9 +59,21 @@ impl<T: ?Sized> AsRef<str> for Id<T> {
     }
 }
 
-impl<T: ?Sized, S: Into<String>> From<S> for Id<T> {
-    fn from(s: S) -> Self {
+impl<T: ?Sized> From<String> for Id<T> {
+    fn from(s: String) -> Self {
         Id::new(s)
+    }
+}
+
+impl<T: ?Sized> From<&str> for Id<T> {
+    fn from(s: &str) -> Self {
+        Id::new(s)
+    }
+}
+
+impl<T: ?Sized> From<Id<T>> for String {
+    fn from(id: Id<T>) -> Self {
+        id.0
     }
 }
 

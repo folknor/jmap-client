@@ -245,6 +245,11 @@ impl<T: HttpTransport> Client<T> {
         &self.default_account_id
     }
 
+    /// Get the default account ID as a typed `AccountId`.
+    pub fn default_account(&self) -> crate::core::id::AccountId {
+        crate::core::id::AccountId::new(&self.default_account_id)
+    }
+
     pub fn download_url(&self) -> &[URLPart<blob::URLParameter>] {
         &self.download_url
     }
