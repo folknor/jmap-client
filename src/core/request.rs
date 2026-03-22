@@ -142,154 +142,98 @@ pub enum Arguments {
     ContactCardCopy(Box<CopyRequest<ContactCard<Set>>>),
 }
 
+macro_rules! impl_arguments_constructor {
+    // Simple: params only
+    ($method_name:ident, $variant:ident, $inner:ty) => {
+        pub fn $method_name(params: RequestParams) -> Self {
+            Arguments::$variant(Box::new(<$inner>::new(params)))
+        }
+    };
+    // With extra String arg
+    ($method_name:ident, $variant:ident, $inner:ty, $arg_name:ident : String) => {
+        pub fn $method_name(params: RequestParams, $arg_name: String) -> Self {
+            Arguments::$variant(Box::new(<$inner>::new(params, $arg_name)))
+        }
+    };
+}
+
+macro_rules! impl_arguments_accessor {
+    ($method_name:ident, $variant:ident, $return_type:ty) => {
+        pub fn $method_name(&mut self) -> &mut $return_type {
+            match self {
+                Arguments::$variant(ref mut r) => r,
+                _ => unreachable!(),
+            }
+        }
+    };
+}
+
 impl Arguments {
-    pub fn changes(params: RequestParams, since_state: String) -> Self {
-        Arguments::Changes(Box::new(ChangesRequest::new(params, since_state)))
-    }
+    // --- Constructors ---
 
-    pub fn push_get(params: RequestParams) -> Self {
-        Arguments::PushGet(Box::new(GetRequest::new(params)))
-    }
+    // Changes (special: uses ChangesRequest directly)
+    impl_arguments_constructor!(changes, Changes, ChangesRequest, since_state: String);
 
-    pub fn push_set(params: RequestParams) -> Self {
-        Arguments::PushSet(Box::new(SetRequest::new(params)))
-    }
+    // Push subscription
+    impl_arguments_constructor!(push_get, PushGet, GetRequest<PushSubscription<Set>>);
+    impl_arguments_constructor!(push_set, PushSet, SetRequest<PushSubscription<Set>>);
 
-    pub fn blob_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::BlobCopy(Box::new(CopyBlobRequest::new(params, from_account_id)))
-    }
+    // Blob
+    impl_arguments_constructor!(blob_copy, BlobCopy, CopyBlobRequest, from_account_id: String);
+    impl_arguments_constructor!(blob_upload, BlobUpload, BlobUploadRequest);
+    impl_arguments_constructor!(blob_get, BlobGet, BlobGetRequest);
+    impl_arguments_constructor!(blob_lookup, BlobLookup, BlobLookupRequest);
 
-    pub fn blob_upload(params: RequestParams) -> Self {
-        Arguments::BlobUpload(Box::new(BlobUploadRequest::new(params)))
-    }
+    // Mailbox
+    impl_arguments_constructor!(mailbox_get, MailboxGet, GetRequest<Mailbox<Set>>);
+    impl_arguments_constructor!(mailbox_query, MailboxQuery, QueryRequest<Mailbox<Set>>);
+    impl_arguments_constructor!(mailbox_query_changes, MailboxQueryChanges, QueryChangesRequest<Mailbox<Set>>, since_query_state: String);
+    impl_arguments_constructor!(mailbox_set, MailboxSet, SetRequest<Mailbox<Set>>);
 
-    pub fn blob_get(params: RequestParams) -> Self {
-        Arguments::BlobGet(Box::new(BlobGetRequest::new(params)))
-    }
+    // Thread
+    impl_arguments_constructor!(thread_get, ThreadGet, GetRequest<Thread>);
 
-    pub fn blob_lookup(params: RequestParams) -> Self {
-        Arguments::BlobLookup(Box::new(BlobLookupRequest::new(params)))
-    }
+    // Email
+    impl_arguments_constructor!(email_get, EmailGet, GetRequest<Email<Set>>);
+    impl_arguments_constructor!(email_query, EmailQuery, QueryRequest<Email<Set>>);
+    impl_arguments_constructor!(email_query_changes, EmailQueryChanges, QueryChangesRequest<Email<Set>>, since_query_state: String);
+    impl_arguments_constructor!(email_set, EmailSet, SetRequest<Email<Set>>);
+    impl_arguments_constructor!(email_copy, EmailCopy, CopyRequest<Email<Set>>, from_account_id: String);
+    impl_arguments_constructor!(email_import, EmailImport, EmailImportRequest);
+    impl_arguments_constructor!(email_parse, EmailParse, EmailParseRequest);
+    impl_arguments_constructor!(search_snippet_get, SearchSnippetGet, SearchSnippetGetRequest);
 
-    pub fn mailbox_get(params: RequestParams) -> Self {
-        Arguments::MailboxGet(Box::new(GetRequest::new(params)))
-    }
+    // Identity
+    impl_arguments_constructor!(identity_get, IdentityGet, GetRequest<Identity<Set>>);
+    impl_arguments_constructor!(identity_set, IdentitySet, SetRequest<Identity<Set>>);
 
-    pub fn mailbox_query(params: RequestParams) -> Self {
-        Arguments::MailboxQuery(Box::new(QueryRequest::new(params)))
-    }
+    // Email submission
+    impl_arguments_constructor!(email_submission_get, EmailSubmissionGet, GetRequest<EmailSubmission<Set>>);
+    impl_arguments_constructor!(email_submission_query, EmailSubmissionQuery, QueryRequest<EmailSubmission<Set>>);
+    impl_arguments_constructor!(email_submission_query_changes, EmailSubmissionQueryChanges, QueryChangesRequest<EmailSubmission<Set>>, since_query_state: String);
+    impl_arguments_constructor!(email_submission_set, EmailSubmissionSet, SetRequest<EmailSubmission<Set>>);
 
-    pub fn mailbox_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::MailboxQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
-    }
+    // Vacation response
+    impl_arguments_constructor!(vacation_response_get, VacationResponseGet, GetRequest<VacationResponse<Set>>);
+    impl_arguments_constructor!(vacation_response_set, VacationResponseSet, SetRequest<VacationResponse<Set>>);
 
-    pub fn mailbox_set(params: RequestParams) -> Self {
-        Arguments::MailboxSet(Box::new(SetRequest::new(params)))
-    }
+    // Sieve script
+    impl_arguments_constructor!(sieve_script_get, SieveScriptGet, GetRequest<SieveScript<Set>>);
+    impl_arguments_constructor!(sieve_script_query, SieveScriptQuery, QueryRequest<SieveScript<Set>>);
+    impl_arguments_constructor!(sieve_script_set, SieveScriptSet, SetRequest<SieveScript<Set>>);
 
-    pub fn thread_get(params: RequestParams) -> Self {
-        Arguments::ThreadGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn email_get(params: RequestParams) -> Self {
-        Arguments::EmailGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn email_query(params: RequestParams) -> Self {
-        Arguments::EmailQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn email_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::EmailQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
-    }
-
-    pub fn email_set(params: RequestParams) -> Self {
-        Arguments::EmailSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn email_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::EmailCopy(Box::new(CopyRequest::new(params, from_account_id)))
-    }
-
-    pub fn email_import(params: RequestParams) -> Self {
-        Arguments::EmailImport(Box::new(EmailImportRequest::new(params)))
-    }
-
-    pub fn email_parse(params: RequestParams) -> Self {
-        Arguments::EmailParse(Box::new(EmailParseRequest::new(params)))
-    }
-
-    pub fn search_snippet_get(params: RequestParams) -> Self {
-        Arguments::SearchSnippetGet(Box::new(SearchSnippetGetRequest::new(params)))
-    }
-
-    pub fn identity_get(params: RequestParams) -> Self {
-        Arguments::IdentityGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn identity_set(params: RequestParams) -> Self {
-        Arguments::IdentitySet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn email_submission_get(params: RequestParams) -> Self {
-        Arguments::EmailSubmissionGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn email_submission_query(params: RequestParams) -> Self {
-        Arguments::EmailSubmissionQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn email_submission_query_changes(
-        params: RequestParams,
-        since_query_state: String,
-    ) -> Self {
-        Arguments::EmailSubmissionQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
-    }
-
-    pub fn email_submission_set(params: RequestParams) -> Self {
-        Arguments::EmailSubmissionSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn vacation_response_get(params: RequestParams) -> Self {
-        Arguments::VacationResponseGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn vacation_response_set(params: RequestParams) -> Self {
-        Arguments::VacationResponseSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn sieve_script_get(params: RequestParams) -> Self {
-        Arguments::SieveScriptGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn sieve_script_query(params: RequestParams) -> Self {
-        Arguments::SieveScriptQuery(Box::new(QueryRequest::new(params)))
-    }
-
+    // Sieve script validate (special: uses impl Into<String>)
     pub fn sieve_script_validate(params: RequestParams, blob_id: impl Into<String>) -> Self {
         Arguments::SieveScriptValidate(Box::new(SieveScriptValidateRequest::new(params, blob_id)))
     }
 
-    pub fn sieve_script_set(params: RequestParams) -> Self {
-        Arguments::SieveScriptSet(Box::new(SetRequest::new(params)))
-    }
+    // Principal
+    impl_arguments_constructor!(principal_get, PrincipalGet, GetRequest<Principal<Set>>);
+    impl_arguments_constructor!(principal_query, PrincipalQuery, QueryRequest<Principal<Set>>);
+    impl_arguments_constructor!(principal_query_changes, PrincipalQueryChanges, QueryChangesRequest<Principal<Set>>, since_query_state: String);
+    impl_arguments_constructor!(principal_set, PrincipalSet, SetRequest<Principal<Set>>);
 
-    pub fn principal_get(params: RequestParams) -> Self {
-        Arguments::PrincipalGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn principal_query(params: RequestParams) -> Self {
-        Arguments::PrincipalQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn principal_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::PrincipalQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
-    }
-
-    pub fn principal_set(params: RequestParams) -> Self {
-        Arguments::PrincipalSet(Box::new(SetRequest::new(params)))
-    }
-
+    // Principal get availability (special: 4 args with impl Into<String>)
     pub fn principal_get_availability(
         params: RequestParams,
         id: impl Into<String>,
@@ -301,577 +245,144 @@ impl Arguments {
         )))
     }
 
-    pub fn quota_get(params: RequestParams) -> Self {
-        Arguments::QuotaGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn quota_query(params: RequestParams) -> Self {
-        Arguments::QuotaQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn quota_query_changes(params: RequestParams, since_query_state: String) -> Self {
-        Arguments::QuotaQueryChanges(Box::new(QueryChangesRequest::new(params, since_query_state)))
-    }
-
-    pub fn calendar_get(params: RequestParams) -> Self {
-        Arguments::CalendarGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn calendar_set(params: RequestParams) -> Self {
-        Arguments::CalendarSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn calendar_event_get(params: RequestParams) -> Self {
-        Arguments::CalendarEventGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn calendar_event_query(params: RequestParams) -> Self {
-        Arguments::CalendarEventQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn calendar_event_query_changes(
-        params: RequestParams,
-        since_query_state: String,
-    ) -> Self {
-        Arguments::CalendarEventQueryChanges(Box::new(QueryChangesRequest::new(
-            params,
-            since_query_state,
-        )))
-    }
-
-    pub fn calendar_event_set(params: RequestParams) -> Self {
-        Arguments::CalendarEventSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn calendar_event_parse(params: RequestParams) -> Self {
-        Arguments::CalendarEventParse(Box::new(CalendarEventParseRequest::new(params)))
-    }
-
-    pub fn calendar_event_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::CalendarEventCopy(Box::new(CopyRequest::new(params, from_account_id)))
-    }
-
-    pub fn calendar_event_notification_get(params: RequestParams) -> Self {
-        Arguments::CalendarEventNotificationGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn calendar_event_notification_query(params: RequestParams) -> Self {
-        Arguments::CalendarEventNotificationQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn calendar_event_notification_query_changes(
-        params: RequestParams,
-        since_query_state: String,
-    ) -> Self {
-        Arguments::CalendarEventNotificationQueryChanges(Box::new(QueryChangesRequest::new(
-            params,
-            since_query_state,
-        )))
-    }
-
-    pub fn calendar_event_notification_set(params: RequestParams) -> Self {
-        Arguments::CalendarEventNotificationSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn participant_identity_get(params: RequestParams) -> Self {
-        Arguments::ParticipantIdentityGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn participant_identity_set(params: RequestParams) -> Self {
-        Arguments::ParticipantIdentitySet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn address_book_get(params: RequestParams) -> Self {
-        Arguments::AddressBookGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn address_book_set(params: RequestParams) -> Self {
-        Arguments::AddressBookSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn contact_card_get(params: RequestParams) -> Self {
-        Arguments::ContactCardGet(Box::new(GetRequest::new(params)))
-    }
-
-    pub fn contact_card_query(params: RequestParams) -> Self {
-        Arguments::ContactCardQuery(Box::new(QueryRequest::new(params)))
-    }
-
-    pub fn contact_card_query_changes(
-        params: RequestParams,
-        since_query_state: String,
-    ) -> Self {
-        Arguments::ContactCardQueryChanges(Box::new(QueryChangesRequest::new(
-            params,
-            since_query_state,
-        )))
-    }
-
-    pub fn contact_card_set(params: RequestParams) -> Self {
-        Arguments::ContactCardSet(Box::new(SetRequest::new(params)))
-    }
-
-    pub fn contact_card_parse(params: RequestParams) -> Self {
-        Arguments::ContactCardParse(Box::new(ContactCardParseRequest::new(params)))
-    }
-
-    pub fn contact_card_copy(params: RequestParams, from_account_id: String) -> Self {
-        Arguments::ContactCardCopy(Box::new(CopyRequest::new(params, from_account_id)))
-    }
-
-    pub fn changes_mut(&mut self) -> &mut ChangesRequest {
-        match self {
-            Arguments::Changes(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn push_get_mut(&mut self) -> &mut GetRequest<PushSubscription<Set>> {
-        match self {
-            Arguments::PushGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn push_set_mut(&mut self) -> &mut SetRequest<PushSubscription<Set>> {
-        match self {
-            Arguments::PushSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn blob_copy_mut(&mut self) -> &mut CopyBlobRequest {
-        match self {
-            Arguments::BlobCopy(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn blob_upload_mut(&mut self) -> &mut BlobUploadRequest {
-        match self {
-            Arguments::BlobUpload(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn blob_get_mut(&mut self) -> &mut BlobGetRequest {
-        match self {
-            Arguments::BlobGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn blob_lookup_mut(&mut self) -> &mut BlobLookupRequest {
-        match self {
-            Arguments::BlobLookup(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn mailbox_get_mut(&mut self) -> &mut GetRequest<Mailbox<Set>> {
-        match self {
-            Arguments::MailboxGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn mailbox_query_mut(&mut self) -> &mut QueryRequest<Mailbox<Set>> {
-        match self {
-            Arguments::MailboxQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn mailbox_query_changes_mut(&mut self) -> &mut QueryChangesRequest<Mailbox<Set>> {
-        match self {
-            Arguments::MailboxQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn mailbox_set_mut(&mut self) -> &mut SetRequest<Mailbox<Set>> {
-        match self {
-            Arguments::MailboxSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn thread_get_mut(&mut self) -> &mut GetRequest<Thread> {
-        match self {
-            Arguments::ThreadGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_get_mut(&mut self) -> &mut GetRequest<Email<Set>> {
-        match self {
-            Arguments::EmailGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_query_mut(&mut self) -> &mut QueryRequest<Email<Set>> {
-        match self {
-            Arguments::EmailQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_query_changes_mut(&mut self) -> &mut QueryChangesRequest<Email<Set>> {
-        match self {
-            Arguments::EmailQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_set_mut(&mut self) -> &mut SetRequest<Email<Set>> {
-        match self {
-            Arguments::EmailSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_copy_mut(&mut self) -> &mut CopyRequest<Email<Set>> {
-        match self {
-            Arguments::EmailCopy(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_import_mut(&mut self) -> &mut EmailImportRequest {
-        match self {
-            Arguments::EmailImport(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_parse_mut(&mut self) -> &mut EmailParseRequest {
-        match self {
-            Arguments::EmailParse(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn search_snippet_get_mut(&mut self) -> &mut SearchSnippetGetRequest {
-        match self {
-            Arguments::SearchSnippetGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn identity_get_mut(&mut self) -> &mut GetRequest<Identity<Set>> {
-        match self {
-            Arguments::IdentityGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn identity_set_mut(&mut self) -> &mut SetRequest<Identity<Set>> {
-        match self {
-            Arguments::IdentitySet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_submission_get_mut(&mut self) -> &mut GetRequest<EmailSubmission<Set>> {
-        match self {
-            Arguments::EmailSubmissionGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_submission_query_mut(&mut self) -> &mut QueryRequest<EmailSubmission<Set>> {
-        match self {
-            Arguments::EmailSubmissionQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_submission_query_changes_mut(
-        &mut self,
-    ) -> &mut QueryChangesRequest<EmailSubmission<Set>> {
-        match self {
-            Arguments::EmailSubmissionQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn email_submission_set_mut(&mut self) -> &mut SetRequest<EmailSubmission<Set>> {
-        match self {
-            Arguments::EmailSubmissionSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn vacation_response_get_mut(&mut self) -> &mut GetRequest<VacationResponse<Set>> {
-        match self {
-            Arguments::VacationResponseGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn vacation_response_set_mut(&mut self) -> &mut SetRequest<VacationResponse<Set>> {
-        match self {
-            Arguments::VacationResponseSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn sieve_script_get_mut(&mut self) -> &mut GetRequest<SieveScript<Set>> {
-        match self {
-            Arguments::SieveScriptGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn sieve_script_query_mut(&mut self) -> &mut QueryRequest<SieveScript<Set>> {
-        match self {
-            Arguments::SieveScriptQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn sieve_script_validate_mut(&mut self) -> &mut SieveScriptValidateRequest {
-        match self {
-            Arguments::SieveScriptValidate(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn sieve_script_set_mut(&mut self) -> &mut SetRequest<SieveScript<Set>> {
-        match self {
-            Arguments::SieveScriptSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn principal_get_mut(&mut self) -> &mut GetRequest<Principal<Set>> {
-        match self {
-            Arguments::PrincipalGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn principal_query_mut(&mut self) -> &mut QueryRequest<Principal<Set>> {
-        match self {
-            Arguments::PrincipalQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn principal_query_changes_mut(&mut self) -> &mut QueryChangesRequest<Principal<Set>> {
-        match self {
-            Arguments::PrincipalQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn principal_set_mut(&mut self) -> &mut SetRequest<Principal<Set>> {
-        match self {
-            Arguments::PrincipalSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn principal_get_availability_mut(
-        &mut self,
-    ) -> &mut PrincipalGetAvailabilityRequest {
-        match self {
-            Arguments::PrincipalGetAvailability(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn quota_get_mut(&mut self) -> &mut GetRequest<Quota<Set>> {
-        match self {
-            Arguments::QuotaGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn quota_query_mut(&mut self) -> &mut QueryRequest<Quota<Set>> {
-        match self {
-            Arguments::QuotaQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn quota_query_changes_mut(&mut self) -> &mut QueryChangesRequest<Quota<Set>> {
-        match self {
-            Arguments::QuotaQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_get_mut(&mut self) -> &mut GetRequest<Calendar<Set>> {
-        match self {
-            Arguments::CalendarGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_set_mut(&mut self) -> &mut SetRequest<Calendar<Set>> {
-        match self {
-            Arguments::CalendarSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_get_mut(&mut self) -> &mut GetRequest<CalendarEvent<Set>> {
-        match self {
-            Arguments::CalendarEventGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_query_mut(&mut self) -> &mut QueryRequest<CalendarEvent<Set>> {
-        match self {
-            Arguments::CalendarEventQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_query_changes_mut(
-        &mut self,
-    ) -> &mut QueryChangesRequest<CalendarEvent<Set>> {
-        match self {
-            Arguments::CalendarEventQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_set_mut(&mut self) -> &mut SetRequest<CalendarEvent<Set>> {
-        match self {
-            Arguments::CalendarEventSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_parse_mut(&mut self) -> &mut CalendarEventParseRequest {
-        match self {
-            Arguments::CalendarEventParse(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_copy_mut(&mut self) -> &mut CopyRequest<CalendarEvent<Set>> {
-        match self {
-            Arguments::CalendarEventCopy(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_notification_get_mut(
-        &mut self,
-    ) -> &mut GetRequest<CalendarEventNotification<Set>> {
-        match self {
-            Arguments::CalendarEventNotificationGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_notification_query_mut(
-        &mut self,
-    ) -> &mut QueryRequest<CalendarEventNotification<Set>> {
-        match self {
-            Arguments::CalendarEventNotificationQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_notification_query_changes_mut(
-        &mut self,
-    ) -> &mut QueryChangesRequest<CalendarEventNotification<Set>> {
-        match self {
-            Arguments::CalendarEventNotificationQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn calendar_event_notification_set_mut(
-        &mut self,
-    ) -> &mut SetRequest<CalendarEventNotification<Set>> {
-        match self {
-            Arguments::CalendarEventNotificationSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn participant_identity_get_mut(
-        &mut self,
-    ) -> &mut GetRequest<ParticipantIdentity<Set>> {
-        match self {
-            Arguments::ParticipantIdentityGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn participant_identity_set_mut(
-        &mut self,
-    ) -> &mut SetRequest<ParticipantIdentity<Set>> {
-        match self {
-            Arguments::ParticipantIdentitySet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn address_book_get_mut(&mut self) -> &mut GetRequest<AddressBook<Set>> {
-        match self {
-            Arguments::AddressBookGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn address_book_set_mut(&mut self) -> &mut SetRequest<AddressBook<Set>> {
-        match self {
-            Arguments::AddressBookSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn contact_card_get_mut(&mut self) -> &mut GetRequest<ContactCard<Set>> {
-        match self {
-            Arguments::ContactCardGet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn contact_card_query_mut(&mut self) -> &mut QueryRequest<ContactCard<Set>> {
-        match self {
-            Arguments::ContactCardQuery(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn contact_card_query_changes_mut(
-        &mut self,
-    ) -> &mut QueryChangesRequest<ContactCard<Set>> {
-        match self {
-            Arguments::ContactCardQueryChanges(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn contact_card_set_mut(&mut self) -> &mut SetRequest<ContactCard<Set>> {
-        match self {
-            Arguments::ContactCardSet(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn contact_card_parse_mut(&mut self) -> &mut ContactCardParseRequest {
-        match self {
-            Arguments::ContactCardParse(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn contact_card_copy_mut(&mut self) -> &mut CopyRequest<ContactCard<Set>> {
-        match self {
-            Arguments::ContactCardCopy(ref mut r) => r,
-            _ => unreachable!(),
-        }
-    }
+    // Quota
+    impl_arguments_constructor!(quota_get, QuotaGet, GetRequest<Quota<Set>>);
+    impl_arguments_constructor!(quota_query, QuotaQuery, QueryRequest<Quota<Set>>);
+    impl_arguments_constructor!(quota_query_changes, QuotaQueryChanges, QueryChangesRequest<Quota<Set>>, since_query_state: String);
+
+    // Calendar
+    impl_arguments_constructor!(calendar_get, CalendarGet, GetRequest<Calendar<Set>>);
+    impl_arguments_constructor!(calendar_set, CalendarSet, SetRequest<Calendar<Set>>);
+
+    // Calendar event
+    impl_arguments_constructor!(calendar_event_get, CalendarEventGet, GetRequest<CalendarEvent<Set>>);
+    impl_arguments_constructor!(calendar_event_query, CalendarEventQuery, QueryRequest<CalendarEvent<Set>>);
+    impl_arguments_constructor!(calendar_event_query_changes, CalendarEventQueryChanges, QueryChangesRequest<CalendarEvent<Set>>, since_query_state: String);
+    impl_arguments_constructor!(calendar_event_set, CalendarEventSet, SetRequest<CalendarEvent<Set>>);
+    impl_arguments_constructor!(calendar_event_parse, CalendarEventParse, CalendarEventParseRequest);
+    impl_arguments_constructor!(calendar_event_copy, CalendarEventCopy, CopyRequest<CalendarEvent<Set>>, from_account_id: String);
+
+    // Calendar event notification
+    impl_arguments_constructor!(calendar_event_notification_get, CalendarEventNotificationGet, GetRequest<CalendarEventNotification<Set>>);
+    impl_arguments_constructor!(calendar_event_notification_query, CalendarEventNotificationQuery, QueryRequest<CalendarEventNotification<Set>>);
+    impl_arguments_constructor!(calendar_event_notification_query_changes, CalendarEventNotificationQueryChanges, QueryChangesRequest<CalendarEventNotification<Set>>, since_query_state: String);
+    impl_arguments_constructor!(calendar_event_notification_set, CalendarEventNotificationSet, SetRequest<CalendarEventNotification<Set>>);
+
+    // Participant identity
+    impl_arguments_constructor!(participant_identity_get, ParticipantIdentityGet, GetRequest<ParticipantIdentity<Set>>);
+    impl_arguments_constructor!(participant_identity_set, ParticipantIdentitySet, SetRequest<ParticipantIdentity<Set>>);
+
+    // Address book
+    impl_arguments_constructor!(address_book_get, AddressBookGet, GetRequest<AddressBook<Set>>);
+    impl_arguments_constructor!(address_book_set, AddressBookSet, SetRequest<AddressBook<Set>>);
+
+    // Contact card
+    impl_arguments_constructor!(contact_card_get, ContactCardGet, GetRequest<ContactCard<Set>>);
+    impl_arguments_constructor!(contact_card_query, ContactCardQuery, QueryRequest<ContactCard<Set>>);
+    impl_arguments_constructor!(contact_card_query_changes, ContactCardQueryChanges, QueryChangesRequest<ContactCard<Set>>, since_query_state: String);
+    impl_arguments_constructor!(contact_card_set, ContactCardSet, SetRequest<ContactCard<Set>>);
+    impl_arguments_constructor!(contact_card_parse, ContactCardParse, ContactCardParseRequest);
+    impl_arguments_constructor!(contact_card_copy, ContactCardCopy, CopyRequest<ContactCard<Set>>, from_account_id: String);
+
+    // --- Mutable accessors ---
+
+    // Changes
+    impl_arguments_accessor!(changes_mut, Changes, ChangesRequest);
+
+    // Push subscription
+    impl_arguments_accessor!(push_get_mut, PushGet, GetRequest<PushSubscription<Set>>);
+    impl_arguments_accessor!(push_set_mut, PushSet, SetRequest<PushSubscription<Set>>);
+
+    // Blob
+    impl_arguments_accessor!(blob_copy_mut, BlobCopy, CopyBlobRequest);
+    impl_arguments_accessor!(blob_upload_mut, BlobUpload, BlobUploadRequest);
+    impl_arguments_accessor!(blob_get_mut, BlobGet, BlobGetRequest);
+    impl_arguments_accessor!(blob_lookup_mut, BlobLookup, BlobLookupRequest);
+
+    // Mailbox
+    impl_arguments_accessor!(mailbox_get_mut, MailboxGet, GetRequest<Mailbox<Set>>);
+    impl_arguments_accessor!(mailbox_query_mut, MailboxQuery, QueryRequest<Mailbox<Set>>);
+    impl_arguments_accessor!(mailbox_query_changes_mut, MailboxQueryChanges, QueryChangesRequest<Mailbox<Set>>);
+    impl_arguments_accessor!(mailbox_set_mut, MailboxSet, SetRequest<Mailbox<Set>>);
+
+    // Thread
+    impl_arguments_accessor!(thread_get_mut, ThreadGet, GetRequest<Thread>);
+
+    // Email
+    impl_arguments_accessor!(email_get_mut, EmailGet, GetRequest<Email<Set>>);
+    impl_arguments_accessor!(email_query_mut, EmailQuery, QueryRequest<Email<Set>>);
+    impl_arguments_accessor!(email_query_changes_mut, EmailQueryChanges, QueryChangesRequest<Email<Set>>);
+    impl_arguments_accessor!(email_set_mut, EmailSet, SetRequest<Email<Set>>);
+    impl_arguments_accessor!(email_copy_mut, EmailCopy, CopyRequest<Email<Set>>);
+    impl_arguments_accessor!(email_import_mut, EmailImport, EmailImportRequest);
+    impl_arguments_accessor!(email_parse_mut, EmailParse, EmailParseRequest);
+    impl_arguments_accessor!(search_snippet_get_mut, SearchSnippetGet, SearchSnippetGetRequest);
+
+    // Identity
+    impl_arguments_accessor!(identity_get_mut, IdentityGet, GetRequest<Identity<Set>>);
+    impl_arguments_accessor!(identity_set_mut, IdentitySet, SetRequest<Identity<Set>>);
+
+    // Email submission
+    impl_arguments_accessor!(email_submission_get_mut, EmailSubmissionGet, GetRequest<EmailSubmission<Set>>);
+    impl_arguments_accessor!(email_submission_query_mut, EmailSubmissionQuery, QueryRequest<EmailSubmission<Set>>);
+    impl_arguments_accessor!(email_submission_query_changes_mut, EmailSubmissionQueryChanges, QueryChangesRequest<EmailSubmission<Set>>);
+    impl_arguments_accessor!(email_submission_set_mut, EmailSubmissionSet, SetRequest<EmailSubmission<Set>>);
+
+    // Vacation response
+    impl_arguments_accessor!(vacation_response_get_mut, VacationResponseGet, GetRequest<VacationResponse<Set>>);
+    impl_arguments_accessor!(vacation_response_set_mut, VacationResponseSet, SetRequest<VacationResponse<Set>>);
+
+    // Sieve script
+    impl_arguments_accessor!(sieve_script_get_mut, SieveScriptGet, GetRequest<SieveScript<Set>>);
+    impl_arguments_accessor!(sieve_script_query_mut, SieveScriptQuery, QueryRequest<SieveScript<Set>>);
+    impl_arguments_accessor!(sieve_script_validate_mut, SieveScriptValidate, SieveScriptValidateRequest);
+    impl_arguments_accessor!(sieve_script_set_mut, SieveScriptSet, SetRequest<SieveScript<Set>>);
+
+    // Principal
+    impl_arguments_accessor!(principal_get_mut, PrincipalGet, GetRequest<Principal<Set>>);
+    impl_arguments_accessor!(principal_query_mut, PrincipalQuery, QueryRequest<Principal<Set>>);
+    impl_arguments_accessor!(principal_query_changes_mut, PrincipalQueryChanges, QueryChangesRequest<Principal<Set>>);
+    impl_arguments_accessor!(principal_set_mut, PrincipalSet, SetRequest<Principal<Set>>);
+    impl_arguments_accessor!(principal_get_availability_mut, PrincipalGetAvailability, PrincipalGetAvailabilityRequest);
+
+    // Quota
+    impl_arguments_accessor!(quota_get_mut, QuotaGet, GetRequest<Quota<Set>>);
+    impl_arguments_accessor!(quota_query_mut, QuotaQuery, QueryRequest<Quota<Set>>);
+    impl_arguments_accessor!(quota_query_changes_mut, QuotaQueryChanges, QueryChangesRequest<Quota<Set>>);
+
+    // Calendar
+    impl_arguments_accessor!(calendar_get_mut, CalendarGet, GetRequest<Calendar<Set>>);
+    impl_arguments_accessor!(calendar_set_mut, CalendarSet, SetRequest<Calendar<Set>>);
+
+    // Calendar event
+    impl_arguments_accessor!(calendar_event_get_mut, CalendarEventGet, GetRequest<CalendarEvent<Set>>);
+    impl_arguments_accessor!(calendar_event_query_mut, CalendarEventQuery, QueryRequest<CalendarEvent<Set>>);
+    impl_arguments_accessor!(calendar_event_query_changes_mut, CalendarEventQueryChanges, QueryChangesRequest<CalendarEvent<Set>>);
+    impl_arguments_accessor!(calendar_event_set_mut, CalendarEventSet, SetRequest<CalendarEvent<Set>>);
+    impl_arguments_accessor!(calendar_event_parse_mut, CalendarEventParse, CalendarEventParseRequest);
+    impl_arguments_accessor!(calendar_event_copy_mut, CalendarEventCopy, CopyRequest<CalendarEvent<Set>>);
+
+    // Calendar event notification
+    impl_arguments_accessor!(calendar_event_notification_get_mut, CalendarEventNotificationGet, GetRequest<CalendarEventNotification<Set>>);
+    impl_arguments_accessor!(calendar_event_notification_query_mut, CalendarEventNotificationQuery, QueryRequest<CalendarEventNotification<Set>>);
+    impl_arguments_accessor!(calendar_event_notification_query_changes_mut, CalendarEventNotificationQueryChanges, QueryChangesRequest<CalendarEventNotification<Set>>);
+    impl_arguments_accessor!(calendar_event_notification_set_mut, CalendarEventNotificationSet, SetRequest<CalendarEventNotification<Set>>);
+
+    // Participant identity
+    impl_arguments_accessor!(participant_identity_get_mut, ParticipantIdentityGet, GetRequest<ParticipantIdentity<Set>>);
+    impl_arguments_accessor!(participant_identity_set_mut, ParticipantIdentitySet, SetRequest<ParticipantIdentity<Set>>);
+
+    // Address book
+    impl_arguments_accessor!(address_book_get_mut, AddressBookGet, GetRequest<AddressBook<Set>>);
+    impl_arguments_accessor!(address_book_set_mut, AddressBookSet, SetRequest<AddressBook<Set>>);
+
+    // Contact card
+    impl_arguments_accessor!(contact_card_get_mut, ContactCardGet, GetRequest<ContactCard<Set>>);
+    impl_arguments_accessor!(contact_card_query_mut, ContactCardQuery, QueryRequest<ContactCard<Set>>);
+    impl_arguments_accessor!(contact_card_query_changes_mut, ContactCardQueryChanges, QueryChangesRequest<ContactCard<Set>>);
+    impl_arguments_accessor!(contact_card_set_mut, ContactCardSet, SetRequest<ContactCard<Set>>);
+    impl_arguments_accessor!(contact_card_parse_mut, ContactCardParse, ContactCardParseRequest);
+    impl_arguments_accessor!(contact_card_copy_mut, ContactCardCopy, CopyRequest<ContactCard<Set>>);
 }
 
 impl<'x> Request<'x> {
