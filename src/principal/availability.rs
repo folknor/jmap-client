@@ -11,7 +11,6 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::RequestParams;
 
 /// Request for `Principal/getAvailability`.
 ///
@@ -65,13 +64,13 @@ pub struct AvailabilityEntry {
 
 impl PrincipalGetAvailabilityRequest {
     pub fn new(
-        params: RequestParams<'_>,
+        account_id: impl Into<String>,
         id: impl Into<String>,
         utc_start: impl Into<String>,
         utc_end: impl Into<String>,
     ) -> Self {
         PrincipalGetAvailabilityRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             id: id.into(),
             utc_start: utc_start.into(),
             utc_end: utc_end.into(),

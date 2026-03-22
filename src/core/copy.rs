@@ -14,10 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Error;
 
-use super::{
-    set::{SetError, SetObject},
-    RequestParams,
-};
+use super::set::{SetError, SetObject};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct CopyRequest<O: SetObject> {
@@ -68,11 +65,11 @@ pub struct CopyResponse<O: SetObject> {
 }
 
 impl<T: SetObject> CopyRequest<T> {
-    pub fn new(params: RequestParams<'_>, from_account_id: String) -> Self {
+    pub fn new(account_id: impl Into<String>, from_account_id: impl Into<String>) -> Self {
         CopyRequest {
-            from_account_id,
+            from_account_id: from_account_id.into(),
             if_from_in_state: None,
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             if_in_state: None,
             create: HashMap::new(),
             on_success_destroy_original: false,

@@ -16,7 +16,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{core::RequestParams, Error};
+use crate::Error;
 
 // ---- Blob/upload (RFC 9404 §4.1) ----
 
@@ -113,9 +113,9 @@ pub struct BlobUploadCreated {
 }
 
 impl BlobUploadRequest {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         BlobUploadRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             create: HashMap::new(),
         }
     }
@@ -312,9 +312,9 @@ impl BlobGetResult {
 }
 
 impl BlobGetRequest {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         BlobGetRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             ids: Vec::new(),
             properties: None,
             offset: None,
@@ -422,9 +422,9 @@ pub struct BlobLookupResult {
 }
 
 impl BlobLookupRequest {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         BlobLookupRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             type_names: Vec::new(),
             ids: Vec::new(),
         }

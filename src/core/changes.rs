@@ -11,9 +11,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::Method;
-
-use super::{request::ResultReference, Object, RequestParams};
+use super::Object;
 
 pub trait ChangesObject: Object {
     type ChangesResponse;
@@ -21,9 +19,6 @@ pub trait ChangesObject: Object {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ChangesRequest {
-    #[serde(skip)]
-    method: (Method, usize),
-
     #[serde(rename = "accountId")]
     account_id: String,
 
@@ -60,11 +55,10 @@ pub struct ChangesResponse<O: ChangesObject> {
 }
 
 impl ChangesRequest {
-    pub fn new(params: RequestParams<'_>, since_state: String) -> Self {
+    pub fn new(account_id: impl Into<String>, since_state: impl Into<String>) -> Self {
         ChangesRequest {
-            method: (params.method, params.call_id),
-            account_id: params.account_id.to_string(),
-            since_state,
+            account_id: account_id.into(),
+            since_state: since_state.into(),
             max_changes: None,
         }
     }
@@ -79,17 +73,6 @@ impl ChangesRequest {
         self
     }
 
-    pub fn created_reference(&self) -> ResultReference {
-        ResultReference::new(self.method.0, self.method.1, "/created")
-    }
-
-    pub fn updated_reference(&self) -> ResultReference {
-        ResultReference::new(self.method.0, self.method.1, "/updated")
-    }
-
-    pub fn updated_properties_reference(&self) -> ResultReference {
-        ResultReference::new(self.method.0, self.method.1, "/updatedProperties")
-    }
 }
 
 impl<O: ChangesObject> ChangesResponse<O> {

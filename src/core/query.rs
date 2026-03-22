@@ -11,9 +11,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::Method;
-
-use super::{request::ResultReference, Object, RequestParams};
+use super::Object;
 
 pub trait QueryObject: Object {
     type QueryArguments: Default + Serialize;
@@ -23,9 +21,6 @@ pub trait QueryObject: Object {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct QueryRequest<O: QueryObject> {
-    #[serde(skip)]
-    method: (Method, usize),
-
     #[serde(rename = "accountId")]
     account_id: String,
 
@@ -123,10 +118,9 @@ pub struct QueryResponse {
 }
 
 impl<O: QueryObject> QueryRequest<O> {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         QueryRequest {
-            account_id: params.account_id.to_string(),
-            method: (params.method, params.call_id),
+            account_id: account_id.into(),
             filter: None,
             sort: None,
             position: None,
@@ -182,9 +176,6 @@ impl<O: QueryObject> QueryRequest<O> {
         &mut self.arguments
     }
 
-    pub fn result_reference(&self) -> ResultReference {
-        ResultReference::new(self.method.0, self.method.1, "/ids")
-    }
 }
 
 impl QueryResponse {

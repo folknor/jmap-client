@@ -11,10 +11,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{
-    query::{Comparator, Filter, QueryObject},
-    RequestParams,
-};
+use super::query::{Comparator, Filter, QueryObject};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct QueryChangesRequest<O: QueryObject> {
@@ -70,12 +67,12 @@ pub struct AddedItem {
 }
 
 impl<O: QueryObject> QueryChangesRequest<O> {
-    pub fn new(params: RequestParams<'_>, since_query_state: String) -> Self {
+    pub fn new(account_id: impl Into<String>, since_query_state: impl Into<String>) -> Self {
         QueryChangesRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             filter: None,
             sort: None,
-            since_query_state,
+            since_query_state: since_query_state.into(),
             max_changes: None,
             up_to_id: None,
             calculate_total: false,

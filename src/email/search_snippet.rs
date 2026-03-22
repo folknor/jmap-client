@@ -11,7 +11,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::{query::Filter, request::ResultReference, RequestParams};
+use crate::core::{query::Filter, request::ResultReference};
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct SearchSnippet {
@@ -52,9 +52,9 @@ pub struct SearchSnippetGetResponse {
 }
 
 impl SearchSnippetGetRequest {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         SearchSnippetGetRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             filter: None,
             email_ids: None,
             email_ids_ref: None,

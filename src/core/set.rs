@@ -15,7 +15,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 
-use super::{request::ResultReference, Object, RequestParams};
+use super::{request::ResultReference, Object};
 
 pub trait SetObject: Object {
     type SetArguments: Default;
@@ -149,10 +149,11 @@ pub enum SetErrorType {
 }
 
 impl<O: SetObject> SetRequest<O> {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
+        let account_id = account_id.into();
         Self {
             account_id: if O::requires_account_id() {
-                params.account_id.to_string().into()
+                Some(account_id)
             } else {
                 None
             },

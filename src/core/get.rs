@@ -11,9 +11,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::Method;
-
-use super::{request::ResultReference, Object, RequestParams};
+use super::request::ResultReference;
+use super::Object;
 
 pub trait GetObject: Object {
     type GetArguments: Default;
@@ -21,9 +20,6 @@ pub trait GetObject: Object {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct GetRequest<O: GetObject> {
-    #[serde(skip)]
-    method: (Method, usize),
-
     #[serde(rename = "accountId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     account_id: Option<String>,
@@ -62,14 +58,13 @@ pub struct GetResponse<T> {
 }
 
 impl<O: GetObject> GetRequest<O> {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         GetRequest {
             account_id: if O::requires_account_id() {
-                params.account_id.to_string().into()
+                Some(account_id.into())
             } else {
                 None
             },
-            method: (params.method, params.call_id),
             ids: None,
             ids_ref: None,
             properties: None,
@@ -117,13 +112,6 @@ impl<O: GetObject> GetRequest<O> {
         &mut self.arguments
     }
 
-    pub fn result_reference(&self, property: O::Property) -> ResultReference {
-        ResultReference::new(
-            self.method.0,
-            self.method.1,
-            format!("/list/*/{property}"),
-        )
-    }
 }
 
 impl<O> GetResponse<O> {

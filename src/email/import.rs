@@ -13,7 +13,6 @@ use crate::{
     core::{
         request::ResultReference,
         set::{from_timestamp, SetError},
-        RequestParams,
     },
     Error,
 };
@@ -79,9 +78,9 @@ pub struct EmailImportResponse {
 }
 
 impl EmailImportRequest {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         EmailImportRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             if_in_state: None,
             emails: HashMap::new(),
         }

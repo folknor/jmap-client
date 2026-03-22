@@ -13,24 +13,18 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::Method;
-
+pub mod capability;
 pub mod changes;
 pub mod copy;
 pub mod error;
 pub mod get;
+pub mod method;
 pub mod query;
 pub mod query_changes;
 pub mod request;
 pub mod response;
 pub mod session;
 pub mod set;
-
-pub struct RequestParams<'a> {
-    pub account_id: &'a str,
-    pub method: Method,
-    pub call_id: usize,
-}
 
 pub trait Object: Sized {
     type Property: Display + Serialize + for<'de> Deserialize<'de>;

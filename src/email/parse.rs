@@ -12,7 +12,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{BodyProperty, Email, Property};
-use crate::{core::RequestParams, Error};
+use crate::Error;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize)]
@@ -64,9 +64,9 @@ pub struct EmailParseResponse {
 }
 
 impl EmailParseRequest {
-    pub fn new(params: RequestParams<'_>) -> Self {
+    pub fn new(account_id: impl Into<String>) -> Self {
         EmailParseRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             blob_ids: Vec::new(),
             properties: None,
             body_properties: None,

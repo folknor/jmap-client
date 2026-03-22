@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::core::{set::SetError, RequestParams};
+use crate::core::set::SetError;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SieveScriptValidateRequest {
@@ -21,9 +21,9 @@ pub struct SieveScriptValidateResponse {
 }
 
 impl SieveScriptValidateRequest {
-    pub fn new(params: RequestParams<'_>, blob_id: impl Into<String>) -> Self {
+    pub fn new(account_id: impl Into<String>, blob_id: impl Into<String>) -> Self {
         SieveScriptValidateRequest {
-            account_id: params.account_id.to_string(),
+            account_id: account_id.into(),
             blob_id: blob_id.into(),
         }
     }

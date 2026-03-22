@@ -321,37 +321,68 @@ impl Client {
         })
     }
 
-    pub async fn send<R>(
+    /// Send a JMAP request and get a typed Response for extraction via CallHandle.
+    pub async fn send_request(
         &self,
         request: &request::Request<'_>,
-    ) -> crate::Result<response::Response<R>>
+    ) -> crate::Result<response::Response> {
+        let bytes = self.send_bytes(request).await?;
+        let response: response::Response = serde_json::from_slice(&bytes)?;
+        if response.session_state()
+            != self
+                .session
+                .lock()
+                .expect("session mutex poisoned")
+                .state()
+        {
+            self.session_updated.store(false, Ordering::Relaxed);
+        }
+        Ok(response)
+    }
+
+    /// Send a JMAP request and deserialize the raw response envelope.
+    pub async fn send_raw<R>(
+        &self,
+        request: &request::Request<'_>,
+    ) -> crate::Result<response::RawResponse<R>>
     where
         R: DeserializeOwned,
     {
-        let response: response::Response<R> = serde_json::from_slice(
-            &Client::handle_error(
-                HttpClient::builder()
-                    .redirect(self.redirect_policy())
-                    .danger_accept_invalid_certs(self.accept_invalid_certs)
-                    .timeout(self.timeout)
-                    .default_headers(self.headers.clone())
-                    .build()?
-                    .post(&self.api_url)
-                    .body(serde_json::to_string(&request)?)
-                    .send()
-                    .await?,
-            )
-            .await?
-            .bytes()
-            .await?,
-        )?;
-
-        if response.session_state() != self.session.lock().expect("session mutex poisoned").state() {
+        let bytes = self.send_bytes(request).await?;
+        let response: response::RawResponse<R> = serde_json::from_slice(&bytes)?;
+        if response.session_state()
+            != self
+                .session
+                .lock()
+                .expect("session mutex poisoned")
+                .state()
+        {
             self.session_updated.store(false, Ordering::Relaxed);
         }
-
         Ok(response)
     }
+
+    async fn send_bytes(
+        &self,
+        request: &request::Request<'_>,
+    ) -> crate::Result<bytes::Bytes> {
+        Ok(Client::handle_error(
+            HttpClient::builder()
+                .redirect(self.redirect_policy())
+                .danger_accept_invalid_certs(self.accept_invalid_certs)
+                .timeout(self.timeout)
+                .default_headers(self.headers.clone())
+                .build()?
+                .post(&self.api_url)
+                .body(serde_json::to_string(request)?)
+                .send()
+                .await?,
+        )
+        .await?
+        .bytes()
+        .await?)
+    }
+
 
     pub async fn refresh_session(&self) -> crate::Result<()> {
         let session: Session = serde_json::from_slice(
