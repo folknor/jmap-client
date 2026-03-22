@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod capability;
 pub mod changes;
+pub mod field;
 pub mod copy;
 pub mod error;
 pub mod get;
