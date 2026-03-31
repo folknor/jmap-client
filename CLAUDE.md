@@ -11,11 +11,11 @@ Fork of stalwartlabs/jmap-client (Apache-2.0 / MIT), maintained at folknor/jmap-
 ## Build & test
 
 ```bash
-cargo build                        # default features
-cargo test --lib                   # 74 tests with all features
-cargo test --lib --no-default-features  # 22 core-only tests
-cargo build --no-default-features  # minimal build (core + principal + share_notification + push)
-cargo clippy --lib                 # zero warnings expected
+cargo build                                          # default features (tls-rustls)
+cargo test --lib                                     # 74 tests with all features
+cargo test --lib --no-default-features -F tls-rustls # 22 core-only tests
+cargo build --no-default-features -F tls-rustls      # minimal build (core + principal + share_notification + push)
+cargo clippy --lib                                   # zero warnings expected
 ```
 
 Lints are in `[lints.clippy]` in Cargo.toml, not inline in source.

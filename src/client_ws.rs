@@ -9,11 +9,14 @@
  * except according to those terms.
  */
 
-use std::{pin::Pin, sync::Arc};
+use std::pin::Pin;
+#[cfg(feature = "tls-rustls")]
+use std::sync::Arc;
 
 use std::collections::HashMap;
 use futures_util::{stream::SplitSink, SinkExt, Stream, StreamExt};
 use reqwest::header::SEC_WEBSOCKET_PROTOCOL;
+#[cfg(feature = "tls-rustls")]
 use rustls::{
     client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier},
     ClientConfig, SignatureScheme,
@@ -151,10 +154,12 @@ pub(crate) struct WsStream {
     req_id: usize,
 }
 
+#[cfg(feature = "tls-rustls")]
 #[doc(hidden)]
 #[derive(Debug)]
 struct DummyVerifier;
 
+#[cfg(feature = "tls-rustls")]
 impl ServerCertVerifier for DummyVerifier {
     fn verify_server_cert(
         &self,
@@ -222,17 +227,27 @@ impl Client {
             .insert(SEC_WEBSOCKET_PROTOCOL, "jmap".parse().unwrap());
 
         let (stream, _) = if self.accept_invalid_certs && capabilities.url().starts_with("wss") {
+            #[cfg(feature = "tls-rustls")]
+            let connector = Connector::Rustls(Arc::new(
+                ClientConfig::builder()
+                    .dangerous()
+                    .with_custom_certificate_verifier(Arc::new(DummyVerifier {}))
+                    .with_no_client_auth(),
+            ));
+            #[cfg(feature = "tls-native")]
+            let connector = Connector::NativeTls(
+                native_tls::TlsConnector::builder()
+                    .danger_accept_invalid_certs(true)
+                    .build()
+                    .map_err(|e| {
+                        tokio_tungstenite::tungstenite::error::Error::Tls(e.into())
+                    })?,
+            );
             tokio_tungstenite::connect_async_tls_with_config(
                 request,
                 None,
                 false,
-                Connector::Rustls(Arc::new(
-                    ClientConfig::builder()
-                        .dangerous()
-                        .with_custom_certificate_verifier(Arc::new(DummyVerifier {}))
-                        .with_no_client_auth(),
-                ))
-                .into(),
+                connector.into(),
             )
             .await?
         } else {
